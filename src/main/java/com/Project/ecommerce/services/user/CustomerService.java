@@ -94,12 +94,4 @@ public class CustomerService {
 
         return "Token expired. A new activation link has been sent to your email.";
     }
-
-    public List<Customer> getAllCustomers() {
-        return customerRepository.findAll();
-    }
-
-    public void deleteAllCustomers(){
-        customerRepository.deleteAll();
-    }
 }
