@@ -28,6 +28,7 @@ public class CustomerService {
     private JwtService jwtService;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    @Autowired
     public CustomerService(CustomerRepository customerRepository, UserRepository userRepository, RoleRepository roleRepository, EmailService emailService, JwtService jwtService, BCryptPasswordEncoder bCryptPasswordEncoder){
         this.customerRepository = customerRepository;
         this.userRepository = userRepository;
