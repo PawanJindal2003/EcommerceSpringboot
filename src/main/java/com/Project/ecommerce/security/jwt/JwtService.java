@@ -1,14 +1,17 @@
 package com.Project.ecommerce.security.jwt;
 
+import com.Project.ecommerce.entities.jwt.ActivationToken;
+import com.Project.ecommerce.repositories.Jwt.ActivationTokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +19,12 @@ import java.util.function.Function;
 
 @Component
 public class JwtService {
+    @Autowired
+    ActivationTokenRepository activationTokenRepository;
+
+    public JwtService(ActivationTokenRepository activationTokenRepository){
+        this.activationTokenRepository = activationTokenRepository;
+    }
 
     // Secret Key for signing the JWT. It should be kept private.
     private static final String SECRET = "TmV3U2VjcmV0S2V5Rm9ySldUU2lnbmluZ1B1cnBvc2VzMTIzNDU2Nzgjbhgtyret";
@@ -32,6 +41,15 @@ public class JwtService {
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 3))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
+    }
+
+    public void storeToken(String email){
+        ActivationToken jwtToken = new ActivationToken(email, Instant.now());
+        activationTokenRepository.save(jwtToken);
+    }
+
+    public void deleteToken(String email){
+        activationTokenRepository.deleteByEmail(email);
     }
 
     // Creates a signing key from the base64 encoded secret.
