@@ -13,8 +13,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Seller extends User{
-    private Long GST;
-    private Long companyContact;
+    private String GST;
+    private String companyContact;
     private String companyName;
 
     @OneToMany(mappedBy = "seller")
