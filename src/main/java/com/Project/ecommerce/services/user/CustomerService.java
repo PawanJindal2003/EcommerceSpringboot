@@ -21,27 +21,20 @@ import java.util.List;
 
 @Service
 public class CustomerService {
-    @Autowired
     private CustomerRepository customerRepository;
-
-    @Autowired
     private UserRepository userRepository;
-
-    @Autowired
     private RoleRepository roleRepository;
-
-    @Autowired
     private EmailService emailService;
-
-    @Autowired
     private JwtService jwtService;
-
-    @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public CustomerService(CustomerRepository customerRepository, RoleRepository roleRepository){
+    public CustomerService(CustomerRepository customerRepository, UserRepository userRepository, RoleRepository roleRepository, EmailService emailService, JwtService jwtService, BCryptPasswordEncoder bCryptPasswordEncoder){
         this.customerRepository = customerRepository;
+        this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.emailService = emailService;
+        this.jwtService = jwtService;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     public String registerCustomer(CustomerCO customerCO) throws MessagingException {
