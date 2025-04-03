@@ -13,6 +13,7 @@ import com.Project.ecommerce.security.jwt.JwtService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SignatureException;
@@ -35,6 +36,9 @@ public class CustomerService {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
+
     public CustomerService(CustomerRepository customerRepository, RoleRepository roleRepository){
         this.customerRepository = customerRepository;
         this.roleRepository = roleRepository;
@@ -55,7 +59,7 @@ public class CustomerService {
         customer.setLastName(customerCO.getLastName());
 
         customer.setEmail(customerCO.getEmail());
-        customer.setPassword(customerCO.getPassword());
+        customer.setPassword(bCryptPasswordEncoder.encode(customerCO.getPassword()));
         customer.setCustomerContact(customerCO.getCustomerContact());
         customer.setRole(role);
 
