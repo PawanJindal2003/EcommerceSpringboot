@@ -36,11 +36,8 @@ public class User {
     @Size(min = 3, max = 15, message = "First name must be between 3 and 15 characters")
     private String lastName;
 
-    @Pattern(
-            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{8,15}$",
-            message = "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character")
+    @NotBlank
     private String password;
-
 
     private Boolean isDeleted = false;
     private Boolean isActive = false;
