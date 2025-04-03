@@ -33,7 +33,7 @@ public class CustomerCO {
     private String middleName;
 
     @NotBlank(message = "Last name cannot be blank")
-    @Size(min = 3, max = 15, message = "First name must be between 3 and 15 characters")
+    @Size(min = 3, max = 15, message = "Last name must be between 3 and 15 characters")
     private String lastName;
 
     private Role role;
