@@ -2,6 +2,7 @@ package com.Project.ecommerce.services.user;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +22,7 @@ public class EmailService {
         this.emailSender = emailSender;
     }
 
+    @Async
     public void sendActivationEmail(String toEmail, String activationToken) throws MessagingException {
         String activationUrl = generateActivationUrl(activationToken);
 
