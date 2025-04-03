@@ -15,6 +15,7 @@ import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.security.SignatureException;
 import java.util.List;
 
 @Service
@@ -46,6 +47,7 @@ public class CustomerService {
         if(!customerCO.getPassword().equals(customerCO.getConfirmPassword())){
             throw new ConfirmPasswordMismatch("Confirm password does not match with password, please enter correct confirm password");
         }
+
         Role role = roleRepository.findByAuthority("Customer");
         Customer customer = new Customer();
         customer.setFirstName(customerCO.getFirstName());
@@ -58,19 +60,35 @@ public class CustomerService {
         customer.setRole(role);
 
         customerRepository.save(customer);
-        emailService.sendActivationEmail(customer.getEmail(), jwtService.generateToken(customer.getEmail()));
+        //token generation and saving in db
+        String generatedToken = jwtService.generateToken(customer.getEmail());
+        jwtService.storeToken(customer.getEmail());
+        emailService.sendActivationEmail(customer.getEmail(), generatedToken);
         return "Registration successful. Please check your email to activate your account.";
     }
 
     public String activateCustomer(String token) throws MessagingException {
-        String extractedEmail;
-
         try {
-            extractedEmail = jwtService.extractEmail(token);
+            String extractedEmail = validateAndExtractEmail(token);
+
+            User customer = userRepository.findByEmail(extractedEmail)
+                    .orElseThrow(() -> new IllegalArgumentException("Cannot find email"));
+
+            customer.setIsActive(true);
+            userRepository.save(customer);
+            //deleting useless token from db
+            jwtService.deleteToken(extractedEmail);
+
+            return "Account activated successfully!";
         }
         catch (ExpiredJwtException e) {
+            jwtService.deleteToken(e.getClaims().getSubject());
             return resendActivationEmail(e.getClaims().getSubject());
         }
+    }
+
+    private String validateAndExtractEmail(String token) {
+        String extractedEmail = jwtService.extractEmail(token);
 
         User customer = userRepository.findByEmail(extractedEmail)
                 .orElseThrow(() -> new IllegalArgumentException("Cannot find email"));
@@ -79,11 +97,9 @@ public class CustomerService {
             throw new IllegalArgumentException("Invalid token, account activation failed.");
         }
 
-        customer.setIsActive(true);
-        userRepository.save(customer);
-
-        return "Account activated successfully!";
+        return extractedEmail;
     }
+
 
     public String resendActivationEmail(String extractedEmail) throws MessagingException {
         User customer = userRepository.findByEmail(extractedEmail)
