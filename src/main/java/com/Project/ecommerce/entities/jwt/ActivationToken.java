@@ -26,10 +26,13 @@ public class ActivationToken {
     @Email
     String email;
 
+    String jwtToken;
+
     private Instant createdAt;
 
-    public ActivationToken(String email, Instant createdAt) {
+    public ActivationToken(String jwtToken, String email, Instant createdAt) {
         this.email = email;
+        this.jwtToken = jwtToken;
         this.createdAt = createdAt;
     }
 }
