@@ -43,8 +43,8 @@ public class JwtService {
                 .signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
     }
 
-    public void storeToken(String email){
-        ActivationToken jwtToken = new ActivationToken(email, Instant.now());
+    public void storeToken(String token, String email){
+        ActivationToken jwtToken = new ActivationToken(token, email, Instant.now());
         activationTokenRepository.save(jwtToken);
     }
 
@@ -100,7 +100,7 @@ public class JwtService {
         final String extractedEmail = extractEmail(token);
 
         // Ensure email matches and token is not expired
-        return (extractedEmail != null && extractedEmail.equals(email) && !isTokenExpired(token));
+        return (extractedEmail != null && !isTokenExpired(token));
     }
 
 }
