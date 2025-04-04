@@ -2,6 +2,7 @@ package com.Project.ecommerce.exceptions;
 
 import com.Project.ecommerce.exceptions.customExceptions.ConfirmPasswordMismatch;
 import com.Project.ecommerce.exceptions.customExceptions.EmailAlreadyExistsException;
+import com.Project.ecommerce.exceptions.customExceptions.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -30,5 +31,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleConfirmPasswordMismatchExceptions(ConfirmPasswordMismatch ex){
         List<String> errorMessages = List.of(ex.getMessage());
         return new ResponseEntity<>(new ErrorResponse(400, "Validation failed: ", errorMessages), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(new ErrorResponse(404, "Registeration failure: ", errorMessages), HttpStatus.NOT_FOUND);
     }
 }
