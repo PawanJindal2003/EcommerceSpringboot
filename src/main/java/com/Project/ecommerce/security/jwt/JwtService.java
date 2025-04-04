@@ -99,7 +99,7 @@ public class JwtService {
         // Extract email from token
         final String extractedEmail = extractEmail(token);
 
-        // Ensure email matches and token is not expired
+        // Ensure token is not expired
         return (extractedEmail != null && !isTokenExpired(token));
     }
 
