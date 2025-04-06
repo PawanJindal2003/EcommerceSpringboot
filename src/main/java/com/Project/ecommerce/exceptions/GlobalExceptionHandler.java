@@ -9,6 +9,8 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -62,5 +64,16 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleDuplicateCompanyException(DuplicateCompanyException ex){
         List<String> errorMessages = List.of(ex.getMessage());
         return new ResponseEntity<>(new ErrorResponse(400, "Company Name Issue", errorMessages), HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(new ErrorResponse(404, "Either email or password incorrect", errorMessages), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(CredentialsExpiredException.class)
+    public ResponseEntity<ErrorResponse> handleCredentialsExpiredException(CredentialsExpiredException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(new ErrorResponse(401, "Session expired, please re-login", errorMessages), HttpStatus.UNAUTHORIZED);
     }
 }
