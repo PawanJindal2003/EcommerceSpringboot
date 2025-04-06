@@ -1,6 +1,7 @@
 package com.Project.ecommerce.exceptions;
 
-import com.Project.ecommerce.exceptions.customExceptions.ConfirmPasswordMismatch;
+import com.Project.ecommerce.exceptions.customExceptions.ConfirmPasswordMismatchException;
+import com.Project.ecommerce.exceptions.customExceptions.DuplicateCompanyException;
 import com.Project.ecommerce.exceptions.customExceptions.EmailAlreadyExistsException;
 import com.Project.ecommerce.exceptions.customExceptions.UserNotFoundException;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -30,8 +31,8 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(new ErrorResponse(400, "Validation failed: ", errorMessages), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(ConfirmPasswordMismatch.class)
-    public ResponseEntity<ErrorResponse> handleConfirmPasswordMismatchExceptions(ConfirmPasswordMismatch ex){
+    @ExceptionHandler(ConfirmPasswordMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleConfirmPasswordMismatchExceptions(ConfirmPasswordMismatchException ex){
         List<String> errorMessages = List.of(ex.getMessage());
         return new ResponseEntity<>(new ErrorResponse(400, "Validation failed: ", errorMessages), HttpStatus.BAD_REQUEST);
     }
@@ -56,5 +57,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleExpiredJwtException(ExpiredJwtException ex){
         List<String> errorMessages = List.of(ex.getMessage());
         return new ResponseEntity<>(new ErrorResponse(202, "Token expired", errorMessages), HttpStatus.ACCEPTED);
+    }
+    @ExceptionHandler(DuplicateCompanyException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateCompanyException(DuplicateCompanyException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(new ErrorResponse(400, "Company Name Issue", errorMessages), HttpStatus.BAD_REQUEST);
     }
 }
