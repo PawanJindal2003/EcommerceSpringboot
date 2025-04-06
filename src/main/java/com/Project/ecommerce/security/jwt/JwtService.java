@@ -29,7 +29,6 @@ public class JwtService {
     // Secret Key for signing the JWT. It should be kept private.
     private static final String SECRET = "TmV3U2VjcmV0S2V5Rm9ySldUU2lnbmluZ1B1cnBvc2VzMTIzNDU2Nzgjbhgtyret";
 
-
     // Generates a JWT token for the given email.
     public String generateToken(String email) {
         // Prepare claims for the token
@@ -101,6 +100,16 @@ public class JwtService {
 
         // Ensure token is not expired
         return (extractedEmail != null && !isTokenExpired(token));
+    }
+
+    public Boolean ifTokenPresent(String token){
+        // Validate token structure and signature (will throw if invalid or expired)
+        // without this 200 ok, as service code not able to sense these exceptions
+        Jwts.parser()
+                .setSigningKey(SECRET) // Replace with your actual key
+                .parseClaimsJws(token); // Will throw MalformedJwtException, SignatureException, etc.
+
+        return activationTokenRepository.findByJwtToken(token).isPresent();
     }
 
 }
