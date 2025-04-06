@@ -4,7 +4,7 @@ import com.Project.ecommerce.co.CustomerCO;
 import com.Project.ecommerce.entities.user.Customer;
 import com.Project.ecommerce.entities.user.Role;
 import com.Project.ecommerce.entities.user.User;
-import com.Project.ecommerce.exceptions.customExceptions.ConfirmPasswordMismatch;
+import com.Project.ecommerce.exceptions.customExceptions.ConfirmPasswordMismatchException;
 import com.Project.ecommerce.exceptions.customExceptions.EmailAlreadyExistsException;
 import com.Project.ecommerce.exceptions.customExceptions.UserNotFoundException;
 import com.Project.ecommerce.repositories.user.RoleRepository;
@@ -43,7 +43,7 @@ public class CustomerService {
             throw new EmailAlreadyExistsException("Email already exists, please enter a new email");
         }
         if (!customerCO.getPassword().equals(customerCO.getConfirmPassword())) {
-            throw new ConfirmPasswordMismatch("Confirm password does not match with password, please enter correct confirm password");
+            throw new ConfirmPasswordMismatchException("Confirm password does not match with password, please enter correct confirm password");
         }
 
         Role role = roleRepository.findByAuthority("Customer");
