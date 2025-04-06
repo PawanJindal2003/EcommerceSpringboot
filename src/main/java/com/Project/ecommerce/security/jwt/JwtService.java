@@ -1,7 +1,9 @@
 package com.Project.ecommerce.security.jwt;
 
 import com.Project.ecommerce.entities.jwt.ActivationToken;
+import com.Project.ecommerce.entities.jwt.RefreshToken;
 import com.Project.ecommerce.repositories.Jwt.ActivationTokenRepository;
+import com.Project.ecommerce.repositories.Jwt.RefreshTokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
@@ -19,8 +22,14 @@ import java.util.function.Function;
 
 @Component
 public class JwtService {
+    private ActivationTokenRepository activationTokenRepository;
+    private RefreshTokenRepository refreshTokenRepository;
+
     @Autowired
-    ActivationTokenRepository activationTokenRepository;
+    public JwtService(ActivationTokenRepository activationTokenRepository, RefreshTokenRepository refreshTokenRepository){
+        this.activationTokenRepository = activationTokenRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
+    }
 
     public JwtService(ActivationTokenRepository activationTokenRepository){
         this.activationTokenRepository = activationTokenRepository;
@@ -60,6 +69,23 @@ public class JwtService {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public String generateRefreshToken(String email){
+        return Jwts.builder()
+                .setSubject(email)
+                .setIssuedAt(new Date())
+                .setExpiration(Date.from(Instant.now().plus(Duration.ofHours(60 * 60 * 24))))
+                .signWith(getSignKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public void storeRefreshToken(String refreshToken, String email){
+        RefreshToken newRefreshToken = new RefreshToken(refreshToken, email, Instant.now());
+        refreshTokenRepository.save(newRefreshToken);
+    }
+    public void deleteRefreshToken(String email){
+        refreshTokenRepository.deleteByEmail(email);
     }
 
     public void storeToken(String token, String email){
