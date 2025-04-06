@@ -1,4 +1,4 @@
-package com.Project.ecommerce.services.user.customer.login;
+package com.Project.ecommerce.services.user.login;
 
 import com.Project.ecommerce.co.login.UserCO;
 import com.Project.ecommerce.dto.login.UserDTO;

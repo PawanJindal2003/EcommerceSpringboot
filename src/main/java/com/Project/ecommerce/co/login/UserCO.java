@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class CustomerCO {
+public class UserCO {
     @Email(message = "This is invalid email format, please enter correct email")
     String email;
     @Pattern(

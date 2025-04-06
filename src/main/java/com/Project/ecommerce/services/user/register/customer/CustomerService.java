@@ -1,4 +1,4 @@
-package com.Project.ecommerce.services.user.customer.register;
+package com.Project.ecommerce.services.user.register.customer;
 
 import com.Project.ecommerce.co.registration.CustomerCO;
 import com.Project.ecommerce.entities.user.Customer;

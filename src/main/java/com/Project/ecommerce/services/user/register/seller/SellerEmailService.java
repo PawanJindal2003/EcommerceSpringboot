@@ -1,4 +1,4 @@
-package com.Project.ecommerce.services.user.seller.register;
+package com.Project.ecommerce.services.user.register.seller;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
