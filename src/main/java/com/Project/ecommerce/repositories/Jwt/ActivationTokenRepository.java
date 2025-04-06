@@ -5,12 +5,13 @@ import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
-
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface ActivationTokenRepository extends JpaRepository<ActivationToken, UUID> {
+    Optional<ActivationToken> findByJwtToken(String jwtToken);
     @Transactional
     @Modifying
-    public void deleteByEmail(String email);
+    void deleteByEmail(String email);
 }
