@@ -19,7 +19,7 @@ public class CustomUserDetails implements UserDetails {
     public CustomUserDetails(User user) {
         userName = user.getEmail();
         password = user.getPassword();
-        authorities = Collections.singleton(new SimpleGrantedAuthority(user.getRole().getAuthority()));
+        authorities = Collections.singleton(new SimpleGrantedAuthority("ROLE_" + user.getRole().getAuthority()));
     }
 
     @Override
