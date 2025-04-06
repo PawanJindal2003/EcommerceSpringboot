@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 
 @Getter
 @Setter
@@ -34,6 +35,8 @@ public class SellerCO {
     private String companyAddress;
 
     @NotBlank
+    @Length(min = 9, max = 20, message = "Please enter a valid contact number")
+    @Pattern(regexp = "^\\+[1-9]\\d{1,3}[-/s]?[1-9]\\d{6,14}$", message = "Please enter country code, eg +91-7210003XXX")
     private String companyContact;
 
     @NotBlank(message = "First name cannot be blank")
