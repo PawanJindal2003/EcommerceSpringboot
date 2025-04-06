@@ -41,4 +41,9 @@ public class CustomerLoginController {
     public ResponseEntity<?> logoutCustomer(HttpServletRequest request, HttpServletResponse response) {
         return customerLoginService.logoutCustomer(request, response);
     }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<CustomerDTO> refreshToken(HttpServletRequest request, HttpServletResponse response){
+        return customerLoginService.refreshAccessToken(request, response);
+    }
 }
