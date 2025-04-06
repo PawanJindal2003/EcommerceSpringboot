@@ -1,8 +1,10 @@
 package com.Project.ecommerce.security.jwt;
 
 import com.Project.ecommerce.security.config.CustomUserDetailsService;
+import com.Project.ecommerce.security.redis.RedisTokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +20,16 @@ import java.io.IOException;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
-
-    @Autowired
     private JwtService jwtService;
+    private ApplicationContext applicationContext;
+    private RedisTokenService redisTokenService;
 
     @Autowired
-    private ApplicationContext applicationContext;
+    public JwtFilter(JwtService jwtService, ApplicationContext applicationContext, RedisTokenService redisTokenService){
+        this.jwtService = jwtService;
+        this.applicationContext = applicationContext;
+        this.redisTokenService = redisTokenService;
+    }
 
     // Method to lazily fetch the UserService bean from the ApplicationContext
     // This is done to avoid Circular Dependency issues
@@ -45,13 +51,23 @@ public class JwtFilter extends OncePerRequestFilter {
             email = jwtService.extractEmail(token);
         }
 
+        //retrieving cookie
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("loginToken".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
         // If username is extracted and there is no authentication in the current SecurityContext
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (email != null && jwtService.isAccessTokenValid(token) && redisTokenService.isTokenValid(token)) {
             // Loading UserDetails by username extracted from the token
             UserDetails userDetails = getUserService().loadUserByUsername(email);
 
             // Validating the token with loaded UserDetails
-            if (jwtService.isTokenValid(token, userDetails.getUsername())) {
+            if (SecurityContextHolder.getContext().getAuthentication() == null) {
                 // Creating an authentication token using UserDetails
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 // Setting authentication details
