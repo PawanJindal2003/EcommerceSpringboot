@@ -10,7 +10,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.*;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,9 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth/seller")
 @RestController
 public class SellerLoginController {
-    private AuthenticationManager authenticationManager;
-    private JwtService jwtService;
-    private RedisTokenService redisService;
     private UserLoginService userLoginService;
 
     @Autowired
