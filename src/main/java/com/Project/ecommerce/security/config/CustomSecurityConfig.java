@@ -29,8 +29,11 @@ public class CustomSecurityConfig {
                 .cors(Customizer.withDefaults()) // Apply CORS
                 .csrf(csrf -> csrf.disable()) // Disable CSRF protection
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("api/auth/customer/**").permitAll()// Permit all requests to certain URLs
-                        .anyRequest().authenticated()) // Require authentication for all other requests
+                        .requestMatchers(
+                                "/api/auth/seller/**",
+                                "/api/auth/customer/**"
+                        ).permitAll()
+                        .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Set session management to stateless
                 .authenticationProvider(authenticationProvider()) // Register the authentication provider
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // Add the JWT filter before processing the request
