@@ -25,7 +25,7 @@ public class CustomerController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@Valid @RequestBody CustomerCO customerCO) throws MessagingException {
+    public ResponseEntity<String> registerCustomer(@Valid @RequestBody CustomerCO customerCO) throws MessagingException {
         String response = customerService.registerCustomer(customerCO);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
