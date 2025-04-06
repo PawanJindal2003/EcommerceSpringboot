@@ -24,12 +24,12 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Optional<User> user = userRepository.findByEmail(email);
-        if (!user.get().getIsActive()){
-            throw new DisabledException("Account is not active");
-        }
-        if(user.get().getIsLocked()){
-            throw new LockedException("Account is locked, due to multiple incorrect login attempts");
-        }
+//        if (!user.get().getIsActive()){
+//            throw new DisabledException("Account is not active");
+//        }
+//        if(user.get().getIsLocked()){
+//            throw new LockedException("Account is locked, due to multiple incorrect login attempts");
+//        }
         return user.map(CustomUserDetails::new)
                 .orElseThrow(() -> new UsernameNotFoundException("UserName not found: " + email));
     }
