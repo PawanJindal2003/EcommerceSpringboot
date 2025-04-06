@@ -1,6 +1,7 @@
 package com.Project.ecommerce.services.user.customer.login;
 
 import com.Project.ecommerce.co.login.CustomerCO;
+import com.Project.ecommerce.dto.login.CustomerDTO;
 import com.Project.ecommerce.entities.user.User;
 import com.Project.ecommerce.exceptions.customExceptions.InactiveUserException;
 import com.Project.ecommerce.exceptions.customExceptions.UserNotFoundException;
@@ -36,7 +37,7 @@ public class CustomerLoginService {
         this.redisService = redisService;
     }
 
-    public ResponseEntity<String> loginCustomer(@Valid @RequestBody CustomerCO customerCO, HttpServletResponse response) {
+    public ResponseEntity<CustomerDTO> loginCustomer(@Valid @RequestBody CustomerCO customerCO, HttpServletResponse response) {
         try {
             if(!userRepository.findByEmail(customerCO.getEmail()).get().getIsActive()){
                 throw new InactiveUserException("Please activate your account");
@@ -55,12 +56,13 @@ public class CustomerLoginService {
             cookie.setMaxAge(60 * 15);
             response.addCookie(cookie);
 
-            return new ResponseEntity<>("Login successful", HttpStatus.OK);
+            CustomerDTO dto = new CustomerDTO(token, "Login successful");
+            return new ResponseEntity<>(dto, HttpStatus.OK);
         } catch (BadCredentialsException ex) {
             multipleLoginAttempts(customerCO.getEmail());
-            return new ResponseEntity<>("Either email or password incorrect", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new CustomerDTO(null, "Either email or password incorrect"), HttpStatus.NOT_FOUND);
         }catch (InternalAuthenticationServiceException e) {
-            return new ResponseEntity<>("Ether email or password incorrect", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new CustomerDTO(null, "Ether email or password incorrect"), HttpStatus.NOT_FOUND);
         }
     }
 
