@@ -1,6 +1,7 @@
 package com.Project.ecommerce.controllers.user.customer.login;
 
 import com.Project.ecommerce.co.login.CustomerCO;
+import com.Project.ecommerce.dto.login.CustomerDTO;
 import com.Project.ecommerce.security.jwt.JwtService;
 import com.Project.ecommerce.security.redis.RedisTokenService;
 import com.Project.ecommerce.services.user.customer.login.CustomerLoginService;
@@ -32,7 +33,7 @@ public class CustomerLoginController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> loginCustomer(@Valid @RequestBody CustomerCO customerCO, HttpServletResponse response) {
+    public ResponseEntity<CustomerDTO> loginCustomer(@Valid @RequestBody CustomerCO customerCO, HttpServletResponse response) {
         return customerLoginService.loginCustomer(customerCO, response);
     }
 
