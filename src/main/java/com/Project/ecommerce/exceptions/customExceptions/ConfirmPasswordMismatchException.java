@@ -1,7 +1,7 @@
 package com.Project.ecommerce.exceptions.customExceptions;
 
-public class ConfirmPasswordMismatch extends RuntimeException{
-    public ConfirmPasswordMismatch(String message){
+public class ConfirmPasswordMismatchException extends RuntimeException{
+    public ConfirmPasswordMismatchException(String message){
         super(message);
     }
 }
