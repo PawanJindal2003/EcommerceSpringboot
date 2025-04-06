@@ -24,16 +24,16 @@ public class CustomerService {
     private CustomerRepository customerRepository;
     private UserRepository userRepository;
     private RoleRepository roleRepository;
-    private EmailService emailService;
+    private CustomerEmailService customerEmailService;
     private JwtService jwtService;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    public CustomerService(CustomerRepository customerRepository, UserRepository userRepository, RoleRepository roleRepository, EmailService emailService, JwtService jwtService, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public CustomerService(CustomerRepository customerRepository, UserRepository userRepository, RoleRepository roleRepository, CustomerEmailService customerEmailService, JwtService jwtService, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.customerRepository = customerRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
-        this.emailService = emailService;
+        this.customerEmailService = customerEmailService;
         this.jwtService = jwtService;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
@@ -61,7 +61,7 @@ public class CustomerService {
         //token generation and saving in db
         String generatedToken = jwtService.generateToken(customer.getEmail());
         jwtService.storeToken(generatedToken, customer.getEmail());
-        emailService.sendActivationEmail(customer.getEmail(), generatedToken);
+        customerEmailService.sendActivationEmail(customer.getEmail(), generatedToken);
         return "User registered, please activate your account through email sent on registered email ID";
     }
 
@@ -79,6 +79,8 @@ public class CustomerService {
                 //deleting useless token from db
                 jwtService.deleteToken(extractedEmail);
 
+                //sending confirmation mail
+                customerEmailService.sendConfirmationEmail(extractedEmail);
                 return new ResponseEntity<>("Account activated successfully!", HttpStatus.CREATED);
             }
             // // if user is trying to activate from active and old token
@@ -103,7 +105,7 @@ public class CustomerService {
         jwtService.deleteToken(email);
         String newToken = jwtService.generateToken(customer.getEmail());
         jwtService.storeToken(newToken, email);
-        emailService.sendActivationEmail(customer.getEmail(), newToken);
+        customerEmailService.sendActivationEmail(customer.getEmail(), newToken);
 
         return "A new activation link has been sent to your email.";
     }
