@@ -107,14 +107,4 @@ public class CustomerService {
 
         return "A new activation link has been sent to your email.";
     }
-
-    public String deleteAllUsers() {
-        userRepository.deleteAll();
-        return "all users deleted";
-    }
-
-    public String deleteAllCustomers() {
-        customerRepository.deleteAll();
-        return "all customers deleted";
-    }
 }
