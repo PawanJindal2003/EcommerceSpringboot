@@ -1,4 +1,4 @@
-package com.Project.ecommerce.services.user;
+package com.Project.ecommerce.services.user.customer;
 
 import com.Project.ecommerce.co.registration.CustomerCO;
 import com.Project.ecommerce.entities.user.Customer;
@@ -11,7 +11,6 @@ import com.Project.ecommerce.repositories.user.RoleRepository;
 import com.Project.ecommerce.repositories.user.CustomerRepository;
 import com.Project.ecommerce.repositories.user.UserRepository;
 import com.Project.ecommerce.security.jwt.JwtService;
-import com.Project.ecommerce.services.user.customer.CustomerEmailService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;

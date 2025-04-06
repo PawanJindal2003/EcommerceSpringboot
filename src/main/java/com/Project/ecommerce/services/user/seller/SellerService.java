@@ -1,4 +1,4 @@
-package com.Project.ecommerce.services.user;
+package com.Project.ecommerce.services.user.seller;
 
 import com.Project.ecommerce.co.registration.SellerCO;
 import com.Project.ecommerce.entities.user.Role;
