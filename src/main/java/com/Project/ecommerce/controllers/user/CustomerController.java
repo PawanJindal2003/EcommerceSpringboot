@@ -1,7 +1,6 @@
 package com.Project.ecommerce.controllers.user;
 
 import com.Project.ecommerce.co.CustomerCO;
-import com.Project.ecommerce.entities.user.Customer;
 import com.Project.ecommerce.repositories.user.UserRepository;
 import com.Project.ecommerce.services.user.CustomerService;
 import jakarta.mail.MessagingException;
@@ -27,14 +26,12 @@ public class CustomerController {
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@Valid @RequestBody CustomerCO customerCO) throws MessagingException {
-        customerService.registerCustomer(customerCO);
-
-        return new ResponseEntity<>("User registered successfully", HttpStatus.CREATED);
+        String response = customerService.registerCustomer(customerCO);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
     @PutMapping("/activate")
     public ResponseEntity<String> activateCustomer(@RequestParam("token") String token) throws MessagingException {
-        String response = customerService.activateCustomer(token);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return customerService.activateCustomer(token);
     }
     @PostMapping("/resend-activation-link")
     public ResponseEntity<String> resendActivationEmail(@RequestParam String email) throws MessagingException {
