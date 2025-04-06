@@ -33,6 +33,7 @@ public class CustomerEmailService {
         sendEmail(toEmail, subject, body);
     }
 
+    @Async
     public void sendConfirmationEmail(String toEmail) throws MessagingException {
         String subject = "Account activation confirmation";
         String body = "<p>Congratulation Your Account has been activated.</p>";
