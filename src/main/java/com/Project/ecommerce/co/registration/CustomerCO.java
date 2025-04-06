@@ -1,4 +1,4 @@
-package com.Project.ecommerce.co;
+package com.Project.ecommerce.co.registration;
 
 import com.Project.ecommerce.entities.user.Role;
 import jakarta.validation.constraints.*;

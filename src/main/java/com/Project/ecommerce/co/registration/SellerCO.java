@@ -1,4 +1,4 @@
-package com.Project.ecommerce.co;
+package com.Project.ecommerce.co.registration;
 
 import com.Project.ecommerce.entities.user.Role;
 import jakarta.validation.constraints.Email;
@@ -12,13 +12,16 @@ import org.hibernate.validator.constraints.Length;
 @Getter
 @Setter
 public class SellerCO {
+    @NotBlank
     @Email(message = "This is invalid email format, please enter correct email")
     private String email;
 
+    @NotBlank
     @Pattern(
             regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{8,15}$",
             message = "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character")
     private String password;
+    @NotBlank
     @Pattern(
             regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{8,15}$",
             message = "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character")
@@ -43,6 +46,7 @@ public class SellerCO {
     @Size(min = 3, max = 15, message = "First name must be between 3 and 15 characters")
     private String firstName;
 
+    @NotBlank
     @Size(min = 3, max = 15, message = "Middle name must be between 3 and 15 characters")
     private String middleName;
 
@@ -50,5 +54,5 @@ public class SellerCO {
     @Size(min = 3, max = 15, message = "Last name must be between 3 and 15 characters")
     private String lastName;
 
-    Role role;
+    private Role role;
 }

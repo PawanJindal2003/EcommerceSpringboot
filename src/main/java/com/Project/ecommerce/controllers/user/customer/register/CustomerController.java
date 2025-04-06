@@ -1,6 +1,6 @@
 package com.Project.ecommerce.controllers.user;
 
-import com.Project.ecommerce.co.CustomerCO;
+import com.Project.ecommerce.co.registration.CustomerCO;
 import com.Project.ecommerce.repositories.user.UserRepository;
 import com.Project.ecommerce.services.user.CustomerService;
 import jakarta.mail.MessagingException;
@@ -9,8 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RequestMapping("/api/auth/customer")
 @RestController
