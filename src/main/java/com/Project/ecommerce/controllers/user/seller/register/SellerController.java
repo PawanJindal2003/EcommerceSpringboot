@@ -2,7 +2,7 @@ package com.Project.ecommerce.controllers.user.seller.register;
 
 import com.Project.ecommerce.co.registration.SellerCO;
 import com.Project.ecommerce.repositories.user.UserRepository;
-import com.Project.ecommerce.services.user.seller.register.SellerService;
+import com.Project.ecommerce.services.user.register.seller.SellerService;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
