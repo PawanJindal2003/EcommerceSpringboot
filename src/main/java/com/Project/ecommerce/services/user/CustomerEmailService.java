@@ -11,14 +11,14 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 
 
 @Service
-public class EmailService {
+public class CustomerEmailService {
 
     private final JavaMailSender emailSender;
 
     @Value("${spring.mail.username}")
     private String fromEmail;
 
-    public EmailService(JavaMailSender emailSender) {
+    public CustomerEmailService(JavaMailSender emailSender) {
         this.emailSender = emailSender;
     }
 
@@ -26,12 +26,17 @@ public class EmailService {
     public void sendActivationEmail(String toEmail, String activationToken) throws MessagingException {
         String activationUrl = generateActivationUrl(activationToken);
 
-        // Create email content
         String subject = "Activate Your Account";
         String body = "<p>Welcome! To activate your account, please click the link below:</p>"
                 + "<p><a href='" + activationUrl + "'>Activate Account</a></p>";
 
-        // Send email
+        sendEmail(toEmail, subject, body);
+    }
+
+    public void sendConfirmationEmail(String toEmail) throws MessagingException {
+        String subject = "Account activation confirmation";
+        String body = "<p>Congratulation Your Account has been activated.</p>";
+
         sendEmail(toEmail, subject, body);
     }
 
