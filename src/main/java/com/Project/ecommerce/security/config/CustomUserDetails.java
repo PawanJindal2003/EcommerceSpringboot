@@ -14,11 +14,15 @@ public class CustomUserDetails implements UserDetails {
     private static final long serialVersionUID = 1L;
     String userName = null;
     String password = null;
+    Boolean isAccountNonLocked;
+    Boolean isEnabled;
     Set<SimpleGrantedAuthority> authorities;
 
     public CustomUserDetails(User user) {
-        userName = user.getEmail();
-        password = user.getPassword();
+        this.userName = user.getEmail();
+        this.password = user.getPassword();
+        this.isAccountNonLocked = !user.getIsLocked();
+        this.isEnabled = user.getIsActive();
         authorities = Collections.singleton(new SimpleGrantedAuthority("ROLE_" + user.getRole().getAuthority()));
     }
 
@@ -44,7 +48,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return isAccountNonLocked;
     }
 
     @Override
@@ -54,6 +58,6 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return isEnabled;
     }
 }
