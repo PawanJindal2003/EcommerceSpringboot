@@ -1,43 +1,42 @@
 package com.Project.ecommerce.services.user;
 
-import com.Project.ecommerce.co.SellerCO;
+import com.Project.ecommerce.co.registration.SellerCO;
 import com.Project.ecommerce.entities.user.Role;
 import com.Project.ecommerce.entities.user.Seller;
-import com.Project.ecommerce.entities.user.User;
-import com.Project.ecommerce.exceptions.customExceptions.ConfirmPasswordMismatch;
+import com.Project.ecommerce.exceptions.customExceptions.ConfirmPasswordMismatchException;
+import com.Project.ecommerce.exceptions.customExceptions.DuplicateCompanyException;
 import com.Project.ecommerce.exceptions.customExceptions.EmailAlreadyExistsException;
 import com.Project.ecommerce.repositories.user.RoleRepository;
 import com.Project.ecommerce.repositories.user.SellerRepository;
-import com.Project.ecommerce.repositories.user.UserRepository;
-import com.Project.ecommerce.security.jwt.JwtService;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.security.SignatureException;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SellerService {
-    private UserRepository userRepository;
     private SellerRepository sellerRepository;
     private RoleRepository roleRepository;
-    private JwtService jwtService;
-    private EmailService emailService;
+    private SellerEmailService sellerEmailService;
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    public SellerService(SellerRepository sellerRepository, RoleRepository roleRepository, JwtService jwtService) {
+    public SellerService(SellerRepository sellerRepository, RoleRepository roleRepository, SellerEmailService sellerEmailService, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.sellerRepository = sellerRepository;
+        this.sellerEmailService = sellerEmailService;
         this.roleRepository = roleRepository;
-        this.jwtService = jwtService;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
-    public User registerSeller(SellerCO sellerCO) throws MessagingException {
+    public String registerSeller(SellerCO sellerCO) throws MessagingException {
         if (sellerRepository.findByEmail(sellerCO.getEmail()).isPresent()) {
             throw new EmailAlreadyExistsException("Email already exists, please enter a new email");
         }
         if (!sellerCO.getPassword().equals(sellerCO.getConfirmPassword())) {
-            throw new ConfirmPasswordMismatch("Confirm password does not match with password, please enter correct confirm password");
+            throw new ConfirmPasswordMismatchException("Confirm password does not match with password, please enter correct confirm password");
+        }
+        if(sellerRepository.findByCompanyName(sellerCO.getCompanyName()).isPresent()){
+            throw new DuplicateCompanyException("Company name already exists, please come up with a unique company name");
         }
 
         Role role = roleRepository.findByAuthority("Seller");
@@ -46,16 +45,16 @@ public class SellerService {
         seller.setMiddleName(sellerCO.getMiddleName());
         seller.setLastName(sellerCO.getLastName());
         seller.setGST(sellerCO.getGST());
-        seller.setCompanyName(sellerCO.getCompanyName());
+        seller.setPassword(bCryptPasswordEncoder.encode(sellerCO.getPassword()));
+        seller.setCompanyName(sellerCO.getCompanyName().toLowerCase());
         seller.setCompanyContact(sellerCO.getCompanyContact());
+        seller.setEmail(sellerCO.getEmail());
         seller.setRole(role);
 
         sellerRepository.save(seller);
 
-        String generatedToken = jwtService.generateToken(seller.getEmail());
-        jwtService.storeToken(generatedToken, seller.getEmail());
-        emailService.sendActivationEmail(seller.getEmail(), generatedToken);
+        sellerEmailService.sendActivationEmail(seller.getEmail());
 
-        return seller;
+        return "Registration completed, please wait until your account get approved";
     }
 }
