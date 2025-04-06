@@ -12,7 +12,7 @@ public class CustomerCO {
     @Email(message = "This is invalid email format, please enter correct email")
     private String email;
 
-    @Length(min = 10, max = 16, message = "Please enter a 10 digit phone number")
+    @Length(min = 13, max = 16, message = "Please enter a 10 digit phone number")
     @Pattern(regexp = "^\\+[1-9]\\d{1,3}[-/s]?[1-9]\\d{10}$", message = "Please enter country code, eg +91-7210003XXX")
     private String customerContact;
 
