@@ -1,8 +1,10 @@
 package com.Project.ecommerce.security.jwt;
 
 import com.Project.ecommerce.entities.jwt.ActivationToken;
+import com.Project.ecommerce.entities.jwt.ForgetPasswordToken;
 import com.Project.ecommerce.entities.jwt.RefreshToken;
 import com.Project.ecommerce.repositories.Jwt.ActivationTokenRepository;
+import com.Project.ecommerce.repositories.Jwt.ForgetPasswordTokenRepository;
 import com.Project.ecommerce.repositories.Jwt.RefreshTokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -18,21 +20,20 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 @Component
 public class JwtService {
     private ActivationTokenRepository activationTokenRepository;
     private RefreshTokenRepository refreshTokenRepository;
+    private ForgetPasswordTokenRepository forgetPasswordTokenRepository;
 
     @Autowired
-    public JwtService(ActivationTokenRepository activationTokenRepository, RefreshTokenRepository refreshTokenRepository){
+    public JwtService(ActivationTokenRepository activationTokenRepository, RefreshTokenRepository refreshTokenRepository, ForgetPasswordTokenRepository forgetPasswordTokenRepository){
         this.activationTokenRepository = activationTokenRepository;
         this.refreshTokenRepository = refreshTokenRepository;
-    }
-
-    public JwtService(ActivationTokenRepository activationTokenRepository){
-        this.activationTokenRepository = activationTokenRepository;
+        this.forgetPasswordTokenRepository = forgetPasswordTokenRepository;
     }
 
     // Secret Key for signing the JWT. It should be kept private.
@@ -51,11 +52,12 @@ public class JwtService {
                 .signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
     }
 
+    //access token
     public String generateAccessToken(String email) {
         return Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15)) // 15 min expiry
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -71,6 +73,7 @@ public class JwtService {
         }
     }
 
+    //refresh token
     public String generateRefreshToken(String email){
         return Jwts.builder()
                 .setSubject(email)
@@ -86,6 +89,37 @@ public class JwtService {
     }
     public void deleteRefreshToken(String email){
         refreshTokenRepository.deleteByEmail(email);
+    }
+
+    //forgetPasswordToken
+    public String generateForgetPasswordToken(String email) {
+        return Jwts.builder()
+                .setSubject(email)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15))
+                .signWith(getSignKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+    public void storeForgetPasswordToken(String forgetPasswordToken, String email){
+        ForgetPasswordToken newForgetPasswordToken = new ForgetPasswordToken(forgetPasswordToken, email, Instant.now());
+        forgetPasswordTokenRepository.save(newForgetPasswordToken);
+    }
+    public Optional<ForgetPasswordToken> findForgetPasswordToken(String email){
+        return forgetPasswordTokenRepository.findByEmail(email);
+    }
+    public void deleteForgetPasswordToken(String email){
+        forgetPasswordTokenRepository.deleteByEmail(email);
+    }
+    public boolean isForgetPasswordTokenValid(String forgetPasswordToken) {
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(SECRET.getBytes())
+                    .build()
+                    .parseClaimsJws(forgetPasswordToken);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public void storeToken(String token, String email){
