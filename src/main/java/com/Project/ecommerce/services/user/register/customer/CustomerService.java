@@ -39,6 +39,7 @@ public class CustomerService {
     }
 
     public String registerCustomer(CustomerCO customerCO) throws MessagingException {
+        // validations
         if (customerRepository.findByEmail(customerCO.getEmail()).isPresent()) {
             throw new EmailAlreadyExistsException("Email already exists, please enter a new email");
         }
@@ -67,6 +68,10 @@ public class CustomerService {
 
     public ResponseEntity<String> activateCustomer(String token) throws MessagingException {
         try {
+            //if account is already active
+            if(userRepository.findByEmail((jwtService.extractEmail(token))).get().getIsActive()){
+                return new ResponseEntity<>("Account already active", HttpStatus.OK);
+            }
             // if user is trying to activate from active and latest token
             if (jwtService.ifTokenPresent(token)) {
                 //validating the user
