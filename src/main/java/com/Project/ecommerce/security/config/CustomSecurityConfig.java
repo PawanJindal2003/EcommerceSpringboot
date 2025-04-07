@@ -31,7 +31,8 @@ public class CustomSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/seller/**",
-                                "/api/auth/customer/**"
+                                "/api/auth/customer/**",
+                                "/api/auth/**"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Set session management to stateless
