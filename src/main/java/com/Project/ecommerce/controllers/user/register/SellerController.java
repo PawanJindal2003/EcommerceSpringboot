@@ -1,4 +1,4 @@
-package com.Project.ecommerce.controllers.user.seller.register;
+package com.Project.ecommerce.controllers.user.register;
 
 import com.Project.ecommerce.co.registration.SellerCO;
 import com.Project.ecommerce.repositories.user.UserRepository;
