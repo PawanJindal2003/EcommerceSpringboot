@@ -40,6 +40,8 @@ public class JwtService {
     private static final String SECRET = "TmV3U2VjcmV0S2V5Rm9ySldUU2lnbmluZ1B1cnBvc2VzMTIzNDU2Nzgjbhgtyret";
 
     // Generates a JWT token for the given email.
+
+    //used by customerRegisterService and sellerRegisterService
     public String generateToken(String email) {
         // Prepare claims for the token
         Map<String, Object> claims = new HashMap<>();
@@ -52,37 +54,16 @@ public class JwtService {
                 .signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
     }
 
-    //access token
-    public String generateAccessToken(String email) {
+    public String generateCustomToken(String email, Long expiryTime) {
         return Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15))
-                .signWith(getSignKey(), SignatureAlgorithm.HS256)
-                .compact();
-    }
-    public boolean isAccessTokenValid(String token) {
-        try {
-            Jwts.parserBuilder()
-                    .setSigningKey(SECRET.getBytes())
-                    .build()
-                    .parseClaimsJws(token);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    //refresh token
-    public String generateRefreshToken(String email){
-        return Jwts.builder()
-                .setSubject(email)
-                .setIssuedAt(new Date())
-                .setExpiration(Date.from(Instant.now().plus(Duration.ofHours(60 * 60 * 24))))
+                .setExpiration(new Date(System.currentTimeMillis() + expiryTime))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
+    //refresh token storing and deletion
     public void storeRefreshToken(String refreshToken, String email){
         RefreshToken newRefreshToken = new RefreshToken(refreshToken, email, Instant.now());
         refreshTokenRepository.save(newRefreshToken);
@@ -91,15 +72,8 @@ public class JwtService {
         refreshTokenRepository.deleteByEmail(email);
     }
 
-    //forgetPasswordToken
-    public String generateForgetPasswordToken(String email) {
-        return Jwts.builder()
-                .setSubject(email)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15))
-                .signWith(getSignKey(), SignatureAlgorithm.HS256)
-                .compact();
-    }
+
+    //forgetPasswordToken token storing and deletion
     public void storeForgetPasswordToken(String forgetPasswordToken, String email){
         ForgetPasswordToken newForgetPasswordToken = new ForgetPasswordToken(forgetPasswordToken, email, Instant.now());
         forgetPasswordTokenRepository.save(newForgetPasswordToken);
@@ -110,23 +84,14 @@ public class JwtService {
     public void deleteForgetPasswordToken(String email){
         forgetPasswordTokenRepository.deleteByEmail(email);
     }
-    public boolean isForgetPasswordTokenValid(String forgetPasswordToken) {
-        try {
-            Jwts.parserBuilder()
-                    .setSigningKey(SECRET.getBytes())
-                    .build()
-                    .parseClaimsJws(forgetPasswordToken);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
 
+    //activation token storing and deletion
     public void storeToken(String token, String email){
         ActivationToken jwtToken = new ActivationToken(token, email, Instant.now());
         activationTokenRepository.save(jwtToken);
     }
 
+    //activation token
     public void deleteToken(String email){
         activationTokenRepository.deleteByEmail(email);
     }
@@ -140,7 +105,6 @@ public class JwtService {
     }
 
     public String extractEmail(String token) {
-        // Extract and return the subject claim from the token
         return extractClaim(token, Claims::getSubject);
     }
 
@@ -168,28 +132,25 @@ public class JwtService {
     //return-> True if the token is expired, false otherwise.
     public Boolean isTokenExpired(String token) {
         // Check if the token's expiration time is before the current time
-        return extractExpiration(token).before(new Date());
+        return (extractExpiration(token)).before(new Date());
     }
 
     //Validates the JWT token against the UserDetails.
     //return-> True if the token is valid, false otherwise.
 
     public Boolean isTokenValid(String token, String email) {
-        // Extract email from token
         final String extractedEmail = extractEmail(token);
-
-        // Ensure token is not expired
         return (extractedEmail != null && !isTokenExpired(token));
     }
 
+    //activation token
     public Boolean ifTokenPresent(String token){
         // Validate token structure and signature (will throw if invalid or expired)
         // without this 200 ok, as service code not able to sense these exceptions
         Jwts.parser()
-                .setSigningKey(SECRET) // Replace with your actual key
+                .setSigningKey(SECRET)
                 .parseClaimsJws(token); // Will throw MalformedJwtException, SignatureException, etc.
 
         return activationTokenRepository.findByJwtToken(token).isPresent();
     }
-
 }
