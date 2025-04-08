@@ -12,12 +12,12 @@ import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("/api/auth/seller")
 @RestController
-public class SellerController {
+public class SellerRegisterController {
     private SellerRegisterService sellerRegisterService;
     private UserRepository userRepository;
 
     @Autowired
-    public SellerController(SellerRegisterService sellerRegisterService, UserRepository userRepository){
+    public SellerRegisterController(SellerRegisterService sellerRegisterService, UserRepository userRepository){
         this.sellerRegisterService = sellerRegisterService;
         this.userRepository = userRepository;
     }
