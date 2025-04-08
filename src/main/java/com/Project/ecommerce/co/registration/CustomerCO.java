@@ -4,26 +4,37 @@ import com.Project.ecommerce.entities.user.Role;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.validator.constraints.Length;
 
 @Setter
 @Getter
 public class CustomerCO {
-    @Email(message = "This is invalid email format, please enter correct email")
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
+    @Size(min = 6, max = 254, message = "Email must be between 6 and 254 characters")
     private String email;
 
-    @Length(min = 13, max = 16, message = "Phone number must include country code and be between 13 to 16 characters")
-    @Pattern(regexp = "^\\+[1-9]\\d{0,3}[-\\s]?\\d{10}$", message = "Please enter country code, e.g., +91-7210003XXX")
+    @NotBlank(message = "Contact number is required")
+    @Size(min = 10, max = 20, message = "Phone number must be between 10 and 20 characters")
+    @Pattern(
+            regexp = "^\\+[1-9]{1}[0-9]{0,3}[-\\s]?[1-9]{1}[0-9]{6,11}$",
+            message = "Please enter a valid phone number with country code, e.g., +91-7210003XXX"
+    )
     private String customerContact;
 
+    @NotBlank(message = "Password is required")
+    @Size(min = 8, max = 15, message = "Confirm password must be between 8 and 15 characters")
     @Pattern(
-            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{8,15}$",
-            message = "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character")
+            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*]).*$",
+            message = "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character"
+    )
     private String password;
 
+    @NotBlank(message = "Confirm password is required")
+    @Size(min = 8, max = 15, message = "Confirm password must be between 8 and 15 characters")
     @Pattern(
-            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{8,15}$",
-            message = "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character")
+            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*]).*$",
+            message = "Confirm password must contain at least one lowercase letter, one uppercase letter, one number, and one special character"
+    )
     private String confirmPassword;
 
     @NotBlank(message = "First name cannot be blank")

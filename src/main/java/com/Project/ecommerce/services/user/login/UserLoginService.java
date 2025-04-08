@@ -45,7 +45,7 @@ public class UserLoginService {
         }
 
         try{
-            Authentication auth = authenticationManager.authenticate(
+            authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(userCO.getEmail(), userCO.getPassword())
             );
         }
