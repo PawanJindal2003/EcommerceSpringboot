@@ -14,14 +14,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class SellerService {
+public class SellerRegisterService {
     private SellerRepository sellerRepository;
     private RoleRepository roleRepository;
     private SellerEmailService sellerEmailService;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    public SellerService(SellerRepository sellerRepository, RoleRepository roleRepository, SellerEmailService sellerEmailService, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public SellerRegisterService(SellerRepository sellerRepository, RoleRepository roleRepository, SellerEmailService sellerEmailService, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.sellerRepository = sellerRepository;
         this.sellerEmailService = sellerEmailService;
         this.roleRepository = roleRepository;

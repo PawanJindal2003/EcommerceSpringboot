@@ -20,7 +20,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CustomerService {
+public class CustomerRegisterService {
     private CustomerRepository customerRepository;
     private UserRepository userRepository;
     private RoleRepository roleRepository;
@@ -29,7 +29,7 @@ public class CustomerService {
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    public CustomerService(CustomerRepository customerRepository, UserRepository userRepository, RoleRepository roleRepository, CustomerEmailService customerEmailService, JwtService jwtService, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public CustomerRegisterService(CustomerRepository customerRepository, UserRepository userRepository, RoleRepository roleRepository, CustomerEmailService customerEmailService, JwtService jwtService, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.customerRepository = customerRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
