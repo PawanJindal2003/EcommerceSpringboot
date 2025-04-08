@@ -30,10 +30,22 @@ public class CustomSecurityConfig {
                 .csrf(csrf -> csrf.disable()) // Disable CSRF protection
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/api/auth/seller/**",
-                                "/api/auth/customer/**",
-                                "/api/auth/**"
+                                "/api/auth/forget-password/**",
+                                "/api/auth/reset-password/**",
+                                "/api/auth/admin/login",
+                                "/api/auth/admin/refresh-token",
+                                "/api/auth/customer/login",
+                                "/api/auth/customer/refresh-token",
+                                "/api/auth/seller/login",
+                                "/api/auth/seller/refresh-token",
+                                "/api/auth/customer/register",
+                                "/api/auth/customer/activate/**",
+                                "/api/auth/customer/resend-activation-link/**",
+                                "/api/auth/seller/register",
+                                "/api/auth/seller/activate/**",
+                                "/api/auth/seller/resend-activation-link/**"
                         ).permitAll()
+                        .requestMatchers("api/auth/admin/logout", "api/auth/customer/logout", "api/auth/seller/logout").authenticated()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Set session management to stateless
                 .authenticationProvider(authenticationProvider()) // Register the authentication provider
