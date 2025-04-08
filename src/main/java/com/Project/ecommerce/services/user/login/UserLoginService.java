@@ -54,11 +54,11 @@ public class UserLoginService {
             throw e;
         }
 
-        String accessToken = jwtService.generateAccessToken(userCO.getEmail());
+        String accessToken = jwtService.generateCustomToken(userCO.getEmail(), 1000L * 60 * 15);
 
         //deleting previous refresh token while logging in
         jwtService.deleteRefreshToken(userCO.getEmail());
-        String refreshToken = jwtService.generateRefreshToken(userCO.getEmail());
+        String refreshToken = jwtService.generateCustomToken(userCO.getEmail(), 1000L * 60 * 60 * 24);
         //saving the newly generated token
         jwtService.storeRefreshToken(refreshToken, userCO.getEmail());
         redisService.storeToken(accessToken, 15 * 60 * 1000);

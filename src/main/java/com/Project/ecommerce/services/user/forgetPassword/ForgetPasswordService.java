@@ -36,7 +36,7 @@ public class ForgetPasswordService {
         if (jwtService.findForgetPasswordToken(user.getEmail()).isPresent()) {
             jwtService.deleteForgetPasswordToken(user.getEmail());
         }
-        String resetPasswordToken = jwtService.generateForgetPasswordToken(user.getEmail());
+        String resetPasswordToken = jwtService.generateCustomToken(user.getEmail(), 1000L * 60 * 15);
         jwtService.storeForgetPasswordToken(resetPasswordToken, user.getEmail());
 
         forgetPasswordEmailService.sendResetPasswordEmail(user.getEmail(), resetPasswordToken);
