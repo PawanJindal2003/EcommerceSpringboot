@@ -1,8 +1,7 @@
 package com.Project.ecommerce.controllers.user.register;
 
 import com.Project.ecommerce.co.registration.CustomerCO;
-import com.Project.ecommerce.repositories.user.UserRepository;
-import com.Project.ecommerce.services.user.register.customer.CustomerService;
+import com.Project.ecommerce.services.user.register.customer.CustomerRegisterService;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,27 +12,25 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/auth/customer")
 @RestController
 public class CustomerController {
-    @Autowired
-    private CustomerService customerService;
-    @Autowired
-    private UserRepository userRepository;
+    private CustomerRegisterService customerRegisterService;
 
-    public CustomerController(CustomerService customerService){
-        this.customerService = customerService;
+    @Autowired
+    public CustomerController(CustomerRegisterService customerRegisterService){
+        this.customerRegisterService = customerRegisterService;
     }
 
     @PostMapping("/register")
     public ResponseEntity<String> registerCustomer(@Valid @RequestBody CustomerCO customerCO) throws MessagingException {
-        String response = customerService.registerCustomer(customerCO);
+        String response = customerRegisterService.registerCustomer(customerCO);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
     @PutMapping("/activate")
     public ResponseEntity<String> activateCustomer(@RequestParam("token") String token) throws MessagingException {
-        return customerService.activateCustomer(token);
+        return customerRegisterService.activateCustomer(token);
     }
     @PostMapping("/resend-activation-link")
     public ResponseEntity<String> resendActivationEmail(@RequestParam String email) throws MessagingException {
-        String response = customerService.resendActivationEmail(email);
+        String response = customerRegisterService.resendActivationEmail(email);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 }
