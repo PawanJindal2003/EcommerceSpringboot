@@ -52,7 +52,7 @@ public class ForgetPasswordService {
         //update password
         try {
             String email = jwtService.extractEmail(resetPasswordCO.getForgetPasswordToken());
-            jwtService.isForgetPasswordTokenValid(resetPasswordCO.getForgetPasswordToken());
+            jwtService.isTokenValid(resetPasswordCO.getForgetPasswordToken(), email);
 
             jwtService.deleteForgetPasswordToken(email);
 
