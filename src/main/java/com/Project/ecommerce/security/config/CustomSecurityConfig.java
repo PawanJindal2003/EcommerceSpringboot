@@ -41,7 +41,7 @@ public class CustomSecurityConfig {
                                 "/api/auth/seller/activate/**",
                                 "/api/auth/seller/resend-activation-link/**"
                         ).permitAll()
-                        .requestMatchers("/api/auth/logout", "/api/admin/all-customers/**").authenticated())
+                        .requestMatchers("/api/auth/logout", "/api/admin/all-customers/**", "/api/admin/all-sellers/**").authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Set session management to stateless
                 .authenticationProvider(authenticationProvider()) // Register the authentication provider
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // Add the JWT filter before processing the request

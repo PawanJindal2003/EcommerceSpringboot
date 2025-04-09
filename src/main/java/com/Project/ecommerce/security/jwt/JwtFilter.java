@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
-    private static final List<String> NON_PUBLIC_URLS = List.of("/api/auth/logout", "/api/admin/all-customers/**");
+    private static final List<String> NON_PUBLIC_URLS = List.of("/api/auth/logout", "/api/admin/all-customers/**", "/api/admin/all-sellers/**");
     private JwtService jwtService;
     private RedisTokenService redisTokenService;
     private CustomUserDetailsService customUserDetailsService;
