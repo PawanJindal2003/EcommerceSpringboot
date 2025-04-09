@@ -49,7 +49,7 @@ public class User {
     @ManyToOne
     private Role role;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private List<Address> addresses;
 }
