@@ -4,6 +4,7 @@ import com.Project.ecommerce.co.forgetPassword.ForgetPasswordCO;
 import com.Project.ecommerce.co.forgetPassword.ResetPasswordCO;
 import com.Project.ecommerce.services.user.forgetPassword.ForgetPasswordService;
 import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,12 +19,12 @@ public class ForgetPasswordController {
     }
 
     @PostMapping("/forget-password")
-    public ResponseEntity<String> forgetPassword(@RequestBody ForgetPasswordCO forgetPasswordCO) throws MessagingException {
+    public ResponseEntity<String> forgetPassword(@Valid @RequestBody ForgetPasswordCO forgetPasswordCO) throws MessagingException {
         return forgetPasswordService.sendResetPasswordMail(forgetPasswordCO.getEmail());
     }
 
     @PatchMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordCO resetPasswordCO){
+    public ResponseEntity<String> resetPassword(@Valid @RequestBody ResetPasswordCO resetPasswordCO){
         return forgetPasswordService.resetPassword(resetPasswordCO);
     }
 }
