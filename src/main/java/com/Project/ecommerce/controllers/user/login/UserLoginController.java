@@ -1,4 +1,4 @@
-package com.Project.ecommerce.controllers.user.login;
+ package com.Project.ecommerce.controllers.user.login;
 
 import com.Project.ecommerce.co.login.UserCO;
 import com.Project.ecommerce.dto.login.UserDTO;
@@ -13,23 +13,23 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RequestMapping("/api/auth/admin")
+@RequestMapping("/api/auth")
 @RestController
-public class AdminLoginController {
+public class CustomerLoginController {
     private UserLoginService userLoginService;
 
     @Autowired
-    public AdminLoginController(UserLoginService userLoginService) {
+    public CustomerLoginController(UserLoginService userLoginService) {
         this.userLoginService = userLoginService;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserDTO> loginCustomer(@Valid @RequestBody UserCO userCO, HttpServletResponse response) {
-        return userLoginService.loginCustomer(userCO, response);
+    public ResponseEntity<UserDTO> loginUser(@Valid @RequestBody UserCO userCO, HttpServletResponse response) {
+        return userLoginService.loginUser(userCO, response);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logoutCustomer(HttpServletRequest request, HttpServletResponse response) {
-        return userLoginService.logoutCustomer(request, response);
+    public ResponseEntity<String> logoutUser(HttpServletRequest request, HttpServletResponse response) {
+        return userLoginService.logoutUser(request, response);
     }
 }
