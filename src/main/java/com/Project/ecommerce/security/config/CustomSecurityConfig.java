@@ -32,11 +32,9 @@ public class CustomSecurityConfig {
                         .requestMatchers(
                                 "/api/auth/forget-password/**",
                                 "/api/auth/reset-password/**",
-                                "/api/auth/admin/login",
+                                "/api/auth/login",
                                 "/api/auth/admin/refresh-token",
-                                "/api/auth/customer/login",
                                 "/api/auth/customer/refresh-token",
-                                "/api/auth/seller/login",
                                 "/api/auth/seller/refresh-token",
                                 "/api/auth/customer/register",
                                 "/api/auth/customer/activate/**",
@@ -45,7 +43,7 @@ public class CustomSecurityConfig {
                                 "/api/auth/seller/activate/**",
                                 "/api/auth/seller/resend-activation-link/**"
                         ).permitAll()
-                        .requestMatchers("/api/auth/admin/logout", "/api/auth/customer/logout", "/api/auth/seller/logout").authenticated()
+                        .requestMatchers("/api/auth/logout").authenticated()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Set session management to stateless
                 .authenticationProvider(authenticationProvider()) // Register the authentication provider
