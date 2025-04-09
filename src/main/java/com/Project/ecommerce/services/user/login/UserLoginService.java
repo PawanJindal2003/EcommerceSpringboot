@@ -38,7 +38,7 @@ public class UserLoginService {
         this.refreshTokenRepository = refreshTokenRepository;
     }
 
-    public ResponseEntity<UserDTO> loginCustomer(@Valid @RequestBody UserCO userCO, HttpServletResponse response) {
+    public ResponseEntity<UserDTO> loginUser(@Valid @RequestBody UserCO userCO, HttpServletResponse response) {
         User user = userRepository.findByEmail(userCO.getEmail()).orElseThrow(()->new UserNotFoundException("Email not found"));
         if (!user.getIsActive()) {
             throw new InactiveUserException("Please activate your account");
@@ -88,7 +88,7 @@ public class UserLoginService {
         userRepository.save(user);
     }
 
-    public ResponseEntity<String> logoutCustomer(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<String> logoutUser(HttpServletRequest request, HttpServletResponse response) {
         String accessToken = null;
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
