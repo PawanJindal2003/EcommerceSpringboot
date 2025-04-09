@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -27,7 +26,6 @@ public class UserLoginService {
     private AuthenticationManager authenticationManager;
     private JwtService jwtService;
     private RedisTokenService redisService;
-    private RefreshTokenRepository refreshTokenRepository;
 
     @Autowired
     public UserLoginService(UserRepository userRepository, AuthenticationManager authenticationManager, JwtService jwtService, RedisTokenService redisService, RefreshTokenRepository refreshTokenRepository) {
@@ -35,7 +33,6 @@ public class UserLoginService {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.redisService = redisService;
-        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     public ResponseEntity<UserDTO> loginUser(@Valid @RequestBody UserCO userCO, HttpServletResponse response) {
@@ -84,8 +81,10 @@ public class UserLoginService {
         if (attempts >= 3) {
             user.setIsLocked(true);
         }
+        if(!user.getRole().getAuthority().equals("ADMIN")){
+            userRepository.save(user);
+        }
 
-        userRepository.save(user);
     }
 
     public ResponseEntity<String> logoutUser(HttpServletRequest request, HttpServletResponse response) {
