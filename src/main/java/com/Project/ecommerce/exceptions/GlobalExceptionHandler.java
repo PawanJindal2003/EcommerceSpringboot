@@ -88,4 +88,10 @@ public class GlobalExceptionHandler {
         List<String> errorMessages = List.of(ex.getMessage());
         return new ResponseEntity<>(new ErrorResponse(400, "Inactive account", errorMessages), HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(DuplicateGSTException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateGSTException(DuplicateGSTException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(new ErrorResponse(400, "Please enter a valid GST number", errorMessages), HttpStatus.BAD_REQUEST);
+    }
 }
