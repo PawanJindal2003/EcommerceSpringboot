@@ -1,6 +1,7 @@
 package com.Project.ecommerce.controllers.admin;
 
 import com.Project.ecommerce.dto.admin.GetAllCustomersDTO;
+import com.Project.ecommerce.dto.admin.GetAllSellersDTO;
 import com.Project.ecommerce.services.admin.AdminService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -40,4 +41,19 @@ public class AdminController {
         return new ResponseEntity<>(allCustomers, HttpStatus.OK);
     }
 
+    @PreAuthorize("getRole('ADMIN')")
+    @GetMapping("/all-sellers")
+    public ResponseEntity<List<GetAllSellersDTO>> getAllSellers(@RequestParam(required = false, defaultValue = "0") int page,
+                                                                  @RequestParam(required = false, defaultValue = "10") int size,
+                                                                  @RequestParam(required = false) String email){
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "ID"));
+        List<GetAllSellersDTO> allSellers = null;
+        if(email == null){
+            allSellers = adminService.getAllSellers(pageable);
+        }
+        else{
+            allSellers = adminService.getAllSellersByEmail(email, pageable);
+        }
+        return new ResponseEntity<>(allSellers, HttpStatus.OK);
+    }
 }
