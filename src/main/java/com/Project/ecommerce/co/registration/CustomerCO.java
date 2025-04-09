@@ -1,9 +1,12 @@
 package com.Project.ecommerce.co.registration;
 
+import com.Project.ecommerce.entities.address.Address;
 import com.Project.ecommerce.entities.user.Role;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Setter
 @Getter
@@ -47,6 +50,8 @@ public class CustomerCO {
     @NotBlank(message = "Last name cannot be blank")
     @Size(min = 3, max = 15, message = "Last name must be between 3 and 15 characters")
     private String lastName;
+
+    private List<Address> addresses;
 
     private Role role;
 }

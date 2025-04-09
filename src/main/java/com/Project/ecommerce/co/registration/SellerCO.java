@@ -1,5 +1,6 @@
 package com.Project.ecommerce.co.registration;
 
+import com.Project.ecommerce.entities.address.Address;
 import com.Project.ecommerce.entities.user.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -8,6 +9,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -41,9 +44,6 @@ public class SellerCO {
     @NotBlank(message = "Company name cannot be blank")
     private String companyName;
 
-    @NotBlank(message = "Company address cannot be blank")
-    private String companyAddress;
-
     @NotBlank(message = "Contact number cannot be blank")
     @Size(min = 10, max = 20, message = "Please enter a valid contact number")
     @Pattern(
@@ -62,6 +62,8 @@ public class SellerCO {
     @NotBlank(message = "Last name cannot be blank")
     @Size(min = 3, max = 15, message = "Last name must be between 3 and 15 characters")
     private String lastName;
+
+    private List<Address> addresses;
 
     private Role role;
 }
