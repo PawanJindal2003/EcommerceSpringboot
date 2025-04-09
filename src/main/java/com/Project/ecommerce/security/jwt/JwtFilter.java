@@ -19,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
-    private static final List<String> NON_PUBLIC_URLS = List.of("/api/auth/customer/logout");
+    private static final List<String> NON_PUBLIC_URLS = List.of("/api/auth/logout", "/api/admin/all-customers/**");
     private JwtService jwtService;
     private RedisTokenService redisTokenService;
     private CustomUserDetailsService customUserDetailsService;
@@ -56,7 +57,10 @@ public class JwtFilter extends OncePerRequestFilter {
             }
         }
 
-        if (!NON_PUBLIC_URLS.contains(path)) {
+        final AntPathMatcher pathMatcher = new AntPathMatcher();
+        boolean isSecuredEndpoint = NON_PUBLIC_URLS.stream()
+                .anyMatch(pattern -> pathMatcher.match(pattern, path));
+        if (!isSecuredEndpoint) {
             filterChain.doFilter(request, response);
             return;
         } else if (token == null) {
