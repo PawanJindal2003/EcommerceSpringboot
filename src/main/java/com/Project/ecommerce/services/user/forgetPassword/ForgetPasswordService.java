@@ -2,6 +2,7 @@ package com.Project.ecommerce.services.user.forgetPassword;
 
 import com.Project.ecommerce.co.forgetPassword.ResetPasswordCO;
 import com.Project.ecommerce.entities.user.User;
+import com.Project.ecommerce.exceptions.customExceptions.ConfirmPasswordMismatchException;
 import com.Project.ecommerce.exceptions.customExceptions.UserNotFoundException;
 import com.Project.ecommerce.repositories.user.UserRepository;
 import com.Project.ecommerce.security.jwt.JwtService;
@@ -32,6 +33,16 @@ public class ForgetPasswordService {
     public ResponseEntity<String> sendResetPasswordMail(String email) throws MessagingException {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("Email not found"));
 
+        //throwing error response if an inactive user trying to forget password
+        if(!userRepository.findByEmail(email).get().getIsActive()){
+            return new ResponseEntity<>("Please activate your account", HttpStatus.BAD_REQUEST);
+        }
+
+        //throwing error response if a locked user trying to forget password
+        if(userRepository.findByEmail(email).get().getIsLocked()){
+            return new ResponseEntity<>("Locked account !!! Please ask admin to unlock your account", HttpStatus.BAD_REQUEST);
+        }
+
         //delete resetPasswordToken if already present in db
         if (jwtService.findForgetPasswordToken(user.getEmail()).isPresent()) {
             jwtService.deleteForgetPasswordToken(user.getEmail());
@@ -51,7 +62,13 @@ public class ForgetPasswordService {
         //token should be deleted
         //update password
         try {
-            String email = jwtService.extractEmail(resetPasswordCO.getForgetPasswordToken());
+            String forgetPasswordToken = resetPasswordCO.getForgetPasswordToken();
+            String email = jwtService.extractEmail(forgetPasswordToken);
+
+            if(!resetPasswordCO.getPassword().equals(resetPasswordCO.getConfirmPassword())){
+                throw new ConfirmPasswordMismatchException("Password and confirm password should be same");
+            }
+
             jwtService.isTokenValid(resetPasswordCO.getForgetPasswordToken(), email);
 
             jwtService.deleteForgetPasswordToken(email);
