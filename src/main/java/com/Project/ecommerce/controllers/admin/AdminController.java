@@ -1,5 +1,6 @@
 package com.Project.ecommerce.controllers.admin;
 
+import com.Project.ecommerce.co.admin.GetIdCO;
 import com.Project.ecommerce.dto.admin.GetAllCustomersDTO;
 import com.Project.ecommerce.dto.admin.GetAllSellersDTO;
 import com.Project.ecommerce.services.admin.AdminService;
@@ -59,14 +60,14 @@ public class AdminController {
     //common for customer and seller
     @PreAuthorize("getRole('ADMIN')")
     @PatchMapping("/activate/user")
-    public ResponseEntity<String> activateUser(UUID userId) throws MessagingException {
-        String responseMessage = adminService.activateDeactivateUser(userId, true);
+    public ResponseEntity<String> activateUser(@RequestBody GetIdCO getIdCO) throws MessagingException {
+        String responseMessage = adminService.activateDeactivateUser(getIdCO.getId(), true);
         return new ResponseEntity<>(responseMessage, HttpStatus.OK);
     }
     @PreAuthorize("getRole('ADMIN')")
     @PatchMapping("/deactivate/user")
-    public ResponseEntity<String> deactivateUser(UUID userId) throws MessagingException {
-        String responseMessage = adminService.activateDeactivateUser(userId, false);
+    public ResponseEntity<String> deactivateUser(@RequestBody GetIdCO getIdCO) throws MessagingException {
+        String responseMessage = adminService.activateDeactivateUser(getIdCO.getId(), false);
         return new ResponseEntity<>(responseMessage, HttpStatus.OK);
     }
 }
