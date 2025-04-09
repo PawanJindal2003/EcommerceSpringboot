@@ -2,25 +2,33 @@ package com.Project.ecommerce.services.admin;
 
 import com.Project.ecommerce.dto.admin.GetAllCustomersDTO;
 import com.Project.ecommerce.dto.admin.GetAllSellersDTO;
-import com.Project.ecommerce.entities.address.Address;
+import com.Project.ecommerce.entities.user.User;
+import com.Project.ecommerce.exceptions.customExceptions.UserNotFoundException;
 import com.Project.ecommerce.repositories.user.CustomerRepository;
 import com.Project.ecommerce.repositories.user.SellerRepository;
+import com.Project.ecommerce.repositories.user.UserRepository;
+import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 public class AdminService {
     private CustomerRepository customerRepository;
     private SellerRepository sellerRepository;
+    private UserRepository userRepository;
+    private AdminEmailService adminEmailService;
 
     @Autowired
-    public AdminService(CustomerRepository customerRepository, SellerRepository sellerRepository) {
+    public AdminService(CustomerRepository customerRepository, SellerRepository sellerRepository, UserRepository userRepository, AdminEmailService adminEmailService) {
         this.customerRepository = customerRepository;
         this.sellerRepository = sellerRepository;
+        this.userRepository = userRepository;
+        this.adminEmailService = adminEmailService;
     }
 
     public List<GetAllCustomersDTO> getAllCustomers(Pageable pageable) {
@@ -76,5 +84,41 @@ public class AdminService {
             sellersDTO.setCompanyContact(seller.getCompanyContact());
             return sellersDTO;
         }).collect(Collectors.toList());
+    }
+
+    public String activateDeactivateUser(UUID userId, Boolean action) throws MessagingException {
+        //user not found
+        User user = userRepository.findById(userId).orElseThrow(()->new UserNotFoundException("User not found"));
+
+        //if action = true, activate user
+        if(action){
+            //if user is deactivated
+            if(!user.getIsActive()){
+                user.setIsActive(true);
+                //save in db
+                userRepository.save(user);
+                //trigger email
+                adminEmailService.sendActivationEmail(user.getEmail());
+                return "Account has been activated successfully";
+            }
+            else{
+                return "Account is already in activated state";
+            }
+        }
+        //if action = false, deactivate user
+        else{
+            //if user is activated
+            if(user.getIsActive()){
+                user.setIsActive(false);
+                //save in db
+                userRepository.save(user);
+                //trigger email
+                adminEmailService.sendDeactivationEmail(user.getEmail());
+                return "Account has been deactivated successfully";
+            }
+            else{
+                return "Account is already in deactivated state";
+            }
+        }
     }
 }
