@@ -56,6 +56,7 @@ public class CustomerRegisterService {
         customer.setEmail(customerCO.getEmail());
         customer.setPassword(bCryptPasswordEncoder.encode(customerCO.getPassword()));
         customer.setCustomerContact(customerCO.getCustomerContact());
+        customer.setAddresses(customerCO.getAddresses());
         customer.setRole(role);
 
         customerRepository.save(customer);

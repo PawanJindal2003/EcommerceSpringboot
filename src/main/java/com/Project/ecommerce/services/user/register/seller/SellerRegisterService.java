@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class SellerRegisterService {
     private SellerRepository sellerRepository;
@@ -49,6 +51,8 @@ public class SellerRegisterService {
         seller.setCompanyName(sellerCO.getCompanyName().toLowerCase());
         seller.setCompanyContact(sellerCO.getCompanyContact());
         seller.setEmail(sellerCO.getEmail());
+        //send only one address
+        seller.setAddresses(sellerCO.getAddresses());
         seller.setRole(role);
 
         sellerRepository.save(seller);
