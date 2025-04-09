@@ -86,6 +86,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InactiveUserException.class)
     public ResponseEntity<ErrorResponse> handleInactiveUserException(InactiveUserException ex){
         List<String> errorMessages = List.of(ex.getMessage());
-        return new ResponseEntity<>(new ErrorResponse(404, "Inactive account", errorMessages), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new ErrorResponse(400, "Inactive account", errorMessages), HttpStatus.BAD_REQUEST);
     }
 }
