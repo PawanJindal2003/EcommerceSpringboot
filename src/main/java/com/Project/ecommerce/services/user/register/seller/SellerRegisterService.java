@@ -5,6 +5,7 @@ import com.Project.ecommerce.entities.user.Role;
 import com.Project.ecommerce.entities.user.Seller;
 import com.Project.ecommerce.exceptions.customExceptions.ConfirmPasswordMismatchException;
 import com.Project.ecommerce.exceptions.customExceptions.DuplicateCompanyException;
+import com.Project.ecommerce.exceptions.customExceptions.DuplicateGSTException;
 import com.Project.ecommerce.exceptions.customExceptions.EmailAlreadyExistsException;
 import com.Project.ecommerce.repositories.user.RoleRepository;
 import com.Project.ecommerce.repositories.user.SellerRepository;
@@ -36,6 +37,10 @@ public class SellerRegisterService {
         }
         if (!sellerCO.getPassword().equals(sellerCO.getConfirmPassword())) {
             throw new ConfirmPasswordMismatchException("Confirm password does not match with password, please enter correct confirm password");
+        }
+        //not printing "enter a unique GST", security issue
+        if(sellerRepository.findByGST(sellerCO.getGST()).isPresent()){
+            throw new DuplicateGSTException("Invalid GST number");
         }
         if(sellerRepository.findByCompanyName(sellerCO.getCompanyName()).isPresent()){
             throw new DuplicateCompanyException("Company name already exists, please come up with a unique company name");
