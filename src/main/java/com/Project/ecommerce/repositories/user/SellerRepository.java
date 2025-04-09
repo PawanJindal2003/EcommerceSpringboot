@@ -16,6 +16,7 @@ import java.util.UUID;
 public interface SellerRepository extends JpaRepository<Seller, UUID> {
     @Query("select s from Seller s WHERE (:email is null or lower(s.email) like lower(concat('%', :email, '%')))")
     Page<Seller> findAllByEmail(@Param("email") String email, Pageable pageable);
+    Optional<Seller> findByGST(String GST);
     Optional<User> findByEmail(String email);
     Optional<User> findByCompanyName(String CompanyName);
 }
