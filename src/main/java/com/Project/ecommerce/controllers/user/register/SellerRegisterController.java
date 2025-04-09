@@ -25,7 +25,7 @@ public class SellerRegisterController {
     @PostMapping("/register")
     public ResponseEntity<String> registerSeller(@Valid @RequestBody SellerCO sellerCO) throws MessagingException {
         String response = sellerRegisterService.registerSeller(sellerCO);
-        return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
     @DeleteMapping("/sellers")
     public void deleteSellers(){
