@@ -1,4 +1,4 @@
-package com.Project.ecommerce.co.seller;
+package com.Project.ecommerce.co.user;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
