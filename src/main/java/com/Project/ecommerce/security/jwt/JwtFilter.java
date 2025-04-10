@@ -33,7 +33,13 @@ public class JwtFilter extends OncePerRequestFilter {
             "/api/admin/all-customers/**",
             "/api/admin/all-sellers/**",
             "/api/admin/activate/user/**",
-            "/api/admin/deactivate/user/**");
+            "/api/admin/deactivate/user/**",
+            "/api/seller/me",
+            "/api/seller/update-profile",
+            "/api/seller/update-address/**",
+            "/api/seller/update-password",
+            "/api/customer/me",
+            "/api/customer/addresses");
     private JwtService jwtService;
     private RedisTokenService redisTokenService;
     private CustomUserDetailsService customUserDetailsService;
