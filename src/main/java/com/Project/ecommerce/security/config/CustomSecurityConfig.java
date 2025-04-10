@@ -46,7 +46,13 @@ public class CustomSecurityConfig {
                                 "/api/admin/all-customers/**",
                                 "/api/admin/all-sellers/**",
                                 "/api/admin/activate/user/**",
-                                "/api/admin/deactivate/user/**"
+                                "/api/admin/deactivate/user/**",
+                                "/api/seller/me",
+                                "/api/seller/update-profile",
+                                "/api/seller/update-address/**",
+                                "/api/seller/update-password",
+                                "/api/customer/me",
+                                "/api/customer/addresses"
                         ).authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Set session management to stateless
                 .authenticationProvider(authenticationProvider()) // Register the authentication provider
