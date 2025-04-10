@@ -1,7 +1,7 @@
 package com.Project.ecommerce.controllers.seller;
 
-import com.Project.ecommerce.co.seller.UpdateAddressCO;
-import com.Project.ecommerce.co.seller.UpdatePasswordCO;
+import com.Project.ecommerce.co.user.UpdateAddressCO;
+import com.Project.ecommerce.co.user.UpdatePasswordCO;
 import com.Project.ecommerce.co.seller.UpdateProfileCO;
 import com.Project.ecommerce.dto.seller.ViewProfileDTO;
 import com.Project.ecommerce.repositories.user.SellerRepository;
