@@ -17,8 +17,6 @@ public class UpdateProfileCO {
     @Size(min = 3, max = 20, message = "Last name must be of length between 3-50")
     private String lastName;
 
-    private Boolean isActive;
-
     @Size(min = 10, max = 20, message = "Please enter a valid contact number")
     @Pattern(
             regexp = "^\\+[1-9]{1}[0-9]{0,3}[-\\s]?[1-9]{1}[0-9]{6,11}$",
