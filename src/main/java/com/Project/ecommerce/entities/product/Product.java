@@ -2,6 +2,7 @@ package com.Project.ecommerce.entities.product;
 
 import com.Project.ecommerce.entities.category.Category;
 import com.Project.ecommerce.entities.user.Seller;
+import com.github.f4b6a3.uuid.UuidCreator;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,8 +16,15 @@ import java.util.UUID;
 @AllArgsConstructor
 public class Product {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @Column(length = 36)
+    private String id;
+
+    @PrePersist
+    public void prePersist(){
+        if(id == null){
+            id = UuidCreator.getTimeOrderedEpoch().toString();
+        }
+    }
 
     private String name;
     private String description;

@@ -1,9 +1,7 @@
 package com.Project.ecommerce.entities.jwt;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.github.f4b6a3.uuid.UuidCreator;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,8 +18,15 @@ import java.util.UUID;
 @NoArgsConstructor
 public class ActivationToken {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @Column(length = 36)
+    private String id;
+
+    @PrePersist
+    public void prePersist(){
+        if(id == null){
+            id = UuidCreator.getTimeOrderedEpoch().toString();
+        }
+    }
 
     @Email
     String email;

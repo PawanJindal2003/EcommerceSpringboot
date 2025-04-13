@@ -1,6 +1,7 @@
 package com.Project.ecommerce.entities.user;
 
 import com.Project.ecommerce.entities.address.Address;
+import com.github.f4b6a3.uuid.UuidCreator;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -17,8 +18,15 @@ import java.util.UUID;
 @Inheritance(strategy = InheritanceType.JOINED)
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID ID;
+    @Column(length = 36)
+    private String id;
+
+    @PrePersist
+    public void prePersist(){
+        if(id == null){
+            id = UuidCreator.getTimeOrderedEpoch().toString();
+        }
+    }
 
     @Email
     private String email;
@@ -49,7 +57,7 @@ public class User {
     @ManyToOne
     private Role role;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "user_id")
     private List<Address> addresses;
 }
