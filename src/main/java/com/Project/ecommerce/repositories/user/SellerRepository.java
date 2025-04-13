@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface SellerRepository extends JpaRepository<Seller, UUID> {
+public interface SellerRepository extends JpaRepository<Seller, String> {
     @Query("select s from Seller s WHERE (:email is null or lower(s.email) like lower(concat('%', :email, '%')))")
     Page<Seller> findAllByEmail(@Param("email") String email, Pageable pageable);
     Optional<Seller> findByGST(String GST);

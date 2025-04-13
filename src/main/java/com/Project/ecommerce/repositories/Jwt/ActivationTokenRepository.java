@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface ActivationTokenRepository extends JpaRepository<ActivationToken, UUID> {
+public interface ActivationTokenRepository extends JpaRepository<ActivationToken, String> {
     Optional<ActivationToken> findByJwtToken(String jwtToken);
     @Transactional
     @Modifying

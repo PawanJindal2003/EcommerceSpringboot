@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface ForgetPasswordTokenRepository extends JpaRepository<ForgetPasswordToken, UUID> {
+public interface ForgetPasswordTokenRepository extends JpaRepository<ForgetPasswordToken, String> {
     public Optional<ForgetPasswordToken> findByEmail(String email);
     @Modifying
     @Transactional
