@@ -5,6 +5,7 @@ import com.Project.ecommerce.dto.admin.GetAllCustomersDTO;
 import com.Project.ecommerce.dto.admin.GetAllSellersDTO;
 import com.Project.ecommerce.services.admin.AdminService;
 import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -30,7 +31,7 @@ public class AdminController {
     public ResponseEntity<List<GetAllCustomersDTO>> getAllCustomers(@RequestParam(required = false, defaultValue = "0") int page,
                                                                     @RequestParam(required = false, defaultValue = "10") int size,
                                                                     @RequestParam(required = false) String email){
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "ID"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"));
         List<GetAllCustomersDTO> allCustomers = null;
         if(email == null){
             allCustomers = adminService.getAllCustomers(pageable);
@@ -46,7 +47,7 @@ public class AdminController {
     public ResponseEntity<List<GetAllSellersDTO>> getAllSellers(@RequestParam(required = false, defaultValue = "0") int page,
                                                                   @RequestParam(required = false, defaultValue = "10") int size,
                                                                   @RequestParam(required = false) String email){
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "ID"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"));
         List<GetAllSellersDTO> allSellers = null;
         if(email == null){
             allSellers = adminService.getAllSellers(pageable);
@@ -60,13 +61,13 @@ public class AdminController {
     //common for customer and seller
     @PreAuthorize("getRole('ADMIN')")
     @PatchMapping("/activate/user")
-    public ResponseEntity<String> activateUser(@RequestBody GetIdCO getIdCO) throws MessagingException {
+    public ResponseEntity<String> activateUser(@RequestBody @Valid GetIdCO getIdCO) throws MessagingException {
         String responseMessage = adminService.activateDeactivateUser(getIdCO.getId(), true);
         return new ResponseEntity<>(responseMessage, HttpStatus.OK);
     }
     @PreAuthorize("getRole('ADMIN')")
     @PatchMapping("/deactivate/user")
-    public ResponseEntity<String> deactivateUser(@RequestBody GetIdCO getIdCO) throws MessagingException {
+    public ResponseEntity<String> deactivateUser(@RequestBody @Valid GetIdCO getIdCO) throws MessagingException {
         String responseMessage = adminService.activateDeactivateUser(getIdCO.getId(), false);
         return new ResponseEntity<>(responseMessage, HttpStatus.OK);
     }
