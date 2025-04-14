@@ -16,7 +16,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/customer")
@@ -64,15 +63,15 @@ public class CustomerController {
 
     @PreAuthorize("getRole('CUSTOMER')")
     @DeleteMapping("/delete-address")
-    public ResponseEntity<String> deleteAddress(HttpServletRequest request,@Valid @RequestBody UUID id){
-        String responseMessage = customerService.deleteAddress(request, id);
+    public ResponseEntity<String> deleteAddress(HttpServletRequest request, @Valid @RequestBody UpdateAddressCO updateAddressCO){
+        String responseMessage = customerService.deleteAddress(request, updateAddressCO);
         return new ResponseEntity<>(responseMessage, HttpStatus.OK);
     }
 
     @PreAuthorize("getRole('CUSTOMER')")
     @PutMapping("/update-address")
-    public ResponseEntity<String> deleteAddress(HttpServletRequest request,@Valid @RequestBody UUID id, @Valid @RequestBody UpdateAddressCO updateAddressCO){
-        String responseMessage = customerService.updateAddress(request, id, updateAddressCO);
+    public ResponseEntity<String> updateAddress(HttpServletRequest request,@Valid @RequestBody UpdateAddressCO updateAddressCO){
+        String responseMessage = customerService.updateAddress(request, updateAddressCO);
         return new ResponseEntity<>(responseMessage, HttpStatus.OK);
     }
 }
