@@ -50,7 +50,7 @@ public class SellerController {
 
     @PreAuthorize("getRole('SELLER')")
     @PatchMapping("/update-address")
-    public ResponseEntity<String> updateAddress(HttpServletRequest request, @Valid @RequestBody UUID addressId, @Valid @RequestBody UpdateAddressCO updateAddressCO){
+    public ResponseEntity<String> updateAddress(HttpServletRequest request, @Valid @RequestBody String addressId, @Valid @RequestBody UpdateAddressCO updateAddressCO){
         String responseMessage = sellerService.updateAddress(request, addressId , updateAddressCO);
         return new ResponseEntity<>(responseMessage, HttpStatus.OK);
     }
