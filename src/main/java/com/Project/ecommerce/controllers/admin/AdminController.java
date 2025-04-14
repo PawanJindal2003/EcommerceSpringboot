@@ -25,10 +25,12 @@ public class AdminController {
 
     @PreAuthorize("getRole('ADMIN')")
     @GetMapping("/all-customers")
-    public ResponseEntity<List<GetAllCustomersDTO>> getAllCustomers(@RequestParam(required = false, defaultValue = "0") int page,
-                                                                    @RequestParam(required = false, defaultValue = "10") int size,
-                                                                    @RequestParam(required = false) String email){
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"));
+    public ResponseEntity<List<GetAllCustomersDTO>> getAllCustomers(@RequestParam(required = true, defaultValue = "0") int page,
+                                                                    @RequestParam(required = true, defaultValue = "10") int size,
+                                                                    @RequestParam(required = false) String email,
+                                                                    @RequestParam(required = false, defaultValue = "id") String sortField,
+                                                                    @RequestParam(required = false, defaultValue = "ASC") String direction){
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(direction), sortField));
         List<GetAllCustomersDTO> allCustomers = null;
         if(email == null){
             allCustomers = adminService.getAllCustomers(pageable);
