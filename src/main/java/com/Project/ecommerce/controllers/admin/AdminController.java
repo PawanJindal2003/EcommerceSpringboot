@@ -5,7 +5,6 @@ import com.Project.ecommerce.dto.admin.GetAllCustomersDTO;
 import com.Project.ecommerce.dto.admin.GetAllSellersDTO;
 import com.Project.ecommerce.services.admin.AdminService;
 import jakarta.mail.MessagingException;
-import jakarta.validation.Valid;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -13,9 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -61,13 +58,13 @@ public class AdminController {
     //common for customer and seller
     @PreAuthorize("getRole('ADMIN')")
     @PatchMapping("/activate/user")
-    public ResponseEntity<String> activateUser(@RequestBody @Valid GetIdCO getIdCO) throws MessagingException {
+    public ResponseEntity<String> activateUser(@RequestBody GetIdCO getIdCO) throws MessagingException {
         String responseMessage = adminService.activateDeactivateUser(getIdCO.getId(), true);
         return new ResponseEntity<>(responseMessage, HttpStatus.OK);
     }
     @PreAuthorize("getRole('ADMIN')")
     @PatchMapping("/deactivate/user")
-    public ResponseEntity<String> deactivateUser(@RequestBody @Valid GetIdCO getIdCO) throws MessagingException {
+    public ResponseEntity<String> deactivateUser(@RequestBody GetIdCO getIdCO) throws MessagingException {
         String responseMessage = adminService.activateDeactivateUser(getIdCO.getId(), false);
         return new ResponseEntity<>(responseMessage, HttpStatus.OK);
     }

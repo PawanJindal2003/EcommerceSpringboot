@@ -11,6 +11,7 @@ import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.List;
 import java.util.UUID;
@@ -86,7 +87,14 @@ public class AdminService {
         }).collect(Collectors.toList());
     }
 
-    public String activateDeactivateUser(String userId, Boolean action) throws MessagingException {
+    public String activateDeactivateUser(String userId, Boolean action) throws MethodArgumentTypeMismatchException, MessagingException {
+        // id validation, in global exception handler
+        try{
+            UUID uuid = UUID.fromString(userId);
+        }
+        catch (IllegalArgumentException e){
+            return "Invalid id";
+        }
         //user not found
         User user = userRepository.findById(userId).orElseThrow(()->new UserNotFoundException("User not found"));
 
