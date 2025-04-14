@@ -18,8 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.util.Date;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class SellerService {
@@ -48,7 +49,7 @@ public class SellerService {
         String email = jwtService.extractEmail(accessToken);
         Seller seller = sellerRepository.findByEmail(email).orElseThrow(()->new UserNotFoundException("Seller not found"));
 
-        viewProfileDTO.setId(seller.getID());
+        viewProfileDTO.setId(seller.getId());
         viewProfileDTO.setFirstName(seller.getFirstName());
         viewProfileDTO.setLastName(seller.getLastName());
         viewProfileDTO.setCompanyContact(seller.getCompanyContact());
@@ -115,15 +116,17 @@ public class SellerService {
 
         //updating password
         seller.setPassword(bCryptPasswordEncoder.encode(updatePasswordCO.getPassword()));
+        //updating passwordUpdateTime
+        seller.setPasswordUpdateDate(Date.from(Instant.now()));
 
         sellerRepository.save(seller);
 
         return "Your password has been successfully updated";
     }
 
-    public String updateAddress(HttpServletRequest request, UUID addressId, UpdateAddressCO updateAddressCO){
+    public String updateAddress(HttpServletRequest request, String addressId, UpdateAddressCO updateAddressCO){
         //is addressId existing
-        if(addressRepository.findById(addressId).isEmpty()){
+        if(addressRepository.findById(addressId).isPresent()){
             return "Address not found";
         }
         //Doubt: validating addressId?
