@@ -1,5 +1,6 @@
 package com.Project.ecommerce.entities.user;
 
+import com.Project.ecommerce.Audit.Auditable;
 import com.Project.ecommerce.entities.address.Address;
 import com.github.f4b6a3.uuid.UuidCreator;
 import jakarta.persistence.*;
@@ -16,7 +17,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Inheritance(strategy = InheritanceType.JOINED)
-public class User {
+public class User extends Auditable {
     @Id
     @Column(length = 36)
     private String id;
