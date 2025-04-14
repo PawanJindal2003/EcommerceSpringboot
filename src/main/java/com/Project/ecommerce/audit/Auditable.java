@@ -1,4 +1,4 @@
-package com.Project.ecommerce.Audit;
+package com.Project.ecommerce.audit;
 
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;

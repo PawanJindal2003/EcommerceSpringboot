@@ -1,4 +1,4 @@
-package com.Project.ecommerce.Audit;
+package com.Project.ecommerce.audit;
 
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.core.Authentication;
