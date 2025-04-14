@@ -15,6 +15,9 @@ import org.springframework.security.authentication.InternalAuthenticationService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.util.Date;
+
 @Service
 public class ForgetPasswordService {
     private UserRepository userRepository;
@@ -76,6 +79,7 @@ public class ForgetPasswordService {
             User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("Email not found"));
 
             user.setPassword(bCryptPasswordEncoder.encode(resetPasswordCO.getPassword()));
+            user.setPasswordUpdateDate(Date.from(Instant.now()));
             userRepository.save(user);
             forgetPasswordEmailService.sendSuccessResetPasswordEmail(email);
             return new ResponseEntity<>("Your password has been reset successfully", HttpStatus.OK);
