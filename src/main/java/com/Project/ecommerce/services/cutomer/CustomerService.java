@@ -9,7 +9,6 @@ import com.Project.ecommerce.entities.address.Address;
 import com.Project.ecommerce.entities.user.Customer;
 import com.Project.ecommerce.exceptions.customExceptions.ConfirmPasswordMismatchException;
 import com.Project.ecommerce.exceptions.customExceptions.UserNotFoundException;
-import com.Project.ecommerce.repositories.user.AddressRepository;
 import com.Project.ecommerce.repositories.user.CustomerRepository;
 import com.Project.ecommerce.security.jwt.JwtService;
 import jakarta.servlet.http.Cookie;
@@ -18,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -25,14 +25,12 @@ public class CustomerService {
     private JwtService jwtService;
     private CustomerRepository customerRepository;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
-    private AddressRepository addressRepository;
 
     @Autowired
-    public CustomerService(JwtService jwtService, CustomerRepository customerRepository, BCryptPasswordEncoder bCryptPasswordEncoder, AddressRepository addressRepository) {
+    public CustomerService(JwtService jwtService, CustomerRepository customerRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.jwtService = jwtService;
         this.customerRepository = customerRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-        this.addressRepository = addressRepository;
     }
 
     public ViewProfileDTO viewProfile(HttpServletRequest request) {
@@ -49,7 +47,7 @@ public class CustomerService {
 
         ViewProfileDTO viewProfileDTO = new ViewProfileDTO();
 
-        viewProfileDTO.setId(customer.getID());
+        viewProfileDTO.setId(customer.getId());
         viewProfileDTO.setFirstName(customer.getFirstName());
         viewProfileDTO.setMiddleName(customer.getMiddleName());
         viewProfileDTO.setLastName(customer.getLastName());
@@ -134,6 +132,8 @@ public class CustomerService {
 
         //updating password
         customer.setPassword(bCryptPasswordEncoder.encode(updatePasswordCO.getPassword()));
+        //updating passwordUpdateTime
+        customer.setPasswordUpdateDate(Date.from(Instant.now()));
 
         customerRepository.save(customer);
 
@@ -171,7 +171,7 @@ public class CustomerService {
         return "Address added successfully";
     }
 
-    public String deleteAddress(HttpServletRequest request, UUID id) {
+    public String deleteAddress(HttpServletRequest request, UpdateAddressCO updateAddressCO) {
         String accessToken = null;
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
@@ -185,23 +185,18 @@ public class CustomerService {
         Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("Customer not found"));
 
         List<Address> addresses = customer.getAddresses();
+        String id = updateAddressCO.getId();
 
-        int i = 0;
-        for (Address address : addresses) {
-            if (address.getId() == id) {
-                addressRepository.deleteById(id);
-                return "Address deleted successfully";
-            }
-            i += 1;
-        }
+        boolean removed = addresses.removeIf(address -> address.getId().equals(id));
 
-        if (i >= addresses.size()) {
-            return "Address not found";
+        if (removed) {
+            customerRepository.save(customer);
+            return "Address deleted successfully";
         }
-        return "Address deleted successfully";
+        return "Address not found";
     }
 
-    public String updateAddress(HttpServletRequest request, UUID id, UpdateAddressCO updateAddressCO) {
+    public String updateAddress(HttpServletRequest request, UpdateAddressCO updateAddressCO) {
         String accessToken = null;
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
@@ -215,25 +210,20 @@ public class CustomerService {
         Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("Customer not found"));
 
         List<Address> addresses = customer.getAddresses();
+        String id = updateAddressCO.getId();
 
-
-        int i = 0;
         for (Address address : addresses) {
-            if (address.getId() == id) {
+            if (address.getId().equals(id)) {
                 Optional.ofNullable(updateAddressCO.getAddressLine()).ifPresent(address::setAddressLine);
                 Optional.ofNullable(updateAddressCO.getCity()).ifPresent(address::setCity);
                 Optional.ofNullable(updateAddressCO.getState()).ifPresent(address::setState);
                 Optional.ofNullable(updateAddressCO.getCountry()).ifPresent(address::setCountry);
                 Optional.ofNullable(updateAddressCO.getZipCode()).ifPresent(address::setZipCode);
+
+                customerRepository.save(customer);
+                return "Address updated successfully";
             }
-            i += 1;
         }
-
-        if (i >= addresses.size()) {
-            return "Address not found";
-        }
-
-        customerRepository.save(customer);
-        return "Address updated successfully";
+        return "Address not found";
     }
 }
