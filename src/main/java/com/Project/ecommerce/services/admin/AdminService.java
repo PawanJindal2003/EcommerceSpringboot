@@ -34,7 +34,7 @@ public class AdminService {
     public List<GetAllCustomersDTO> getAllCustomers(Pageable pageable) {
         return customerRepository.findAll(pageable).stream().map(customer -> {
             GetAllCustomersDTO customerDTO = new GetAllCustomersDTO();
-            customerDTO.setId(customer.getID());
+            customerDTO.setId(customer.getId());
             customerDTO.setFirstName(customer.getFirstName());
             customerDTO.setMiddleName(customer.getMiddleName());
             customerDTO.setLastName(customer.getLastName());
@@ -47,7 +47,7 @@ public class AdminService {
     public List<GetAllCustomersDTO> getAllCustomersByEmail(String email, Pageable pageable) {
         return customerRepository.findAllByEmail(email, pageable).stream().map(customer -> {
             GetAllCustomersDTO customerDTO = new GetAllCustomersDTO();
-            customerDTO.setId(customer.getID());
+            customerDTO.setId(customer.getId());
             customerDTO.setFirstName(customer.getFirstName());
             customerDTO.setMiddleName(customer.getMiddleName());
             customerDTO.setLastName(customer.getLastName());
@@ -60,7 +60,7 @@ public class AdminService {
     public List<GetAllSellersDTO> getAllSellers(Pageable pageable) {
         return sellerRepository.findAll(pageable).stream().map(seller -> {
             GetAllSellersDTO sellersDTO = new GetAllSellersDTO();
-            sellersDTO.setId(seller.getID());
+            sellersDTO.setId(seller.getId());
             sellersDTO.setFirstName(seller.getFirstName());
             sellersDTO.setMiddleName(seller.getMiddleName());
             sellersDTO.setLastName(seller.getLastName());
@@ -73,7 +73,7 @@ public class AdminService {
     public List<GetAllSellersDTO> getAllSellersByEmail(String email, Pageable pageable) {
         return sellerRepository.findAllByEmail(email, pageable).stream().map(seller -> {
             GetAllSellersDTO sellersDTO = new GetAllSellersDTO();
-            sellersDTO.setId(seller.getID());
+            sellersDTO.setId(seller.getId());
             sellersDTO.setFirstName(seller.getFirstName());
             sellersDTO.setMiddleName(seller.getMiddleName());
             sellersDTO.setLastName(seller.getLastName());
@@ -86,7 +86,7 @@ public class AdminService {
         }).collect(Collectors.toList());
     }
 
-    public String activateDeactivateUser(UUID userId, Boolean action) throws MessagingException {
+    public String activateDeactivateUser(String userId, Boolean action) throws MessagingException {
         //user not found
         User user = userRepository.findById(userId).orElseThrow(()->new UserNotFoundException("User not found"));
 
