@@ -47,7 +47,7 @@ public class CustomerRegisterService {
             throw new ConfirmPasswordMismatchException("Confirm password does not match with password, please enter correct confirm password");
         }
 
-        Role role = roleRepository.findByAuthority("Customer");
+        Role role = roleRepository.findByAuthority("CUSTOMER");
         Customer customer = new Customer();
         customer.setFirstName(customerCO.getFirstName());
         customer.setMiddleName(customerCO.getMiddleName());
