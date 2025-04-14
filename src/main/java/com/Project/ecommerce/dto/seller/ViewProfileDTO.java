@@ -3,12 +3,10 @@ package com.Project.ecommerce.dto.seller;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.UUID;
-
 @Getter
 @Setter
 public class ViewProfileDTO {
-    private UUID id;
+    private String id;
     private String firstName;
     private String middleName;
     private String lastName;
