@@ -64,7 +64,7 @@ public class UserLoginService {
         accessCookie.setHttpOnly(true);
         accessCookie.setSecure(true);//for https
         accessCookie.setPath("/");
-        accessCookie.setMaxAge(60 * 15);
+//        accessCookie.setMaxAge(60 * 15);
         response.addCookie(accessCookie);
 
         UserDTO dto = new UserDTO(accessToken, "Login successful");
