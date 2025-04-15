@@ -1,7 +1,5 @@
 package com.Project.ecommerce.co.seller;
 
-import com.Project.ecommerce.entities.address.Address;
-import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;

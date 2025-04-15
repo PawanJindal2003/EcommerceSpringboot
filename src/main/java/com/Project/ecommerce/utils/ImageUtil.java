@@ -1,6 +1,5 @@
 package com.Project.ecommerce.utils;
 
-import com.Project.ecommerce.entities.user.Customer;
 import com.Project.ecommerce.entities.user.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -8,7 +7,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 @Component
 public class ImageUtil {
