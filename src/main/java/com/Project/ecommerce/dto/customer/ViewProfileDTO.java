@@ -12,5 +12,5 @@ public class ViewProfileDTO {
     private String lastName;
     private Boolean isActive;
     private String customerContact;
-//    private String image
+    private String profilePicUrl;
 }

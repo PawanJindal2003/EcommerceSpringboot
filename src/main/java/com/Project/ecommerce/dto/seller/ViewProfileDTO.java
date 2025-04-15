@@ -21,4 +21,6 @@ public class ViewProfileDTO {
     private String country;
     private String addressLine;
     private String zipCode;
+
+    private String profilePicUrl;
 }
