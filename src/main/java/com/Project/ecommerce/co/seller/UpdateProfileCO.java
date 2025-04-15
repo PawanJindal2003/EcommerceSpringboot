@@ -29,4 +29,6 @@ public class UpdateProfileCO {
     @Size(min = 15, max = 15, message = "GST number must contain exact 15 characters")
     @Pattern(regexp = "^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$", message = "Invalid GST number format")
     private String GST;
+
+    private String profilePicUrl;
 }

@@ -8,11 +8,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UpdateProfileCO {
-    @Size(min = 3, max = 20, message = "First name must be of length between 3-50")
+    @Size(min = 3, max = 20, message = "First name must be of length between 3-20")
     private String firstName;
-    @Size(min = 3, max = 20, message = "Middle name must be of length between 3-50")
+    @Size(min = 3, max = 20, message = "Middle name must be of length between 3-20")
     private String middleName;
-    @Size(min = 3, max = 20, message = "Last name must be of length between 3-50")
+    @Size(min = 3, max = 20, message = "Last name must be of length between 3-20")
     private String lastName;
 
     @Size(min = 10, max = 20, message = "Please enter a valid contact number")
@@ -21,4 +21,6 @@ public class UpdateProfileCO {
             message = "Please enter a valid phone number with country code, e.g., +91-7210003XXX"
     )
     private String customerContact;
+
+    private String profilePicUrl;
 }
