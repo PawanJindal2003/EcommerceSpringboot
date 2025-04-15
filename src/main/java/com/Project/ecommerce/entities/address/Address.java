@@ -4,6 +4,7 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import org.hibernate.annotations.*;
 import org.hibernate.annotations.UuidGenerator;
 
 @Entity
@@ -11,6 +12,9 @@ import org.hibernate.annotations.UuidGenerator;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+
+@SQLDelete(sql = "update address set is_deleted = true where id=?")
+@Where(clause = "is_deleted = false")
 public class Address {
     @Id
     @UuidGenerator(style = UuidGenerator.Style.TIME)
@@ -41,4 +45,6 @@ public class Address {
     private String zipCode;
 
     private String label;
+
+    private Boolean isDeleted = false;
 }
