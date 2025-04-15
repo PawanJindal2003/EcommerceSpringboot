@@ -16,6 +16,7 @@ import com.Project.ecommerce.utils.ImageUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,13 +32,15 @@ public class SellerService {
     private AddressRepository addressRepository;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     private ImageUtil imageUtil;
+    private MessageSource messageSource;
     @Autowired
-    public SellerService(JwtService jwtService, SellerRepository sellerRepository, AddressRepository addressRepository, BCryptPasswordEncoder bCryptPasswordEncoder, ImageUtil imageUtil){
+    public SellerService(JwtService jwtService, SellerRepository sellerRepository, AddressRepository addressRepository, BCryptPasswordEncoder bCryptPasswordEncoder, ImageUtil imageUtil, MessageSource messageSource){
         this.jwtService = jwtService;
         this.sellerRepository = sellerRepository;
         this.addressRepository = addressRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.imageUtil = imageUtil;
+        this.messageSource = messageSource;
     }
     public ViewProfileDTO viewProfile(HttpServletRequest request){
         String accessToken = null;
@@ -51,7 +54,7 @@ public class SellerService {
         }
         ViewProfileDTO viewProfileDTO = new ViewProfileDTO();
         String email = jwtService.extractEmail(accessToken);
-        Seller seller = sellerRepository.findByEmail(email).orElseThrow(()->new UserNotFoundException("Seller not found"));
+        Seller seller = sellerRepository.findByEmail(email).orElseThrow(()->new UserNotFoundException(messageSource.getMessage("seller.not.found", null, request.getLocale())));
 
         viewProfileDTO.setId(seller.getId());
         viewProfileDTO.setFirstName(seller.getFirstName());
@@ -83,7 +86,7 @@ public class SellerService {
             }
         }
         String email = jwtService.extractEmail(accessToken);
-        Seller seller = sellerRepository.findByEmail(email).orElseThrow(()-> new UserNotFoundException("Seller not found"));
+        Seller seller = sellerRepository.findByEmail(email).orElseThrow(()-> new UserNotFoundException(messageSource.getMessage("seller.not.found", null, request.getLocale())));
 
         if(updateProfileCO!=null) {
             Optional.ofNullable(updateProfileCO.getFirstName()).ifPresent(seller::setFirstName);
@@ -92,7 +95,7 @@ public class SellerService {
             Optional.ofNullable(updateProfileCO.getCompanyName()).ifPresent(seller::setCompanyName);
             //not printing "enter a unique GST", security issue
             if (sellerRepository.findByGST(updateProfileCO.getGST()).isPresent()) {
-                throw new DuplicateGSTException("Invalid GST number");
+                throw new DuplicateGSTException(messageSource.getMessage("gst.duplicate", null, request.getLocale()));
             }
 
             Optional.ofNullable(updateProfileCO.getGST()).ifPresent(seller::setGST);
@@ -103,13 +106,13 @@ public class SellerService {
             imageUtil.saveImage(multipartFile, seller);
         }
         sellerRepository.save(seller);
-        return "Profile updated successfully.";
+        return messageSource.getMessage("profile.update.success", null, request.getLocale());
     }
 
     public String updatePassword(HttpServletRequest request, UpdatePasswordCO updatePasswordCO){
         // check if password and confirm password are not different
         if(!updatePasswordCO.getPassword().equals(updatePasswordCO.getConfirmPassword())){
-            throw new ConfirmPasswordMismatchException("Password-Confirm password mismatch");
+            throw new ConfirmPasswordMismatchException(messageSource.getMessage("password.confirm.mismatch", null, request.getLocale()));
         }
         String accessToken = null;
         if(request.getCookies()!=null){
@@ -130,13 +133,13 @@ public class SellerService {
 
         sellerRepository.save(seller);
 
-        return "Your password has been successfully updated";
+        return messageSource.getMessage("password.update.success", null, request.getLocale());
     }
 
     public String updateAddress(HttpServletRequest request, String addressId, UpdateAddressCO updateAddressCO){
         //is addressId existing
         if(addressRepository.findById(addressId).isPresent()){
-            return "Address not found";
+            return messageSource.getMessage("address.not.found", null, request.getLocale());
         }
         //Doubt: validating addressId?
 
@@ -164,6 +167,6 @@ public class SellerService {
 
         sellerRepository.save(seller);
 
-        return "Seller address has been updated successfully";
+        return messageSource.getMessage("address.update.success", null, request.getLocale());
     }
 }

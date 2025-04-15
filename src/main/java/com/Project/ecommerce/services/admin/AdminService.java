@@ -9,6 +9,8 @@ import com.Project.ecommerce.repositories.user.SellerRepository;
 import com.Project.ecommerce.repositories.user.UserRepository;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -23,13 +25,15 @@ public class AdminService {
     private SellerRepository sellerRepository;
     private UserRepository userRepository;
     private AdminEmailService adminEmailService;
+    private MessageSource messageSource;
 
     @Autowired
-    public AdminService(CustomerRepository customerRepository, SellerRepository sellerRepository, UserRepository userRepository, AdminEmailService adminEmailService) {
+    public AdminService(CustomerRepository customerRepository, SellerRepository sellerRepository, UserRepository userRepository, AdminEmailService adminEmailService, MessageSource messageSource) {
         this.customerRepository = customerRepository;
         this.sellerRepository = sellerRepository;
         this.userRepository = userRepository;
         this.adminEmailService = adminEmailService;
+        this.messageSource = messageSource;
     }
 
     public List<GetAllCustomersDTO> getAllCustomers(Pageable pageable) {
@@ -93,10 +97,10 @@ public class AdminService {
             UUID uuid = UUID.fromString(userId);
         }
         catch (IllegalArgumentException e){
-            return "Invalid id";
+            return messageSource.getMessage("user.invalid.id", null, LocaleContextHolder.getLocale());
         }
         //user not found
-        User user = userRepository.findById(userId).orElseThrow(()->new UserNotFoundException("User not found"));
+        User user = userRepository.findById(userId).orElseThrow(()->new UserNotFoundException(messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale())));
 
         //if action = true, activate user
         if(action){
@@ -107,10 +111,10 @@ public class AdminService {
                 userRepository.save(user);
                 //trigger email
                 adminEmailService.sendActivationEmail(user.getEmail());
-                return "Account has been activated successfully";
+                return messageSource.getMessage("user.account.activated", null, LocaleContextHolder.getLocale());
             }
             else{
-                return "Account is already in activated state";
+                return messageSource.getMessage("user.account.already.activated", null, LocaleContextHolder.getLocale());
             }
         }
         //if action = false, deactivate user
@@ -122,10 +126,10 @@ public class AdminService {
                 userRepository.save(user);
                 //trigger email
                 adminEmailService.sendDeactivationEmail(user.getEmail());
-                return "Account has been deactivated successfully";
+                return messageSource.getMessage("user.account.deactivated", null, LocaleContextHolder.getLocale());
             }
             else{
-                return "Account is already in deactivated state";
+                return messageSource.getMessage("user.account.already.deactivated", null, LocaleContextHolder.getLocale());
             }
         }
     }

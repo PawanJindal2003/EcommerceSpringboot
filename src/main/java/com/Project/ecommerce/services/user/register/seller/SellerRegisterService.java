@@ -11,10 +11,13 @@ import com.Project.ecommerce.repositories.user.RoleRepository;
 import com.Project.ecommerce.repositories.user.SellerRepository;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class SellerRegisterService {
@@ -22,28 +25,30 @@ public class SellerRegisterService {
     private RoleRepository roleRepository;
     private SellerEmailService sellerEmailService;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private MessageSource messageSource;
 
     @Autowired
-    public SellerRegisterService(SellerRepository sellerRepository, RoleRepository roleRepository, SellerEmailService sellerEmailService, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public SellerRegisterService(SellerRepository sellerRepository, RoleRepository roleRepository, SellerEmailService sellerEmailService, BCryptPasswordEncoder bCryptPasswordEncoder, MessageSource messageSource) {
         this.sellerRepository = sellerRepository;
         this.sellerEmailService = sellerEmailService;
         this.roleRepository = roleRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.messageSource = messageSource;
     }
 
     public String registerSeller(SellerCO sellerCO) throws MessagingException {
         if (sellerRepository.findByEmail(sellerCO.getEmail()).isPresent()) {
-            throw new EmailAlreadyExistsException("Email already exists, please enter a new email");
+            throw new EmailAlreadyExistsException(messageSource.getMessage("seller.email.already.exists", null, LocaleContextHolder.getLocale()));
         }
         if (!sellerCO.getPassword().equals(sellerCO.getConfirmPassword())) {
-            throw new ConfirmPasswordMismatchException("Confirm password does not match with password, please enter correct confirm password");
+            throw new ConfirmPasswordMismatchException(messageSource.getMessage("seller.confirm.password.mismatch", null, LocaleContextHolder.getLocale()));
         }
         //not printing "enter a unique GST", security issue
         if(sellerRepository.findByGST(sellerCO.getGST()).isPresent()){
-            throw new DuplicateGSTException("Invalid GST number");
+            throw new DuplicateGSTException(messageSource.getMessage("seller.invalid.gst", null, LocaleContextHolder.getLocale()));
         }
         if(sellerRepository.findByCompanyName(sellerCO.getCompanyName()).isPresent()){
-            throw new DuplicateCompanyException("Company name already exists, please come up with a unique company name");
+            throw new DuplicateCompanyException(messageSource.getMessage("seller.duplicate.company.name", null, LocaleContextHolder.getLocale()));
         }
 
         Role role = roleRepository.findByAuthority("Seller");
@@ -64,6 +69,6 @@ public class SellerRegisterService {
 
         sellerEmailService.sendActivationEmail(seller.getEmail());
 
-        return "Registration completed, please wait until your account get approved";
+        return messageSource.getMessage("seller.register.attempt", null, LocaleContextHolder.getLocale());
     }
 }

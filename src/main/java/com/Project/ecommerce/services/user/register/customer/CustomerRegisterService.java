@@ -14,8 +14,8 @@ import com.Project.ecommerce.security.jwt.JwtService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,24 +27,26 @@ public class CustomerRegisterService {
     private CustomerEmailService customerEmailService;
     private JwtService jwtService;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private MessageSource messageSource;
 
     @Autowired
-    public CustomerRegisterService(CustomerRepository customerRepository, UserRepository userRepository, RoleRepository roleRepository, CustomerEmailService customerEmailService, JwtService jwtService, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public CustomerRegisterService(CustomerRepository customerRepository, UserRepository userRepository, RoleRepository roleRepository, CustomerEmailService customerEmailService, JwtService jwtService, BCryptPasswordEncoder bCryptPasswordEncoder, MessageSource messageSource) {
         this.customerRepository = customerRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.customerEmailService = customerEmailService;
         this.jwtService = jwtService;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.messageSource = messageSource;
     }
 
     public String registerCustomer(CustomerCO customerCO) throws MessagingException {
         // validations
         if (customerRepository.findByEmail(customerCO.getEmail()).isPresent()) {
-            throw new EmailAlreadyExistsException("Email already exists, please enter a new email");
+            throw new EmailAlreadyExistsException(messageSource.getMessage("customer.email.already.exists", null, LocaleContextHolder.getLocale()));
         }
         if (!customerCO.getPassword().equals(customerCO.getConfirmPassword())) {
-            throw new ConfirmPasswordMismatchException("Confirm password does not match with password, please enter correct confirm password");
+            throw new ConfirmPasswordMismatchException(messageSource.getMessage("customer.confirm.password.mismatch", null, LocaleContextHolder.getLocale()));
         }
 
         Role role = roleRepository.findByAuthority("CUSTOMER");
@@ -52,7 +54,6 @@ public class CustomerRegisterService {
         customer.setFirstName(customerCO.getFirstName());
         customer.setMiddleName(customerCO.getMiddleName());
         customer.setLastName(customerCO.getLastName());
-
         customer.setEmail(customerCO.getEmail());
         customer.setPassword(bCryptPasswordEncoder.encode(customerCO.getPassword()));
         customer.setCustomerContact(customerCO.getCustomerContact());
@@ -60,37 +61,40 @@ public class CustomerRegisterService {
         customer.setRole(role);
 
         customerRepository.save(customer);
-        //token generation and saving in db
+        // token generation and saving in db
         String generatedToken = jwtService.generateToken(customer.getEmail());
         jwtService.storeToken(generatedToken, customer.getEmail());
         customerEmailService.sendActivationEmail(customer.getEmail(), generatedToken);
-        return "User registered, please activate your account through email sent on registered email ID";
+
+        return messageSource.getMessage("customer.register.success", null, LocaleContextHolder.getLocale());
     }
 
     public String activateCustomer(String token) throws MessagingException {
         try {
-            //if account is already active
-            if(userRepository.findByEmail((jwtService.extractEmail(token))).get().getIsActive()){
-                return "Account already active";
+            // if account is already active
+            if (userRepository.findByEmail(jwtService.extractEmail(token)).get().getIsActive()) {
+                return messageSource.getMessage("customer.account.already.active", null, LocaleContextHolder.getLocale());
             }
+
             // if user is trying to activate from active and latest token
             if (jwtService.ifTokenPresent(token)) {
-                //validating the user
+                // validating the user
                 String extractedEmail = jwtService.extractEmail(token);
                 User customer = userRepository.findByEmail(extractedEmail)
-                        .orElseThrow(() -> new UserNotFoundException("Cannot find your details, please register properly"));
-                //activating the user
+                        .orElseThrow(() -> new UserNotFoundException(messageSource.getMessage("customer.user.not.found", null, LocaleContextHolder.getLocale())));
+
+                // activating the user
                 customer.setIsActive(true);
                 userRepository.save(customer);
-                //deleting useless token from db
+                // deleting useless token from db
                 jwtService.deleteToken(extractedEmail);
 
-                //sending confirmation mail
+                // sending confirmation mail
                 customerEmailService.sendConfirmationEmail(extractedEmail);
-                return "Account activated successfully!";
+                return messageSource.getMessage("customer.account.activated", null, LocaleContextHolder.getLocale());
             }
-            // // if user is trying to activate from active and old token
-            throw new EmailAlreadyExistsException("Please try to activate with latest email sent");
+
+            throw new EmailAlreadyExistsException(messageSource.getMessage("customer.invalid.activation.token", null, LocaleContextHolder.getLocale()));
         } catch (ExpiredJwtException e) {
             // delete expired token
             jwtService.deleteToken(e.getClaims().getSubject());
@@ -98,20 +102,19 @@ public class CustomerRegisterService {
             // resend activation email
             resendActivationEmail(e.getClaims().getSubject());
 
-            return "Your activation link has expired. We've sent a new one to your email.";
+            return messageSource.getMessage("customer.activation.token.expired", null, LocaleContextHolder.getLocale());
         }
-        // Doing nothing when token is invalid, throwing proper error message, catching exception from isTokenPresent
     }
 
     public String resendActivationEmail(String email) throws MessagingException {
         User customer = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("Cannot find your details, please register properly"));
+                .orElseThrow(() -> new UserNotFoundException(messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale())));
 
         jwtService.deleteToken(email);
         String newToken = jwtService.generateToken(customer.getEmail());
         jwtService.storeToken(newToken, email);
         customerEmailService.sendActivationEmail(customer.getEmail(), newToken);
 
-        return "A new activation link has been sent to your email.";
+        return messageSource.getMessage("customer.resend.activation.email", null, LocaleContextHolder.getLocale());
     }
 }

@@ -15,6 +15,7 @@ import com.Project.ecommerce.utils.ImageUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,13 +28,15 @@ public class CustomerService {
     private CustomerRepository customerRepository;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     private ImageUtil imageUtil;
+    private MessageSource messageSource;
 
     @Autowired
-    public CustomerService(JwtService jwtService, CustomerRepository customerRepository, BCryptPasswordEncoder bCryptPasswordEncoder, ImageUtil imageUtil) {
+    public CustomerService(JwtService jwtService, CustomerRepository customerRepository, BCryptPasswordEncoder bCryptPasswordEncoder, ImageUtil imageUtil, MessageSource messageSource) {
         this.jwtService = jwtService;
         this.customerRepository = customerRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.imageUtil = imageUtil;
+        this.messageSource = messageSource;
     }
 
     public ViewProfileDTO viewProfile(HttpServletRequest request) {
@@ -46,7 +49,7 @@ public class CustomerService {
             }
         }
         String email = jwtService.extractEmail(accessToken);
-        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("Email not found"));
+        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(messageSource.getMessage("email.not.found", null, request.getLocale())));
 
         ViewProfileDTO viewProfileDTO = new ViewProfileDTO();
 
@@ -73,7 +76,7 @@ public class CustomerService {
         }
 
         String email = jwtService.extractEmail(accessToken);
-        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("Email not found"));
+        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(messageSource.getMessage("email.not.found", null, request.getLocale())));
 
         List<ViewAddressDTO> addressesDTO = new ArrayList<>();
 
@@ -105,7 +108,7 @@ public class CustomerService {
         }
 
         String email = jwtService.extractEmail(accessToken);
-        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("Customer not found"));
+        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(messageSource.getMessage("customer.not.found", null, request.getLocale())));
 
         if(updateProfileCO != null) {
             Optional.ofNullable(updateProfileCO.getFirstName()).ifPresent(customer::setFirstName);
@@ -118,13 +121,13 @@ public class CustomerService {
             imageUtil.saveImage(multipartFile, customer);
         }
         customerRepository.save(customer);
-        return "Profile updated successfully.";
+        return messageSource.getMessage("customer.profile.updated", null, request.getLocale());
     }
 
     public String updatePassword(HttpServletRequest request, UpdatePasswordCO updatePasswordCO) {
         // check if password and confirm password are not different
         if (!updatePasswordCO.getPassword().equals(updatePasswordCO.getConfirmPassword())) {
-            throw new ConfirmPasswordMismatchException("Password-Confirm password mismatch");
+            throw new ConfirmPasswordMismatchException(messageSource.getMessage("password.confirm.mismatch", null, request.getLocale()));
         }
         String accessToken = null;
         if (request.getCookies() != null) {
@@ -145,7 +148,7 @@ public class CustomerService {
 
         customerRepository.save(customer);
 
-        return "Your password has been successfully updated";
+        return messageSource.getMessage("customer.password.updated", null, request.getLocale());
     }
 
     public String addAddress(HttpServletRequest request, Address enteredNewAddress) {
@@ -176,7 +179,7 @@ public class CustomerService {
 
         customerRepository.save(customer);
 
-        return "Address added successfully";
+        return messageSource.getMessage("customer.address.added", null, request.getLocale());
     }
 
     public String deleteAddress(HttpServletRequest request, UpdateAddressCO updateAddressCO) {
@@ -199,9 +202,9 @@ public class CustomerService {
 
         if (removed) {
             customerRepository.save(customer);
-            return "Address deleted successfully";
+            return messageSource.getMessage("customer.address.deleted", null, request.getLocale());
         }
-        return "Address not found";
+        return messageSource.getMessage("customer.address.not.found", null, request.getLocale());
     }
 
     public String updateAddress(HttpServletRequest request, UpdateAddressCO updateAddressCO) {
@@ -229,9 +232,9 @@ public class CustomerService {
                 Optional.ofNullable(updateAddressCO.getZipCode()).ifPresent(address::setZipCode);
 
                 customerRepository.save(customer);
-                return "Address updated successfully";
+                return messageSource.getMessage("customer.address.updated", null, request.getLocale());
             }
         }
-        return "Address not found";
+        return messageSource.getMessage("customer.address.not.found", null, request.getLocale());
     }
 }
