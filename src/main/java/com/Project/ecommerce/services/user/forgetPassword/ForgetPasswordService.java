@@ -3,6 +3,8 @@ package com.Project.ecommerce.services.user.forgetPassword;
 import com.Project.ecommerce.co.forgetPassword.ResetPasswordCO;
 import com.Project.ecommerce.entities.user.User;
 import com.Project.ecommerce.exceptions.customExceptions.ConfirmPasswordMismatchException;
+import com.Project.ecommerce.exceptions.customExceptions.InactiveUserException;
+import com.Project.ecommerce.exceptions.customExceptions.LockedAccountException;
 import com.Project.ecommerce.exceptions.customExceptions.UserNotFoundException;
 import com.Project.ecommerce.repositories.user.UserRepository;
 import com.Project.ecommerce.security.jwt.JwtService;
@@ -33,17 +35,17 @@ public class ForgetPasswordService {
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
-    public ResponseEntity<String> sendResetPasswordMail(String email) throws MessagingException {
+    public String sendResetPasswordMail(String email) throws MessagingException {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("Email not found"));
 
         //throwing error response if an inactive user trying to forget password
         if(!userRepository.findByEmail(email).get().getIsActive()){
-            return new ResponseEntity<>("Please activate your account", HttpStatus.BAD_REQUEST);
+            throw new InactiveUserException("Please activate your account");
         }
 
         //throwing error response if a locked user trying to forget password
         if(userRepository.findByEmail(email).get().getIsLocked()){
-            return new ResponseEntity<>("Locked account !!! Please ask admin to unlock your account", HttpStatus.BAD_REQUEST);
+            throw new LockedAccountException("Locked account !!! Please ask admin to unlock your account");
         }
 
         //delete resetPasswordToken if already present in db
@@ -55,10 +57,10 @@ public class ForgetPasswordService {
 
         forgetPasswordEmailService.sendResetPasswordEmail(user.getEmail(), resetPasswordToken);
 
-        return new ResponseEntity<>("A link to reset password has been sent to your email", HttpStatus.OK);
+        return "A link to reset password has been sent to your email";
     }
 
-    public ResponseEntity<String> resetPassword(ResetPasswordCO resetPasswordCO) {
+    public String resetPassword(ResetPasswordCO resetPasswordCO) {
         //invalid token
         //expired token
         //validate token
@@ -82,11 +84,11 @@ public class ForgetPasswordService {
             user.setPasswordUpdateDate(Date.from(Instant.now()));
             userRepository.save(user);
             forgetPasswordEmailService.sendSuccessResetPasswordEmail(email);
-            return new ResponseEntity<>("Your password has been reset successfully", HttpStatus.OK);
+            return "Your password has been reset successfully";
         } catch (BadCredentialsException ex) {
-            return new ResponseEntity<>("Either email or password incorrect", HttpStatus.NOT_FOUND);
+            throw new BadCredentialsException("Either email or password incorrect");
         } catch (InternalAuthenticationServiceException e) {
-            return new ResponseEntity<>("Ether email or password incorrect", HttpStatus.NOT_FOUND);
+            throw new InternalAuthenticationServiceException("Ether email or password incorrect");
         } catch (MessagingException e) {
             throw new RuntimeException(e);
         }

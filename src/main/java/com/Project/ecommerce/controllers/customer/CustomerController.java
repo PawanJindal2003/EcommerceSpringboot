@@ -3,10 +3,12 @@ package com.Project.ecommerce.controllers.customer;
 import com.Project.ecommerce.co.customer.UpdateProfileCO;
 import com.Project.ecommerce.co.user.UpdateAddressCO;
 import com.Project.ecommerce.co.user.UpdatePasswordCO;
+import com.Project.ecommerce.dto.response.SuccessResponse;
 import com.Project.ecommerce.dto.customer.ViewAddressDTO;
 import com.Project.ecommerce.dto.customer.ViewProfileDTO;
 import com.Project.ecommerce.entities.address.Address;
 import com.Project.ecommerce.services.cutomer.CustomerService;
+import com.Project.ecommerce.utils.ResponseUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,46 +25,49 @@ import java.util.List;
 @RequestMapping("/api/customer")
 public class CustomerController {
     private CustomerService customerService;
+    private ResponseUtil responseUtil;
+
     @Autowired
-    public CustomerController(CustomerService customerService){
+    public CustomerController(CustomerService customerService, ResponseUtil responseUtil){
         this.customerService = customerService;
+        this.responseUtil = responseUtil;
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/me")
-    public ResponseEntity<ViewProfileDTO> viewProfile(HttpServletRequest request){
+    public ResponseEntity<SuccessResponse> viewProfile(HttpServletRequest request){
         ViewProfileDTO viewProfileDTO = customerService.viewProfile(request);
-        return new ResponseEntity<>(viewProfileDTO, HttpStatus.OK);
+        return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, List.of(viewProfileDTO)), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/addresses")
-    public ResponseEntity<List<ViewAddressDTO>> viewAddresses(HttpServletRequest request){
+    public ResponseEntity<SuccessResponse> viewAddresses(HttpServletRequest request){
         List<ViewAddressDTO> addresses = customerService.getAllAddresses(request);
-        return new ResponseEntity<>(addresses, HttpStatus.OK);
+        return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, addresses), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @PutMapping(value = "/update-profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> updateProfile(HttpServletRequest request,
+    public ResponseEntity<SuccessResponse> updateProfile(HttpServletRequest request,
                                                 @RequestPart(value = "profilePic", required = false) MultipartFile multipartFile,
                                                 @Valid UpdateProfileCO updateProfile){
         String responseMessage = customerService.updateProfile(request, updateProfile, multipartFile);
-        return new ResponseEntity<>(responseMessage, HttpStatus.OK);
+        return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, responseMessage), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @PutMapping("/update-password")
-    public ResponseEntity<String> updatePassword(HttpServletRequest request, @Valid @RequestBody UpdatePasswordCO updatePasswordCO){
+    public ResponseEntity<SuccessResponse> updatePassword(HttpServletRequest request, @Valid @RequestBody UpdatePasswordCO updatePasswordCO){
         String responseMessage = customerService.updatePassword(request, updatePasswordCO);
-        return new ResponseEntity<>(responseMessage, HttpStatus.OK);
+        return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, responseMessage), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/add-address")
-    public ResponseEntity<String> addAddress(HttpServletRequest request, @Valid @RequestBody Address address){
+    public ResponseEntity<SuccessResponse> addAddress(HttpServletRequest request, @Valid @RequestBody Address address){
         String responseMessage = customerService.addAddress(request, address);
-        return new ResponseEntity<>(responseMessage, HttpStatus.OK);
+        return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, responseMessage), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")

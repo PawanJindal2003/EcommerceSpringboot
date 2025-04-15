@@ -1,8 +1,10 @@
 package com.Project.ecommerce.controllers.user.register;
 
 import com.Project.ecommerce.co.registration.SellerCO;
+import com.Project.ecommerce.dto.response.SuccessResponse;
 import com.Project.ecommerce.repositories.user.UserRepository;
 import com.Project.ecommerce.services.user.register.seller.SellerRegisterService;
+import com.Project.ecommerce.utils.ResponseUtil;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,22 +16,18 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class SellerRegisterController {
     private SellerRegisterService sellerRegisterService;
-    private UserRepository userRepository;
+    private ResponseUtil responseUtil;
 
     @Autowired
-    public SellerRegisterController(SellerRegisterService sellerRegisterService, UserRepository userRepository){
+    public SellerRegisterController(SellerRegisterService sellerRegisterService, UserRepository userRepository, ResponseUtil responseUtil){
         this.sellerRegisterService = sellerRegisterService;
-        this.userRepository = userRepository;
+        this.responseUtil = responseUtil;
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerSeller(@Valid @RequestBody SellerCO sellerCO) throws MessagingException {
+    public ResponseEntity<SuccessResponse> registerSeller(@Valid @RequestBody SellerCO sellerCO) throws MessagingException {
         String response = sellerRegisterService.registerSeller(sellerCO);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
-    @DeleteMapping("/sellers")
-    public void deleteSellers(){
-        userRepository.deleteAll();
+        return new ResponseEntity<>(responseUtil.success(HttpStatus.CREATED, response), HttpStatus.CREATED);
     }
 
 }

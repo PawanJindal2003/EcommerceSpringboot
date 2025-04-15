@@ -3,7 +3,6 @@ package com.Project.ecommerce.security.jwt;
 import com.Project.ecommerce.entities.jwt.RefreshToken;
 import com.Project.ecommerce.repositories.Jwt.RefreshTokenRepository;
 import com.Project.ecommerce.security.config.CustomUserDetailsService;
-import com.Project.ecommerce.security.redis.RedisTokenService;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
@@ -46,14 +45,12 @@ public class JwtFilter extends OncePerRequestFilter {
             "/api/customer/delete-address",
             "/api/customer/update-address");
     private JwtService jwtService;
-    private RedisTokenService redisTokenService;
     private CustomUserDetailsService customUserDetailsService;
     private RefreshTokenRepository refreshTokenRepository;
 
     @Autowired
-    public JwtFilter(JwtService jwtService, RedisTokenService redisTokenService, CustomUserDetailsService customUserDetailsService, RefreshTokenRepository refreshTokenRepository) {
+    public JwtFilter(JwtService jwtService, CustomUserDetailsService customUserDetailsService, RefreshTokenRepository refreshTokenRepository) {
         this.jwtService = jwtService;
-        this.redisTokenService = redisTokenService;
         this.customUserDetailsService = customUserDetailsService;
         this.refreshTokenRepository = refreshTokenRepository;
     }
@@ -87,10 +84,6 @@ public class JwtFilter extends OncePerRequestFilter {
         try {
             if(SecurityContextHolder.getContext().getAuthentication() == null){
                 email = jwtService.extractEmail(token);
-                if(!redisTokenService.isTokenValid(token)){
-                    sendErrorResponse(response, List.of("Jwt validation failed: Token invalid"), HttpStatus.UNAUTHORIZED);
-                    return;
-                }
                 if(email!=null){
                     UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
 
@@ -151,9 +144,6 @@ public class JwtFilter extends OncePerRequestFilter {
             try{
                 if (refreshToken != null && jwtService.isTokenValid(refreshToken.getToken(), refreshToken.getEmail())) {
                     String newAccessToken = jwtService.generateCustomToken(email, 1000L * 60 * 15);
-
-                    //store in redis
-                    redisTokenService.storeToken(newAccessToken, 1000 * 60 * 15);
 
                     //send in cookie
                     Cookie newCookie = new Cookie("accessToken", newAccessToken);

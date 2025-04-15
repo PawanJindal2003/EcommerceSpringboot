@@ -67,11 +67,11 @@ public class CustomerRegisterService {
         return "User registered, please activate your account through email sent on registered email ID";
     }
 
-    public ResponseEntity<String> activateCustomer(String token) throws MessagingException {
+    public String activateCustomer(String token) throws MessagingException {
         try {
             //if account is already active
             if(userRepository.findByEmail((jwtService.extractEmail(token))).get().getIsActive()){
-                return new ResponseEntity<>("Account already active", HttpStatus.OK);
+                return "Account already active";
             }
             // if user is trying to activate from active and latest token
             if (jwtService.ifTokenPresent(token)) {
@@ -87,7 +87,7 @@ public class CustomerRegisterService {
 
                 //sending confirmation mail
                 customerEmailService.sendConfirmationEmail(extractedEmail);
-                return new ResponseEntity<>("Account activated successfully!", HttpStatus.CREATED);
+                return "Account activated successfully!";
             }
             // // if user is trying to activate from active and old token
             throw new EmailAlreadyExistsException("Please try to activate with latest email sent");
@@ -98,8 +98,7 @@ public class CustomerRegisterService {
             // resend activation email
             resendActivationEmail(e.getClaims().getSubject());
 
-            String message = "Your activation link has expired. We've sent a new one to your email.";
-            return new ResponseEntity<>(message, HttpStatus.ACCEPTED);
+            return "Your activation link has expired. We've sent a new one to your email.";
         }
         // Doing nothing when token is invalid, throwing proper error message, catching exception from isTokenPresent
     }

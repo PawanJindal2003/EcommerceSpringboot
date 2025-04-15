@@ -2,10 +2,13 @@ package com.Project.ecommerce.controllers.user.forgetPassword;
 
 import com.Project.ecommerce.co.forgetPassword.ForgetPasswordCO;
 import com.Project.ecommerce.co.forgetPassword.ResetPasswordCO;
+import com.Project.ecommerce.dto.response.SuccessResponse;
 import com.Project.ecommerce.services.user.forgetPassword.ForgetPasswordService;
+import com.Project.ecommerce.utils.ResponseUtil;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,18 +16,22 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class ForgetPasswordController {
     private ForgetPasswordService forgetPasswordService;
+    private ResponseUtil responseUtil;
     @Autowired
-    public ForgetPasswordController(ForgetPasswordService forgetPasswordService){
+    public ForgetPasswordController(ForgetPasswordService forgetPasswordService, ResponseUtil responseUtil){
         this.forgetPasswordService = forgetPasswordService;
+        this.responseUtil = responseUtil;
     }
 
     @PostMapping("/forget-password")
-    public ResponseEntity<String> forgetPassword(@Valid @RequestBody ForgetPasswordCO forgetPasswordCO) throws MessagingException {
-        return forgetPasswordService.sendResetPasswordMail(forgetPasswordCO.getEmail());
+    public ResponseEntity<SuccessResponse> forgetPassword(@Valid @RequestBody ForgetPasswordCO forgetPasswordCO) throws MessagingException {
+        String response = forgetPasswordService.sendResetPasswordMail(forgetPasswordCO.getEmail());
+        return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, response), HttpStatus.OK);
     }
 
     @PatchMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@Valid @RequestBody ResetPasswordCO resetPasswordCO){
-        return forgetPasswordService.resetPassword(resetPasswordCO);
+    public ResponseEntity<SuccessResponse> resetPassword(@Valid @RequestBody ResetPasswordCO resetPasswordCO){
+        String response =  forgetPasswordService.resetPassword(resetPasswordCO);
+        return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, response), HttpStatus.OK);
     }
 }
