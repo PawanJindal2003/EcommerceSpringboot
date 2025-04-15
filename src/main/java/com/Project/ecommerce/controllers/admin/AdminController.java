@@ -23,7 +23,7 @@ public class AdminController {
         this.adminService = adminService;
     }
 
-    @PreAuthorize("getRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/all-customers")
     public ResponseEntity<List<GetAllCustomersDTO>> getAllCustomers(@RequestParam(required = true, defaultValue = "0") int page,
                                                                     @RequestParam(required = true, defaultValue = "10") int size,
@@ -41,7 +41,7 @@ public class AdminController {
         return new ResponseEntity<>(allCustomers, HttpStatus.OK);
     }
 
-    @PreAuthorize("getRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/all-sellers")
     public ResponseEntity<List<GetAllSellersDTO>> getAllSellers(@RequestParam(required = false, defaultValue = "0") int page,
                                                                   @RequestParam(required = false, defaultValue = "10") int size,
@@ -58,13 +58,13 @@ public class AdminController {
     }
 
     //common for customer and seller
-    @PreAuthorize("getRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/activate/user")
     public ResponseEntity<String> activateUser(@RequestBody GetIdCO getIdCO) throws MessagingException {
         String responseMessage = adminService.activateDeactivateUser(getIdCO.getId(), true);
         return new ResponseEntity<>(responseMessage, HttpStatus.OK);
     }
-    @PreAuthorize("getRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/deactivate/user")
     public ResponseEntity<String> deactivateUser(@RequestBody GetIdCO getIdCO) throws MessagingException {
         String responseMessage = adminService.activateDeactivateUser(getIdCO.getId(), false);
