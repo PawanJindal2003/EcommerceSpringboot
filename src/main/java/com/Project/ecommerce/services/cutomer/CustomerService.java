@@ -11,12 +11,13 @@ import com.Project.ecommerce.exceptions.customExceptions.ConfirmPasswordMismatch
 import com.Project.ecommerce.exceptions.customExceptions.UserNotFoundException;
 import com.Project.ecommerce.repositories.user.CustomerRepository;
 import com.Project.ecommerce.security.jwt.JwtService;
+import com.Project.ecommerce.utils.ImageUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import org.springframework.web.multipart.MultipartFile;
 import java.time.Instant;
 import java.util.*;
 
@@ -25,12 +26,14 @@ public class CustomerService {
     private JwtService jwtService;
     private CustomerRepository customerRepository;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private ImageUtil imageUtil;
 
     @Autowired
-    public CustomerService(JwtService jwtService, CustomerRepository customerRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public CustomerService(JwtService jwtService, CustomerRepository customerRepository, BCryptPasswordEncoder bCryptPasswordEncoder, ImageUtil imageUtil) {
         this.jwtService = jwtService;
         this.customerRepository = customerRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.imageUtil = imageUtil;
     }
 
     public ViewProfileDTO viewProfile(HttpServletRequest request) {
@@ -53,7 +56,7 @@ public class CustomerService {
         viewProfileDTO.setLastName(customer.getLastName());
         viewProfileDTO.setIsActive(customer.getIsActive());
         viewProfileDTO.setCustomerContact(customer.getCustomerContact());
-//        viewProfileDTO.setImage(customer.getImage);
+        viewProfileDTO.setProfilePicUrl(imageUtil.getImage(customer.getId()));
 
         return viewProfileDTO;
     }
@@ -90,7 +93,7 @@ public class CustomerService {
         return addressesDTO;
     }
 
-    public String updateProfile(HttpServletRequest request, UpdateProfileCO updateProfileCO) {
+    public String updateProfile(HttpServletRequest request, UpdateProfileCO updateProfileCO, MultipartFile multipartFile) {
         String accessToken = null;
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
@@ -104,11 +107,16 @@ public class CustomerService {
         String email = jwtService.extractEmail(accessToken);
         Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("Customer not found"));
 
-        Optional.ofNullable(updateProfileCO.getFirstName()).ifPresent(customer::setFirstName);
-        Optional.ofNullable(updateProfileCO.getMiddleName()).ifPresent(customer::setMiddleName);
-        Optional.ofNullable(updateProfileCO.getLastName()).ifPresent(customer::setLastName);
-        Optional.ofNullable(updateProfileCO.getCustomerContact()).ifPresent(customer::setCustomerContact);
-
+        if(updateProfileCO != null) {
+            Optional.ofNullable(updateProfileCO.getFirstName()).ifPresent(customer::setFirstName);
+            Optional.ofNullable(updateProfileCO.getMiddleName()).ifPresent(customer::setMiddleName);
+            Optional.ofNullable(updateProfileCO.getLastName()).ifPresent(customer::setLastName);
+            Optional.ofNullable(updateProfileCO.getCustomerContact()).ifPresent(customer::setCustomerContact);
+        }
+        // Save image if provided
+        if (multipartFile != null && !multipartFile.isEmpty()) {
+            imageUtil.saveImage(multipartFile, customer);
+        }
         customerRepository.save(customer);
         return "Profile updated successfully.";
     }

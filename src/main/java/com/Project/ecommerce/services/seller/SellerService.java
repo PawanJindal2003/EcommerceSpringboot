@@ -12,11 +12,13 @@ import com.Project.ecommerce.exceptions.customExceptions.UserNotFoundException;
 import com.Project.ecommerce.repositories.user.AddressRepository;
 import com.Project.ecommerce.repositories.user.SellerRepository;
 import com.Project.ecommerce.security.jwt.JwtService;
+import com.Project.ecommerce.utils.ImageUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 import java.util.Date;
@@ -28,12 +30,14 @@ public class SellerService {
     private SellerRepository sellerRepository;
     private AddressRepository addressRepository;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private ImageUtil imageUtil;
     @Autowired
-    public SellerService(JwtService jwtService, SellerRepository sellerRepository, AddressRepository addressRepository, BCryptPasswordEncoder bCryptPasswordEncoder){
+    public SellerService(JwtService jwtService, SellerRepository sellerRepository, AddressRepository addressRepository, BCryptPasswordEncoder bCryptPasswordEncoder, ImageUtil imageUtil){
         this.jwtService = jwtService;
         this.sellerRepository = sellerRepository;
         this.addressRepository = addressRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.imageUtil = imageUtil;
     }
     public ViewProfileDTO viewProfile(HttpServletRequest request){
         String accessToken = null;
@@ -63,12 +67,12 @@ public class SellerService {
         viewProfileDTO.setCountry(seller.getAddresses().get(0).getCountry());
         viewProfileDTO.setState(seller.getAddresses().get(0).getState());
         viewProfileDTO.setZipCode(seller.getAddresses().get(0).getZipCode());
-//        sellerProfileDTO.setImage(seller.getImage());
+        viewProfileDTO.setProfilePicUrl(imageUtil.getImage(seller.getId()));
 
         return viewProfileDTO;
     }
 
-    public String updateProfile(HttpServletRequest request, UpdateProfileCO updateProfileCO){
+    public String updateProfile(HttpServletRequest request, UpdateProfileCO updateProfileCO, MultipartFile multipartFile){
         String accessToken = null;
         if(request.getCookies()!=null){
             for(Cookie cookie : request.getCookies()){
@@ -81,18 +85,23 @@ public class SellerService {
         String email = jwtService.extractEmail(accessToken);
         Seller seller = sellerRepository.findByEmail(email).orElseThrow(()-> new UserNotFoundException("Seller not found"));
 
-        Optional.ofNullable(updateProfileCO.getFirstName()).ifPresent(seller::setFirstName);
-        Optional.ofNullable(updateProfileCO.getMiddleName()).ifPresent(seller::setMiddleName);
-        Optional.ofNullable(updateProfileCO.getLastName()).ifPresent(seller::setLastName);
-        Optional.ofNullable(updateProfileCO.getCompanyName()).ifPresent(seller::setCompanyName);
-        //not printing "enter a unique GST", security issue
-        if(sellerRepository.findByGST(updateProfileCO.getGST()).isPresent()){
-            throw new DuplicateGSTException("Invalid GST number");
-        }
-        Optional.ofNullable(updateProfileCO.getGST()).ifPresent(seller::setGST);
-        Optional.ofNullable(updateProfileCO.getCompanyContact()).ifPresent(seller::setCompanyContact);
-        Optional.ofNullable(updateProfileCO.getCompanyName()).ifPresent(seller::setCompanyName);
+        if(updateProfileCO!=null) {
+            Optional.ofNullable(updateProfileCO.getFirstName()).ifPresent(seller::setFirstName);
+            Optional.ofNullable(updateProfileCO.getMiddleName()).ifPresent(seller::setMiddleName);
+            Optional.ofNullable(updateProfileCO.getLastName()).ifPresent(seller::setLastName);
+            Optional.ofNullable(updateProfileCO.getCompanyName()).ifPresent(seller::setCompanyName);
+            //not printing "enter a unique GST", security issue
+            if (sellerRepository.findByGST(updateProfileCO.getGST()).isPresent()) {
+                throw new DuplicateGSTException("Invalid GST number");
+            }
 
+            Optional.ofNullable(updateProfileCO.getGST()).ifPresent(seller::setGST);
+            Optional.ofNullable(updateProfileCO.getCompanyContact()).ifPresent(seller::setCompanyContact);
+            Optional.ofNullable(updateProfileCO.getCompanyName()).ifPresent(seller::setCompanyName);
+        }
+        if (multipartFile != null && !multipartFile.isEmpty()) {
+            imageUtil.saveImage(multipartFile, seller);
+        }
         sellerRepository.save(seller);
         return "Profile updated successfully.";
     }
