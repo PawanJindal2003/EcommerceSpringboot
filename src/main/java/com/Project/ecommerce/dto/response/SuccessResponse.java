@@ -3,14 +3,12 @@ package com.Project.ecommerce.dto.response;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
-
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Setter
 public class SuccessResponse {
-    private List<?> data;
+    private Object data;
     private HttpStatus httpStatusCode;
     private LocalDateTime responseTime;
     private String successMessage;
@@ -21,7 +19,7 @@ public class SuccessResponse {
         this.successMessage = successMessage;
     }
 
-    public SuccessResponse(List<?> data, HttpStatus httpStatusCode, LocalDateTime responseTime, String successMessage) {
+    public SuccessResponse(Object data, HttpStatus httpStatusCode, LocalDateTime responseTime, String successMessage) {
         this.data = data;
         this.httpStatusCode = httpStatusCode;
         this.responseTime = responseTime;
