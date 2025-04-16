@@ -53,7 +53,7 @@ public class UserLoginService {
             throw e;
         }
 
-        String accessToken = jwtService.generateCustomToken(userCO.getEmail(), 1000L * 5);
+        String accessToken = jwtService.generateCustomToken(userCO.getEmail(), 1000L * 60 * 15);
 
         //deleting previous refresh token while logging in
         jwtService.deleteRefreshToken(userCO.getEmail());
