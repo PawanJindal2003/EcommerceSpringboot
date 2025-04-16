@@ -16,12 +16,12 @@ public class ResponseUtil {
     }
 
     // success with data
-    public SuccessResponse successWithData(HttpStatus httpStatusCode, List<?> data) {
+    public SuccessResponse successWithData(HttpStatus httpStatusCode, Object data) {
         return new SuccessResponse(data, httpStatusCode, LocalDateTime.now(), null);
     }
 
     // success with data and success message
-    public SuccessResponse successWithDataAndMessage(List<?> data, HttpStatus httpStatusCode, String successMessage) {
+    public SuccessResponse successWithDataAndMessage(Object data, HttpStatus httpStatusCode, String successMessage) {
         return new SuccessResponse(data, httpStatusCode, LocalDateTime.now(), successMessage);
     }
 
