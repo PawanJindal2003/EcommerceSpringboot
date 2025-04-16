@@ -72,15 +72,15 @@ public class CustomerController {
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @DeleteMapping("/delete-address")
-    public ResponseEntity<String> deleteAddress(HttpServletRequest request, @Valid @RequestBody UpdateAddressCO updateAddressCO){
+    public ResponseEntity<SuccessResponse> deleteAddress(HttpServletRequest request, @Valid @RequestBody UpdateAddressCO updateAddressCO){
         String responseMessage = customerService.deleteAddress(request, updateAddressCO);
-        return new ResponseEntity<>(responseMessage, HttpStatus.OK);
+        return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, responseMessage), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @PutMapping("/update-address")
-    public ResponseEntity<String> updateAddress(HttpServletRequest request,@Valid @RequestBody UpdateAddressCO updateAddressCO){
+    public ResponseEntity<SuccessResponse> updateAddress(HttpServletRequest request,@Valid @RequestBody UpdateAddressCO updateAddressCO){
         String responseMessage = customerService.updateAddress(request, updateAddressCO);
-        return new ResponseEntity<>(responseMessage, HttpStatus.OK);
+        return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, responseMessage), HttpStatus.OK);
     }
 }
