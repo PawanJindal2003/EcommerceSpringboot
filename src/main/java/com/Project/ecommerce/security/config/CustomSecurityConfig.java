@@ -57,8 +57,13 @@ public class CustomSecurityConfig {
                                 "/api/customer/update-password",
                                 "/api/customer/add-address",
                                 "/api/customer/delete-address",
-                                "/api/customer/update-address"
-                        ).authenticated())
+                                "/api/customer/update-address",
+                                "/api/customer/update-address",
+                                "/api/category/add-categoryMetaDataField",
+                                "/api/category/all-categoryMetaDataField",
+                                "/api/category/add-category",
+                                "/api/category/category/**"
+                                ).authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Set session management to stateless
                 .authenticationProvider(authenticationProvider()) // Register the authentication provider
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // Add the JWT filter before processing the request
