@@ -115,4 +115,29 @@ public class GlobalExceptionHandler {
         List<String> errorMessages = List.of(ex.getMessage());
         return new ResponseEntity<>(responseUtil.fail(HttpStatus.UNAUTHORIZED, errorMessages), HttpStatus.UNAUTHORIZED);
     }
+
+    @ExceptionHandler(DuplicateCategoryMetaDataFieldException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateCategoryMetaDataFieldException(DuplicateCategoryMetaDataFieldException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(responseUtil.fail(HttpStatus.BAD_REQUEST, errorMessages), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DuplicateRootCategoryException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateRootCategoryException(DuplicateRootCategoryException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(responseUtil.fail(HttpStatus.BAD_REQUEST, errorMessages), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DuplicateSubCategoryException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateSubCategoryException(DuplicateSubCategoryException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(responseUtil.fail(HttpStatus.BAD_REQUEST, errorMessages), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CategoryAssignedToProductException.class)
+    public ResponseEntity<ErrorResponse> handleCategoryAssignedToProductException(CategoryAssignedToProductException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(responseUtil.fail(HttpStatus.BAD_REQUEST, errorMessages), HttpStatus.BAD_REQUEST);
+    }
+
 }
