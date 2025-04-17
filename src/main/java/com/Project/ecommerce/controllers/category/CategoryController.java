@@ -1,15 +1,14 @@
 package com.Project.ecommerce.controllers.category;
 
+import com.Project.ecommerce.co.category.category.MetadataValueCategoryCO;
+import com.Project.ecommerce.co.category.category.UpdateCategoryCO;
 import com.Project.ecommerce.co.category.categoryMetaDataField.AddCategoryMetaDataFieldCO;
+import com.Project.ecommerce.dto.category.CategoryMetadataFieldValueDTO;
+import com.Project.ecommerce.dto.category.CategoryResponseDTO;
 import com.Project.ecommerce.dto.response.SuccessResponse;
-import com.Project.ecommerce.entities.category.Category;
-import com.Project.ecommerce.entities.category.CategoryMetaDataField;
 import com.Project.ecommerce.services.category.CategoryService;
 import com.Project.ecommerce.utils.ResponseUtil;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -42,9 +41,8 @@ public class CategoryController {
             @RequestParam(defaultValue = "10") int pageSize,
             @RequestParam(defaultValue = "ASC") String direction,
             @RequestParam(defaultValue = "id") String sortField){
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(direction), sortField));
-        Page<CategoryMetaDataField> categoryMetaDataFields= categoryService.getAllCategoryMetaDataField(pageable);
-        return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, categoryMetaDataFields.getContent()), HttpStatus.OK);
+        CategoryMetadataFieldValueDTO categoryMetaDataFields= categoryService.getAllCategoryMetaDataField(pageNo, pageSize,direction, sortField);
+        return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, categoryMetaDataFields), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -62,8 +60,41 @@ public class CategoryController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/category")
-    public ResponseEntity<SuccessResponse> addCategory(@RequestParam(required = false) String id){
-        List<Category> categories = categoryService.getCategory(id);
+    public ResponseEntity<SuccessResponse> getCategory(@RequestParam(required = true) String id){
+        CategoryResponseDTO category = categoryService.getCategory(id);
+        return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, category), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/all-categories")
+    public ResponseEntity<SuccessResponse> getAllCategories(
+            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "ASC") String direction,
+            @RequestParam(defaultValue = "id") String sortField){
+
+        List<CategoryResponseDTO> categories = categoryService.getAllCategories(pageNo, pageSize, direction, sortField);
         return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, categories), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/update-category")
+    public ResponseEntity<SuccessResponse> updateCategory(@RequestBody UpdateCategoryCO updateCategoryCO){
+        String responseMessage = categoryService.updateCategory(updateCategoryCO);
+        return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, responseMessage), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/add-metadata-category")
+    public ResponseEntity<SuccessResponse> addMetadataCategory(@Valid @RequestBody MetadataValueCategoryCO metadataValueCategoryCO){
+        String responseMessage = categoryService.addMetadataCategory(metadataValueCategoryCO);
+        return new ResponseEntity<>(responseUtil.success(HttpStatus.CREATED, responseMessage), HttpStatus.CREATED);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/update-metadata-category")
+    public ResponseEntity<SuccessResponse> updateMetadataCategory(@Valid @RequestBody MetadataValueCategoryCO metadataValueCategoryCO){
+        String responseMessage = categoryService.updateMetadataCategory(metadataValueCategoryCO);
+        return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, responseMessage), HttpStatus.OK);
     }
 }
