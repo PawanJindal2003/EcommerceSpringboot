@@ -9,6 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, String> {
+    Optional<List<Category>> findAllByParentCategoryIdIsNull();
     Boolean existsByNameAndParentCategoryIdIsNull(String name);
 
     //immediate child categories
