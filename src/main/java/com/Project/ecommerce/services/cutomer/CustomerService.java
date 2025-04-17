@@ -7,8 +7,10 @@ import com.Project.ecommerce.dto.customer.ViewAddressDTO;
 import com.Project.ecommerce.dto.customer.ViewProfileDTO;
 import com.Project.ecommerce.entities.address.Address;
 import com.Project.ecommerce.entities.user.Customer;
+import com.Project.ecommerce.exceptions.customExceptions.AddressNotFoundException;
 import com.Project.ecommerce.exceptions.customExceptions.ConfirmPasswordMismatchException;
 import com.Project.ecommerce.exceptions.customExceptions.UserNotFoundException;
+import com.Project.ecommerce.repositories.user.AddressRepository;
 import com.Project.ecommerce.repositories.user.CustomerRepository;
 import com.Project.ecommerce.security.jwt.JwtService;
 import com.Project.ecommerce.utils.ImageUtil;
@@ -16,9 +18,12 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.security.Principal;
 import java.time.Instant;
 import java.util.*;
 
@@ -29,14 +34,16 @@ public class CustomerService {
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     private ImageUtil imageUtil;
     private MessageSource messageSource;
+    private AddressRepository addressRepository;
 
     @Autowired
-    public CustomerService(JwtService jwtService, CustomerRepository customerRepository, BCryptPasswordEncoder bCryptPasswordEncoder, ImageUtil imageUtil, MessageSource messageSource) {
+    public CustomerService(JwtService jwtService, CustomerRepository customerRepository, BCryptPasswordEncoder bCryptPasswordEncoder, ImageUtil imageUtil, MessageSource messageSource, AddressRepository addressRepository) {
         this.jwtService = jwtService;
         this.customerRepository = customerRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.imageUtil = imageUtil;
         this.messageSource = messageSource;
+        this.addressRepository = addressRepository;
     }
 
     public ViewProfileDTO viewProfile(HttpServletRequest request) {
@@ -182,29 +189,19 @@ public class CustomerService {
         return messageSource.getMessage("customer.address.added", null, request.getLocale());
     }
 
-    public String deleteAddress(HttpServletRequest request, UpdateAddressCO updateAddressCO) {
-        String accessToken = null;
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if (cookie.getName().equals("accessToken")) {
-                    accessToken = cookie.getValue();
-                    break;
-                }
-            }
-        }
-        String email = jwtService.extractEmail(accessToken);
+    public String deleteAddress(Principal principal, String addressId) {
+        String email = principal.getName();
         Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("Customer not found"));
 
-        List<Address> addresses = customer.getAddresses();
-        String id = updateAddressCO.getId();
+        // check id provided is valid
+        addressRepository.findById(addressId).orElseThrow(()->new AddressNotFoundException("Address not found"));
 
-        boolean removed = addresses.removeIf(address -> address.getId().equals(id));
+        //check if provided address is customer's address
+        addressRepository.findByUserId(customer.getId()).orElseThrow(()->new AddressNotFoundException("Wrong addressId provided"));
 
-        if (removed) {
-            customerRepository.save(customer);
-            return messageSource.getMessage("customer.address.deleted", null, request.getLocale());
-        }
-        return messageSource.getMessage("customer.address.not.found", null, request.getLocale());
+        addressRepository.deleteById(addressId);
+
+        return messageSource.getMessage("customer.address.deleted", null, LocaleContextHolder.getLocale());
     }
 
     public String updateAddress(HttpServletRequest request, UpdateAddressCO updateAddressCO) {
