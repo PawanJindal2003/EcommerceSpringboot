@@ -9,6 +9,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,6 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @RequiredArgsConstructor
+@EnableMethodSecurity
 public class CustomSecurityConfig {
     private final JwtFilter jwtFilter;
     private final CustomUserDetailsService customUserDetailsService;
@@ -56,14 +58,18 @@ public class CustomSecurityConfig {
                                 "/api/customer/update-profile",
                                 "/api/customer/update-password",
                                 "/api/customer/add-address",
-                                "/api/customer/delete-address",
+                                "/api/customer/delete-address/**",
                                 "/api/customer/update-address",
                                 "/api/customer/update-address",
                                 "/api/category/add-categoryMetaDataField",
                                 "/api/category/all-categoryMetaDataField",
                                 "/api/category/add-category",
-                                "/api/category/category/**"
-                                ).authenticated())
+                                "/api/category/category/**",
+                                "/api/category/all-categories/**",
+                                "/api/category/update-category",
+                                "/api/category/add-metadata-category",
+                                "/api/category/update-metadata-category"
+                        ).authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Set session management to stateless
                 .authenticationProvider(authenticationProvider()) // Register the authentication provider
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // Add the JWT filter before processing the request

@@ -42,12 +42,16 @@ public class JwtFilter extends OncePerRequestFilter {
             "/api/customer/update-profile",
             "/api/customer/update-password",
             "/api/customer/add-address",
-            "/api/customer/delete-address",
+            "/api/customer/delete-address/**",
             "/api/customer/update-address",
             "/api/category/add-categoryMetaDataField",
             "/api/category/all-categoryMetaDataField",
             "/api/category/add-category",
-            "/api/category/category/**");
+            "/api/category/category/**",
+            "/api/category/all-categories/**",
+            "/api/category/update-category",
+            "/api/category/add-metadata-category",
+            "/api/category/update-metadata-category");
     private JwtService jwtService;
     private CustomUserDetailsService customUserDetailsService;
     private RefreshTokenRepository refreshTokenRepository;
