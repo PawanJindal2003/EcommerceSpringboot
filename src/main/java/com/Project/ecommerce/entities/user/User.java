@@ -57,7 +57,7 @@ public class User extends Auditable {
     @ManyToOne
     private Role role;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private List<Address> addresses;
 }
