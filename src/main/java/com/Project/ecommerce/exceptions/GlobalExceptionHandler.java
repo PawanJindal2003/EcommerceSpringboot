@@ -140,4 +140,32 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(responseUtil.fail(HttpStatus.BAD_REQUEST, errorMessages), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(DuplicateMetadataFieldValuesException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateMetadataFieldValuesException(DuplicateMetadataFieldValuesException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(responseUtil.fail(HttpStatus.BAD_REQUEST, errorMessages), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidIdException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidIdException(InvalidIdException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(responseUtil.fail(HttpStatus.NOT_FOUND, errorMessages), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(FieldNotAssociatedException.class)
+    public ResponseEntity<ErrorResponse> handleFieldNotAssociatedException(FieldNotAssociatedException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(responseUtil.fail(HttpStatus.NOT_FOUND, errorMessages), HttpStatus.NOT_FOUND);
+    }
+    @ExceptionHandler(AddressNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleAddressNotFoundException(AddressNotFoundException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(responseUtil.fail(HttpStatus.NOT_FOUND, errorMessages), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(NonLeafCategoryException.class)
+    public ResponseEntity<ErrorResponse> handleNonLeafCategoryException(NonLeafCategoryException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(responseUtil.fail(HttpStatus.BAD_REQUEST, errorMessages), HttpStatus.BAD_REQUEST);
+    }
 }
