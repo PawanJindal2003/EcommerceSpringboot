@@ -2,9 +2,11 @@ package com.Project.ecommerce.services.category;
 
 import com.Project.ecommerce.co.category.category.MetadataValueCategoryCO;
 import com.Project.ecommerce.co.category.category.UpdateCategoryCO;
-import com.Project.ecommerce.dto.category.CategoryMetadataFieldValueDTO;
-import com.Project.ecommerce.dto.category.CategoryResponseDTO;
-import com.Project.ecommerce.dto.category.SubCategoryResponseDTO;
+import com.Project.ecommerce.dto.category.admin.CategoryMetaFieldsDTO;
+import com.Project.ecommerce.dto.category.admin.CategoryMetadataFieldDTO;
+import com.Project.ecommerce.dto.category.admin.CategoryResponseDTO;
+import com.Project.ecommerce.dto.category.admin.SubCategoryResponseDTO;
+import com.Project.ecommerce.dto.category.customer.CustomerCategoryResponseDTO;
 import com.Project.ecommerce.entities.category.Category;
 import com.Project.ecommerce.entities.category.CategoryMetaDataField;
 import com.Project.ecommerce.entities.category.CategoryMetaDataFieldValues;
@@ -50,26 +52,24 @@ public class CategoryService {
         return List.of(categoryMetaDataField.getId(), messageSource.getMessage("categoryMetaDataFields.added", null, LocaleContextHolder.getLocale()));
     }
 
-    public CategoryMetadataFieldValueDTO getAllCategoryMetaDataField(int pageNo, int pageSize, String direction, String sortField) {
+    public CategoryMetaFieldsDTO getAllCategoryMetaDataField(int pageNo, int pageSize, String direction, String sortField) {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(direction), sortField));
         Page<CategoryMetaDataField> list = categoryMetaDataFieldRepository.findAll(pageable);
 
-        CategoryMetadataFieldValueDTO dto = new CategoryMetadataFieldValueDTO();
+        CategoryMetaFieldsDTO dto = new CategoryMetaFieldsDTO();
         List<String> fields = list.getContent().stream().map(CategoryMetaDataField::getName).toList();
         dto.setFields(fields);
         return dto;
     }
 
-    public String addCategory(String name) {
-        //unique category at root level
-        if (isUniqueRootCategory(name)) {
-            throw new DuplicateRootCategoryException(messageSource.getMessage("duplicate.root.category", null, LocaleContextHolder.getLocale()));
-        }
+    public CategoryMetaFieldsDTO getAllCategoryMetaDataFieldByName(int pageNo, int pageSize, String direction, String sortField, String name) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(direction), sortField));
+        Page<CategoryMetaDataField> list = categoryMetaDataFieldRepository.findAllByName(name, pageable);
 
-        Category category = new Category();
-        category.setName(name.toLowerCase());
-        categoryRepository.save(category);
-        return messageSource.getMessage("root.category.added", null, LocaleContextHolder.getLocale());
+        CategoryMetaFieldsDTO dto = new CategoryMetaFieldsDTO();
+        List<String> fields = list.getContent().stream().map(CategoryMetaDataField::getName).toList();
+        dto.setFields(fields);
+        return dto;
     }
 
     boolean isUniqueRootCategory(String name) {
@@ -96,6 +96,18 @@ public class CategoryService {
         return true;
     }
 
+    public String addCategory(String name) {
+        //unique category at root level
+        if (isUniqueRootCategory(name)) {
+            throw new DuplicateRootCategoryException(messageSource.getMessage("duplicate.root.category", null, LocaleContextHolder.getLocale()));
+        }
+
+        Category category = new Category();
+        category.setName(name.toLowerCase());
+        categoryRepository.save(category);
+        return messageSource.getMessage("root.category.added", null, LocaleContextHolder.getLocale());
+    }
+
     public String addSubCategory(String parentCategoryId, String name) {
         Category parentCategory = categoryRepository.findById(parentCategoryId).orElseThrow();
 
@@ -111,6 +123,8 @@ public class CategoryService {
 
         Category category = new Category();
         category.setName(name.toLowerCase());
+        //setting parent's category isLeafCategory to false;
+        parentCategory.setIsLeafCategory(false);
         category.setParentCategory(parentCategory);
 
         categoryRepository.save(category);
@@ -118,18 +132,20 @@ public class CategoryService {
         return messageSource.getMessage("sub.category.added", null, LocaleContextHolder.getLocale());
     }
 
-    CategoryResponseDTO saveCategoryInDTO(String id, Category category) {
+    CategoryResponseDTO saveCategoryInDTO(String id, Category category, List<CategoryMetaDataFieldValues> categoryMetaDataFieldValues) {
         CategoryResponseDTO dto = new CategoryResponseDTO();
         //name and id
         dto.setId(category.getId());
         dto.setName(category.getName());
+
 
         //parentChain
         Category parentCategory = category.getParentCategory();
         List<SubCategoryResponseDTO> parentsDTO = new ArrayList<>();
         if (parentCategory == null) {
             parentsDTO.add(null);
-        } else {
+        }
+        else {
             while (parentCategory.getParentCategory() != null) {
                 SubCategoryResponseDTO parentDTO = new SubCategoryResponseDTO();
                 parentDTO.setId(parentCategory.getId());
@@ -163,13 +179,24 @@ public class CategoryService {
         }
         dto.setSubCategories(subCategoriesDTO);
 
+        //meta data fields
+        List<CategoryMetadataFieldDTO> metadataFieldDTOs = new ArrayList<>();
+        for(CategoryMetaDataFieldValues fieldValue : categoryMetaDataFieldValues){
+            CategoryMetadataFieldDTO metadataFieldDTO = new CategoryMetadataFieldDTO();
+            metadataFieldDTO.setFieldName(fieldValue.getCategoryMetaDataField().getName());
+            metadataFieldDTO.setFieldValues(fieldValue.getValue());
+            metadataFieldDTOs.add(metadataFieldDTO);
+        }
+        dto.setMetaDataFields(metadataFieldDTOs);
+
         return dto;
     }
 
     public CategoryResponseDTO getCategory(String id) {
         Category category = categoryRepository.findById(id).orElseThrow();
+        List<CategoryMetaDataFieldValues> fieldValues = category.getMetadataFieldValues();
 
-        return saveCategoryInDTO(id, category);
+        return saveCategoryInDTO(id, category, fieldValues);
     }
 
     public List<CategoryResponseDTO> getAllCategories(int pageNo, int pageSize, String direction, String sortField) {
@@ -178,12 +205,25 @@ public class CategoryService {
         List<CategoryResponseDTO> categoriesDTO = new ArrayList<>();
 
         for (Category category : categories.getContent()) {
-            CategoryResponseDTO categoryDTO = saveCategoryInDTO(category.getId(), category);
+            List<CategoryMetaDataFieldValues> fieldValues = category.getMetadataFieldValues();
+            CategoryResponseDTO categoryDTO = saveCategoryInDTO(category.getId(), category, fieldValues);
             categoriesDTO.add(categoryDTO);
         }
         return categoriesDTO;
     }
 
+    public List<CategoryResponseDTO> getAllCategoriesByName(int pageNo, int pageSize, String direction, String sortField, String name) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(direction), sortField));
+        Page<Category> categories = categoryRepository.findAllByName(name, pageable);
+        List<CategoryResponseDTO> categoriesDTO = new ArrayList<>();
+
+        for (Category category : categories.getContent()) {
+            List<CategoryMetaDataFieldValues> fieldValues = category.getMetadataFieldValues();
+            CategoryResponseDTO categoryDTO = saveCategoryInDTO(category.getId(), category, fieldValues);
+            categoriesDTO.add(categoryDTO);
+        }
+        return categoriesDTO;
+    }
     boolean bfs(Category category, String name){
         Queue<Category> queue = new LinkedList<>();
 
@@ -337,5 +377,56 @@ public class CategoryService {
         categoryMetaDataFieldValuesRepository.save(categoryMetaDataFieldValues);
 
         return "New values added successfully ";
+    }
+
+    //seller service
+    public List<CategoryResponseDTO> getSellerCategories(){
+        List<Category> allCategories = categoryRepository.findAll();
+        List<Category> leafCategories = new ArrayList<>();
+        for(Category category:allCategories){
+            if(category.getIsLeafCategory()){
+                leafCategories.add(category);
+            }
+        }
+
+        List<CategoryResponseDTO> leafCategoriesDTO = new ArrayList<>();
+        for(Category leafCategory : leafCategories){
+            //insert into list of DTO
+            List<CategoryMetaDataFieldValues> fieldValues = leafCategory.getMetadataFieldValues();
+            CategoryResponseDTO categoryDTO = saveCategoryInDTO(leafCategory.getId(), leafCategory, fieldValues);
+            leafCategoriesDTO.add(categoryDTO);
+        }
+
+        //return list of DTO
+        return leafCategoriesDTO;
+    }
+
+    //customer service
+    public List<CustomerCategoryResponseDTO> getCustomerCategories(String categoryId){
+        //validating categoryId
+        List<Category> subCategories = categoryRepository.findAllByParentCategoryId(categoryId).orElseThrow();
+
+        //get list of immediate subcategories
+        List<CustomerCategoryResponseDTO> subCategoriesDTOs = new ArrayList<>();
+        for(Category subCategory:subCategories){
+            CustomerCategoryResponseDTO subCategoryDTO = new CustomerCategoryResponseDTO();
+            subCategoryDTO.setId(subCategory.getId());
+            subCategoryDTO.setName(subCategory.getName());
+            subCategoriesDTOs.add(subCategoryDTO);
+        }
+        return subCategoriesDTOs;
+    }
+
+    public List<CustomerCategoryResponseDTO> getCustomerRootCategories(){
+        List<Category> rootCategories = categoryRepository.findAllByParentCategoryIdIsNull().orElseThrow();
+        List<CustomerCategoryResponseDTO> rootCategoriesDTOs = new ArrayList<>();
+        for(Category rootCategory:rootCategories){
+
+            CustomerCategoryResponseDTO subCategoryDTO = new CustomerCategoryResponseDTO();
+            subCategoryDTO.setId(rootCategory.getId());
+            subCategoryDTO.setName(rootCategory.getName());
+            rootCategoriesDTOs.add(subCategoryDTO);
+        }
+        return rootCategoriesDTOs;
     }
 }
