@@ -62,13 +62,15 @@ public class CustomSecurityConfig {
                                 "/api/customer/update-address",
                                 "/api/customer/update-address",
                                 "/api/category/add-categoryMetaDataField",
-                                "/api/category/all-categoryMetaDataField",
+                                "/api/category/all-categoryMetaDataField/**",
                                 "/api/category/add-category",
                                 "/api/category/category/**",
                                 "/api/category/all-categories/**",
                                 "/api/category/update-category",
                                 "/api/category/add-metadata-category",
-                                "/api/category/update-metadata-category"
+                                "/api/category/update-metadata-category",
+                                "/api/category/seller/all-categories",
+                                "/api/category/customer/categories/**"
                         ).authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Set session management to stateless
                 .authenticationProvider(authenticationProvider()) // Register the authentication provider
