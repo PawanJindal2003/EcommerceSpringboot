@@ -1,4 +1,4 @@
-package com.Project.ecommerce.dto.category;
+package com.Project.ecommerce.dto.category.admin;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +12,6 @@ public class CategoryResponseDTO {
     private String name;
     private List<SubCategoryResponseDTO> parentChain;
     private List<SubCategoryResponseDTO> subCategories;
-    private List<CategoryMetadataFieldValueDTO> metadataFieldValues;
+    private List<CategoryMetadataFieldDTO> metaDataFields;
     //private List<ProductDTO> products;
 }
