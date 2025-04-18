@@ -27,6 +27,8 @@ public class Category {
 
     private String name;
 
+    private Boolean isLeafCategory = true;
+
     // self referencing
     @ManyToOne
     @JoinColumn(name = "parent_category_id")
