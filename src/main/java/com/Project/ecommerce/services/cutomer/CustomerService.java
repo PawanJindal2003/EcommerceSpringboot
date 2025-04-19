@@ -125,7 +125,7 @@ public class CustomerService {
         }
         // Save image if provided
         if (multipartFile != null && !multipartFile.isEmpty()) {
-            imageUtil.saveImage(multipartFile, customer);
+            imageUtil.saveUserImage(multipartFile, customer);
         }
         customerRepository.save(customer);
         return messageSource.getMessage("customer.profile.updated", null, request.getLocale());

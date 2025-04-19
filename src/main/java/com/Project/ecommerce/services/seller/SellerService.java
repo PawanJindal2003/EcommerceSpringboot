@@ -103,7 +103,7 @@ public class SellerService {
             Optional.ofNullable(updateProfileCO.getCompanyName()).ifPresent(seller::setCompanyName);
         }
         if (multipartFile != null && !multipartFile.isEmpty()) {
-            imageUtil.saveImage(multipartFile, seller);
+            imageUtil.saveUserImage(multipartFile, seller);
         }
         sellerRepository.save(seller);
         return messageSource.getMessage("profile.update.success", null, request.getLocale());
