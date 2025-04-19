@@ -30,7 +30,7 @@ public class ProductVariation {
     private Long price;
     private String metaData;
     private String primaryImageName;
-    private Boolean isActive;
+    private Boolean isActive = true;
 
     @ManyToOne
     Product product;
