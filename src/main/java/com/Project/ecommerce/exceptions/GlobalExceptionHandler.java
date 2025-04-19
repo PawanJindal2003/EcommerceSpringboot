@@ -168,4 +168,53 @@ public class GlobalExceptionHandler {
         List<String> errorMessages = List.of(ex.getMessage());
         return new ResponseEntity<>(responseUtil.fail(HttpStatus.BAD_REQUEST, errorMessages), HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(InactiveProductException.class)
+    public ResponseEntity<ErrorResponse> handleInactiveProductException(InactiveProductException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(responseUtil.fail(HttpStatus.BAD_REQUEST, errorMessages), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DeletedProductException.class)
+    public ResponseEntity<ErrorResponse> handleDeletedProductException(DeletedProductException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(responseUtil.fail(HttpStatus.BAD_REQUEST, errorMessages), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BlankMetadataException.class)
+    public ResponseEntity<ErrorResponse> handleBlankMetadataException(BlankMetadataException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(responseUtil.fail(HttpStatus.BAD_REQUEST, errorMessages), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DuplicateProductVariationException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateProductVariationException(DuplicateProductVariationException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(responseUtil.fail(HttpStatus.BAD_REQUEST, errorMessages), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidMetadataStructureException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidMetadataStructureException(InvalidMetadataStructureException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(responseUtil.fail(HttpStatus.BAD_REQUEST, errorMessages), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidMetadataFieldException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidMetadataFieldException(InvalidMetadataFieldException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(responseUtil.fail(HttpStatus.BAD_REQUEST, errorMessages), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidMetadataValueException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidMetadataValueException(InvalidMetadataValueException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(responseUtil.fail(HttpStatus.BAD_REQUEST, errorMessages), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UnsupportedImageTypeException.class)
+    public ResponseEntity<ErrorResponse> handleUnsupportedImageTypeException(UnsupportedImageTypeException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(responseUtil.fail(HttpStatus.BAD_REQUEST, errorMessages), HttpStatus.BAD_REQUEST);
+    }
+
 }
