@@ -70,7 +70,9 @@ public class CustomSecurityConfig {
                                 "/api/category/add-metadata-category",
                                 "/api/category/update-metadata-category",
                                 "/api/category/seller/all-categories",
-                                "/api/category/customer/categories/**"
+                                "/api/category/customer/categories/**",
+                                "/api/product/add-product",
+                                "/api/product/add-product-variation"
                         ).authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Set session management to stateless
                 .authenticationProvider(authenticationProvider()) // Register the authentication provider
