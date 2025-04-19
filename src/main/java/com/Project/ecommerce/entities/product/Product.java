@@ -31,7 +31,7 @@ public class Product {
     private Boolean isCancellable;
     private Boolean isReturnable;
     private String brand;
-    private Boolean isActive;
+    private Boolean isActive = false;
     private Boolean isDeleted;
 
     @ManyToOne
