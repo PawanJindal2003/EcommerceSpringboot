@@ -1,18 +1,23 @@
 package com.Project.ecommerce.utils;
 
 import com.Project.ecommerce.entities.user.User;
+import com.Project.ecommerce.exceptions.customExceptions.UnsupportedImageTypeException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.List;
 import java.util.Objects;
 
 @Component
 public class ImageUtil {
-    @Value("${file.upload-dir}")
+    @Value("${user.upload-dir}")
     String uploadDir;
-    public void saveImage(MultipartFile multipartFile, User user){
+
+    @Value("${product.variation.upload-dir}")
+    String variationUploadDir;
+    public void saveUserImage(MultipartFile multipartFile, User user){
         try {
             String extension = Objects.requireNonNull(multipartFile.getOriginalFilename()).substring(multipartFile.getOriginalFilename().lastIndexOf('.'));
             Path uploadPath = Paths.get(uploadDir);
@@ -25,6 +30,33 @@ public class ImageUtil {
         } catch (IOException e) {
             throw new RuntimeException("Failed to store profile picture", e);
         }
+    }
+
+    public String saveProductVariationImage(MultipartFile image, String productId, String imageType) throws IOException {
+        String originalFilename = image.getOriginalFilename();
+
+        assert originalFilename != null;
+        String extension = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
+
+        List<String> allowedExtensions = List.of(".jpg", ".jpeg", ".png", ".bmp");
+        if (!allowedExtensions.contains(extension)) {
+            throw new UnsupportedImageTypeException("Unsupported image format. Allowed formats: jpg, jpeg, png, bmp");
+        }
+
+        String filename;
+        if ("primary".equals(imageType)) {
+            filename = productId + "_primary" + extension;
+        }
+        else {
+            filename = productId + "_" + imageType + extension;
+        }
+
+        Path imagePath = Paths.get(variationUploadDir, productId, filename);
+
+        Files.createDirectories(imagePath.getParent());
+        Files.copy(image.getInputStream(), imagePath, StandardCopyOption.REPLACE_EXISTING);
+        return filename;
+
     }
 
     public String getImage(String id){
