@@ -2,14 +2,14 @@ package com.Project.ecommerce.utils.validator;
 
 import com.Project.ecommerce.entities.category.CategoryMetaDataFieldValues;
 import com.Project.ecommerce.entities.product.Product;
+import com.Project.ecommerce.entities.product.ProductVariation;
+import com.Project.ecommerce.entities.user.Seller;
 import com.Project.ecommerce.exceptions.customExceptions.*;
 import com.Project.ecommerce.utils.JsonUtil;
 import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import static com.Project.ecommerce.utils.JsonUtil.isDuplicateVariation;
 
 @Component
@@ -71,6 +71,12 @@ public class ProductVariationUtil {
     public void validateMetadataStructure(Product product, Map<String, String> metadata){
         if (!JsonUtil.matchesStructure(product, metadata)) {
             throw new InvalidMetadataStructureException("Meta data values provided does not matched the structure of meta data fields");
+        }
+    }
+
+    public void validateIsSellerProductVariation(Seller seller, ProductVariation productVariation){
+        if(!productVariation.getProduct().getSeller().getId().equals(seller.getId())){
+            throw new UnauthorizedAccessException("You do not have permission to view this product variation.");
         }
     }
 }
