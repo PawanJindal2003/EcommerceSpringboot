@@ -3,6 +3,7 @@ package com.Project.ecommerce.services.product.seller;
 import com.Project.ecommerce.co.product.AddProductCO;
 import com.Project.ecommerce.co.product.AddProductVariationCO;
 import com.Project.ecommerce.co.product.UpdateProductCO;
+import com.Project.ecommerce.co.product.UpdateProductVariationCO;
 import com.Project.ecommerce.dto.category.admin.CategoryResponseDTO;
 import com.Project.ecommerce.dto.product.seller.SellerProductDTO;
 import com.Project.ecommerce.dto.product.seller.SellerProductVariationDTO;
@@ -259,5 +260,32 @@ public class ProductService {
 
         productRepository.save(product);
         return "Product has been updated successfully";
+    }
+
+    public String updateProductVariation(Principal principal, String productVariationId, UpdateProductVariationCO updateProductVariationCO, MultipartFile primaryImage, List<MultipartFile> secondaryImages) throws IOException {
+        ProductVariation productVariation = productVariationRepository.findById(productVariationId).orElseThrow(()->new ResourceNotFoundException("Product variation not found"));
+        Seller seller = sellerRepository.findByEmail(principal.getName()).orElseThrow(()->new ResourceNotFoundException("Seller not found"));
+        Product product = productRepository.findById(productVariation.getProduct().getId()).orElseThrow(()->new ResourceNotFoundException("Product not found"));
+        productVariationValidator.validateIsSellerProductVariation(seller, productVariation);
+
+        productVariation.setQuantityAvailable(updateProductVariationCO.getQuantityAvailable());
+        productVariation.setPrice(updateProductVariationCO.getPrice());
+        productVariation.setMetaData(JsonUtil.mapToJson(updateProductVariationCO.getMetadata()));
+        productVariation.setIsActive(updateProductVariationCO.getIsActive());
+
+        String imageName = imageUtil.saveProductVariationImage(primaryImage, product.getId(), "primary");
+        productVariation.setPrimaryImageName(imageName);
+
+
+        if (secondaryImages != null) {
+            int sequence = 1;
+            for (MultipartFile image : secondaryImages) {
+                imageUtil.saveProductVariationImage(image, product.getId(), "secondary_" + sequence);
+                sequence++;
+            }
+        }
+
+        productVariationRepository.save(productVariation);
+        return "Product variation has been updated successfully.";
     }
 }
