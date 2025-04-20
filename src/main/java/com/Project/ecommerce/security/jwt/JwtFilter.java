@@ -55,7 +55,8 @@ public class JwtFilter extends OncePerRequestFilter {
             "/api/category/seller/all-categories",
             "/api/category/customer/categories/**",
             "/api/product/add-product",
-            "/api/product/add-product-variation");
+            "/api/product/add-product-variation",
+            "/api/product/**");
     private JwtService jwtService;
     private CustomUserDetailsService customUserDetailsService;
     private RefreshTokenRepository refreshTokenRepository;
