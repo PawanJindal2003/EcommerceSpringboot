@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -15,7 +16,7 @@ public class ImageUtil {
     @Value("${user.upload-dir}")
     String uploadDir;
 
-    @Value("${product.variation.upload-dir}")
+    @Value("${product.variations.upload-dir}")
     String variationUploadDir;
     public void saveUserImage(MultipartFile multipartFile, User user){
         try {
@@ -58,6 +59,35 @@ public class ImageUtil {
         return filename;
 
     }
+
+    public String getProductVariationPrimaryImage(String productId){
+        Path dir = Paths.get("src/main/resources/images/products/variations", productId);
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, productId + "_primary*.*")) {
+            for (Path entry : stream) {
+//                return entry.toAbsolutePath().toString();
+                String filename = entry.getFileName().toString();
+                return "http://localhost:8080/product/variations/primary-image/" + filename;
+            }
+        } catch (IOException e) {
+            return "http://localhost:8080/profile-pics/default.jpg";
+        }
+        return null;
+    }
+    public List<String> getProductVariationSecondaryImages(String productId) {
+        List<String> imageUrls = new ArrayList<>();
+        Path dir = Paths.get("src/main/resources/images/products/variations", productId);
+
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, productId + "_secondary_*.*")) {
+            for (Path entry : stream) {
+                String filename = entry.getFileName().toString();
+                imageUrls.add("http://localhost:8080/product/variation/image/" + productId + "/" + filename);
+            }
+        } catch (IOException e) {
+            imageUrls.add("http://localhost:8080/profile-pics/default.jpg");
+        }
+        return imageUrls;
+    }
+
 
     public String getImage(String id){
         Path dir = Paths.get("src/main/resources/images/users");
