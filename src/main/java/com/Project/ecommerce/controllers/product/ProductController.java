@@ -74,4 +74,16 @@ public class ProductController {
         List<SellerProductDTO> sellerProducts = productService.getSellerAllProducts(principal, page, size, sortField, direction, query);
         return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, sellerProducts), HttpStatus.OK);
     }
+
+    @PreAuthorize("hasRole('SELLER')")
+    @GetMapping(value = "/{productId}/all-product-variations")
+    public ResponseEntity<SuccessResponse> getSellerAllProductVariations(Principal principal, @PathVariable String productId,
+                                                                @RequestParam(required = false, defaultValue = "0") int page,
+                                                                @RequestParam(required = false, defaultValue = "10") int size,
+                                                                @RequestParam(required = false, defaultValue = "id") String sortField,
+                                                                @RequestParam(required = false, defaultValue = "ASC") String direction,
+                                                                @RequestParam(required = false) String query) throws IOException {
+        List<SellerProductVariationDTO> sellerProductVariations = productService.getSellerAllProductVariations(principal, productId, page, size, sortField, direction, query);
+        return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, sellerProductVariations), HttpStatus.OK);
+    }
 }

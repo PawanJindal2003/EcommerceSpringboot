@@ -20,6 +20,7 @@ import com.Project.ecommerce.services.category.CategoryService;
 import com.Project.ecommerce.utils.ImageUtil;
 import com.Project.ecommerce.utils.JsonUtil;
 import com.Project.ecommerce.utils.specifications.ProductSpecifications;
+import com.Project.ecommerce.utils.specifications.ProductVariationSpecification;
 import com.Project.ecommerce.utils.validator.ProductVariationUtil;
 import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
@@ -208,5 +209,38 @@ public class ProductService {
             sellerProductDTOs.add(dto);
         }
         return sellerProductDTOs;
+    }
+
+    public List<SellerProductVariationDTO> getSellerAllProductVariations(Principal principal, String productId, int pageNo, int pageSize, String sortField, String direction, String query){
+        String sellerEmail = principal.getName();
+        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new UserNotFoundException("Seller not found"));
+
+        Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product not found"));
+
+        if(product.getIsDeleted()){
+            throw new DeletedProductException("Product is deleted please ask admin to add it");
+        }
+
+        if(!product.getSeller().getId().equals(seller.getId())){
+            throw new UnauthorizedAccessException("You do not have permission to view this product.");
+        }
+
+        Page<ProductVariation> sellerProductVariations;
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(direction), sortField));
+        if(query!=null && !query.isBlank()){
+            Specification<ProductVariation> specification = ProductVariationSpecification.fromQueryString(query);
+            sellerProductVariations =  productVariationRepository.findAll(specification, pageable);
+        }
+        else{
+            sellerProductVariations = productVariationRepository.findAll(pageable);
+        }
+
+        List<SellerProductVariationDTO> sellerProductVariationDTOS = new ArrayList<>();
+        for(ProductVariation sellerProductVariation:sellerProductVariations.getContent()){
+            SellerProductVariationDTO sellerProductVariationDTO = createSellerProductVariationDTO(sellerProductVariation, product);
+            sellerProductVariationDTOS.add(sellerProductVariationDTO);
+        }
+
+        return sellerProductVariationDTOS;
     }
 }
