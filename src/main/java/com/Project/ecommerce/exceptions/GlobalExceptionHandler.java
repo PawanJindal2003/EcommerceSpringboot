@@ -234,4 +234,16 @@ public class GlobalExceptionHandler {
         List<String> errorMessages = List.of(ex.getMessage());
         return new ResponseEntity<>(responseUtil.fail(HttpStatus.UNAUTHORIZED, errorMessages), HttpStatus.UNAUTHORIZED);
     }
+
+    @ExceptionHandler(InactiveResourceException.class)
+    public ResponseEntity<ErrorResponse> handleInactiveResourceException(InactiveResourceException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(responseUtil.fail(HttpStatus.BAD_REQUEST, errorMessages), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidResourceException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidResourceException(InvalidResourceException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(responseUtil.fail(HttpStatus.BAD_REQUEST, errorMessages), HttpStatus.BAD_REQUEST);
+    }
 }
