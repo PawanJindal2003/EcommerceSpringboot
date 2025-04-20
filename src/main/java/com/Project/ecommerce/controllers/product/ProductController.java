@@ -86,4 +86,11 @@ public class ProductController {
         List<SellerProductVariationDTO> sellerProductVariations = productService.getSellerAllProductVariations(principal, productId, page, size, sortField, direction, query);
         return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, sellerProductVariations), HttpStatus.OK);
     }
+
+    @PreAuthorize("hasRole('SELLER')")
+    @DeleteMapping(value = "/{productId}")
+    public ResponseEntity<SuccessResponse> deleteSellerProduct(Principal principal, @PathVariable String productId) throws IOException {
+        String responseMessage = productService.deleteSellerProduct(principal, productId);
+        return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, responseMessage), HttpStatus.OK);
+    }
 }

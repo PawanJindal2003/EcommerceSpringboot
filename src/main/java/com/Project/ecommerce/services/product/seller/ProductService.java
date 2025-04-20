@@ -21,6 +21,7 @@ import com.Project.ecommerce.utils.ImageUtil;
 import com.Project.ecommerce.utils.JsonUtil;
 import com.Project.ecommerce.utils.specifications.ProductSpecifications;
 import com.Project.ecommerce.utils.specifications.ProductVariationSpecification;
+import com.Project.ecommerce.utils.validator.ProductUtil;
 import com.Project.ecommerce.utils.validator.ProductVariationUtil;
 import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
@@ -52,6 +53,7 @@ public class ProductService {
     private final ProductVariationRepository productVariationRepository;
     private final ImageUtil imageUtil;
     private final ProductVariationUtil productVariationValidator;
+    private final ProductUtil productValidator;
     private final CategoryService categoryService;
 
     public String addProduct(Principal principal, AddProductCO addProductCO) throws MessagingException {
@@ -64,7 +66,11 @@ public class ProductService {
             throw new NonLeafCategoryException("Please select a leaf category to add the product");
         }
         //unique product name
-        if (productRepository.getNameByBrandAndSellerIdAndCategoryId(addProductCO.getBrand(), seller.getId(), categoryId).getName().equals(addProductCO.getName())) {
+        Product existingProduct = productRepository.getNameByBrandAndSellerIdAndCategoryId(
+                addProductCO.getBrand(), seller.getId(), categoryId
+        );
+
+        if (existingProduct != null && existingProduct.getName().equalsIgnoreCase(addProductCO.getName())) {
             throw new DuplicateCompanyException("Product name already exists, please add a unique product name.");
         }
 
@@ -127,17 +133,9 @@ public class ProductService {
     public SellerProductDTO getSellerProduct(Principal principal, String productId){
         String sellerEmail = principal.getName();
         Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new UserNotFoundException("Seller not found"));
-
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product not found"));
-
-        if(product.getIsDeleted()){
-            throw new DeletedProductException("Product is deleted please ask admin to add it");
-        }
-
-        if(!product.getSeller().getId().equals(seller.getId())){
-            throw new UnauthorizedAccessException("You do not have permission to view this product.");
-        }
-
+        productValidator.validateIsDeletedProduct(product);
+        productValidator.validateIsSellerProduct(seller, product);
         return createSellerProductDTO(product);
     }
 
@@ -163,18 +161,10 @@ public class ProductService {
     public SellerProductVariationDTO getSellerProductVariation(Principal principal, String productVariationId){
         String sellerEmail = principal.getName();
         Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new UserNotFoundException("Seller not found"));
-
         ProductVariation productVariation = productVariationRepository.findById(productVariationId).orElseThrow(()->new ResourceNotFoundException("Product variation not found"));
-
-        if(!productVariation.getProduct().getSeller().getId().equals(seller.getId())){
-            throw new UnauthorizedAccessException("You do not have permission to view this product variation.");
-        }
-
+        productVariationValidator.validateIsSellerProductVariation(seller, productVariation);
         Product product = productVariation.getProduct();
-
-        if(product.getIsDeleted()){
-            throw new DeletedProductException("Product is deleted please ask admin to add it");
-        }
+        productValidator.validateIsDeletedProduct(product);
         return createSellerProductVariationDTO(productVariation, product);
     }
 
@@ -214,16 +204,9 @@ public class ProductService {
     public List<SellerProductVariationDTO> getSellerAllProductVariations(Principal principal, String productId, int pageNo, int pageSize, String sortField, String direction, String query){
         String sellerEmail = principal.getName();
         Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new UserNotFoundException("Seller not found"));
-
         Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product not found"));
-
-        if(product.getIsDeleted()){
-            throw new DeletedProductException("Product is deleted please ask admin to add it");
-        }
-
-        if(!product.getSeller().getId().equals(seller.getId())){
-            throw new UnauthorizedAccessException("You do not have permission to view this product.");
-        }
+        productValidator.validateIsDeletedProduct(product);
+        productValidator.validateIsSellerProduct(seller, product);
 
         Page<ProductVariation> sellerProductVariations;
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(direction), sortField));
@@ -242,5 +225,15 @@ public class ProductService {
         }
 
         return sellerProductVariationDTOS;
+    }
+
+    public String deleteSellerProduct(Principal principal, String productId){
+        String sellerEmail = principal.getName();
+        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new UserNotFoundException("Seller not found"));
+        Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product not found"));
+        productValidator.validateIsSellerProduct(seller, product);
+
+        productRepository.deleteById(productId);
+        return "Product deleted successfully";
     }
 }
