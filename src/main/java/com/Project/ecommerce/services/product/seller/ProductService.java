@@ -5,6 +5,8 @@ import com.Project.ecommerce.co.product.AddProductVariationCO;
 import com.Project.ecommerce.co.product.UpdateProductCO;
 import com.Project.ecommerce.co.product.UpdateProductVariationCO;
 import com.Project.ecommerce.dto.category.admin.CategoryResponseDTO;
+import com.Project.ecommerce.dto.product.customer.CustomerProductDTO;
+import com.Project.ecommerce.dto.product.customer.CustomerProductVariationDTO;
 import com.Project.ecommerce.dto.product.seller.SellerProductDTO;
 import com.Project.ecommerce.dto.product.seller.SellerProductVariationDTO;
 import com.Project.ecommerce.entities.category.Category;
@@ -27,6 +29,7 @@ import com.Project.ecommerce.utils.validator.ProductUtil;
 import com.Project.ecommerce.utils.validator.ProductVariationUtil;
 import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -287,5 +290,34 @@ public class ProductService {
 
         productVariationRepository.save(productVariation);
         return "Product variation has been updated successfully.";
+    }
+
+    public CustomerProductDTO getCustomerProduct(String productId){
+        Product product = productRepository.findById(productId).orElseThrow(()->new UserNotFoundException("Product not found"));
+        productValidator.validateIsDeletedProduct(product);
+        productValidator.validateIsActiveProduct(product);
+        productValidator.containsValidProductVariation(product);
+
+        CustomerProductDTO customerProductDTO = new CustomerProductDTO();
+        customerProductDTO.setName(product.getName());
+        customerProductDTO.setBrand(product.getBrand());
+        customerProductDTO.setDescription(product.getDescription());
+        customerProductDTO.setIsCancellable(product.getIsCancellable());
+        customerProductDTO.setIsReturnable(product.getIsReturnable());
+        customerProductDTO.setCategory(product.getCategory().getName());
+
+        List<CustomerProductVariationDTO> productVariationDTOs = new ArrayList<>();
+        List<ProductVariation> productVariations = product.getProductVariations();
+        for(ProductVariation productVariation:productVariations){
+            CustomerProductVariationDTO dto = new CustomerProductVariationDTO();
+            dto.setPrimaryImage(imageUtil.getProductVariationPrimaryImage(productId));
+            dto.setSecondaryImages(imageUtil.getProductVariationSecondaryImages(productId));
+            dto.setMetadata(JsonUtil.jsonToMap(productVariation.getMetaData()));
+            dto.setPrice(productVariation.getPrice());
+
+            productVariationDTOs.add(dto);
+        }
+        customerProductDTO.setProductVariation(productVariationDTOs);
+        return customerProductDTO;
     }
 }

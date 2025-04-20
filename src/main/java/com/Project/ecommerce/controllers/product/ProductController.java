@@ -4,6 +4,7 @@ import com.Project.ecommerce.co.product.AddProductCO;
 import com.Project.ecommerce.co.product.AddProductVariationCO;
 import com.Project.ecommerce.co.product.UpdateProductCO;
 import com.Project.ecommerce.co.product.UpdateProductVariationCO;
+import com.Project.ecommerce.dto.product.customer.CustomerProductDTO;
 import com.Project.ecommerce.dto.product.seller.SellerProductDTO;
 import com.Project.ecommerce.dto.product.seller.SellerProductVariationDTO;
 import com.Project.ecommerce.dto.response.SuccessResponse;
@@ -113,5 +114,13 @@ public class ProductController {
             @RequestPart(value = "secondaryImages", required = false) List<MultipartFile> secondaryImages) throws IOException {
         String responseMessage = productService.updateProductVariation(principal, productVariationId, updateProductVariationCO, primaryImage, secondaryImages);
         return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, responseMessage), HttpStatus.OK);
+    }
+
+    //customer apis
+    @PreAuthorize("hasRole('CUSTOMER')")
+    @GetMapping(value = "/customer/{productId}")
+    public ResponseEntity<SuccessResponse> getCustomerProduct(@PathVariable String productId) throws IOException {
+        CustomerProductDTO product = productService.getCustomerProduct(productId);
+        return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, product), HttpStatus.OK);
     }
 }
