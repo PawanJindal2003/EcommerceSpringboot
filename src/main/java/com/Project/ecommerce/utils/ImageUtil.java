@@ -45,8 +45,15 @@ public class ImageUtil {
         }
 
         String filename;
+        Path variationDir = Paths.get(variationUploadDir, productId);
+        Files.createDirectories(variationDir);
         if ("primary".equals(imageType)) {
             filename = productId + "_primary" + extension;
+            try(DirectoryStream<Path> stream = Files.newDirectoryStream(variationDir, productId + "_primary.*")){
+                for(Path oldFile:stream){
+                    Files.deleteIfExists(oldFile);
+                }
+            }
         }
         else {
             filename = productId + "_" + imageType + extension;
@@ -57,7 +64,6 @@ public class ImageUtil {
         Files.createDirectories(imagePath.getParent());
         Files.copy(image.getInputStream(), imagePath, StandardCopyOption.REPLACE_EXISTING);
         return filename;
-
     }
 
     public String getProductVariationPrimaryImage(String productId){
