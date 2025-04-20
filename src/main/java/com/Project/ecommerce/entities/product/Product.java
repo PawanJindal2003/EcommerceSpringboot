@@ -28,11 +28,11 @@ public class Product {
 
     private String name;
     private String description;
-    private Boolean isCancellable;
-    private Boolean isReturnable;
+    private Boolean isCancellable = false;
+    private Boolean isReturnable = false;
     private String brand;
     private Boolean isActive = false;
-    private Boolean isDeleted;
+    private Boolean isDeleted = false;
 
     @ManyToOne
     private Category category;
