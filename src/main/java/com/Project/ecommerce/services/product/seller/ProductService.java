@@ -2,6 +2,7 @@ package com.Project.ecommerce.services.product.seller;
 
 import com.Project.ecommerce.co.product.AddProductCO;
 import com.Project.ecommerce.co.product.AddProductVariationCO;
+import com.Project.ecommerce.co.product.UpdateProductCO;
 import com.Project.ecommerce.dto.category.admin.CategoryResponseDTO;
 import com.Project.ecommerce.dto.product.seller.SellerProductDTO;
 import com.Project.ecommerce.dto.product.seller.SellerProductVariationDTO;
@@ -235,5 +236,28 @@ public class ProductService {
 
         productRepository.deleteById(productId);
         return "Product deleted successfully";
+    }
+
+    public String updateSellerProduct(Principal principal, String productId, UpdateProductCO updateProductCO){
+        Seller seller = sellerRepository.findByEmail(principal.getName()).orElseThrow(()->new ResourceNotFoundException("Seller not found"));
+        Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        Category category = categoryRepository.findById(product.getCategory().getId()).orElseThrow(()->new UserNotFoundException("Category not found"));
+        productValidator.validateIsSellerProduct(seller, product);
+
+        Product existingProduct = productRepository.getNameByBrandAndSellerIdAndCategoryId(
+                product.getBrand(), seller.getId(), category.getId()
+        );
+
+        if (existingProduct != null && existingProduct.getName().equalsIgnoreCase(updateProductCO.getName())) {
+            throw new DuplicateCompanyException("Product name already exists, please add a unique product name.");
+        }
+
+        product.setName(updateProductCO.getName());
+        product.setDescription(updateProductCO.getDescription());
+        product.setIsCancellable(updateProductCO.getIsCancellable());
+        product.setIsReturnable(updateProductCO.getIsReturnable());
+
+        productRepository.save(product);
+        return "Product has been updated successfully";
     }
 }

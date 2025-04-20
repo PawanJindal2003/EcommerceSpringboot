@@ -2,6 +2,7 @@ package com.Project.ecommerce.controllers.product;
 
 import com.Project.ecommerce.co.product.AddProductCO;
 import com.Project.ecommerce.co.product.AddProductVariationCO;
+import com.Project.ecommerce.co.product.UpdateProductCO;
 import com.Project.ecommerce.dto.product.seller.SellerProductDTO;
 import com.Project.ecommerce.dto.product.seller.SellerProductVariationDTO;
 import com.Project.ecommerce.dto.response.SuccessResponse;
@@ -91,6 +92,13 @@ public class ProductController {
     @DeleteMapping(value = "/{productId}")
     public ResponseEntity<SuccessResponse> deleteSellerProduct(Principal principal, @PathVariable String productId) throws IOException {
         String responseMessage = productService.deleteSellerProduct(principal, productId);
+        return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, responseMessage), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('SELLER')")
+    @PutMapping(value = "/update-product/{productId}")
+    public ResponseEntity<SuccessResponse> updateSellerProduct(Principal principal, @PathVariable String productId, @RequestBody UpdateProductCO updateProductCO) throws IOException {
+        String responseMessage = productService.updateSellerProduct(principal, productId, updateProductCO);
         return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, responseMessage), HttpStatus.OK);
     }
 }
