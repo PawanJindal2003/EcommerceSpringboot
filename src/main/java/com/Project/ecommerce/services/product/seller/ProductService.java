@@ -2,8 +2,13 @@ package com.Project.ecommerce.services.product.seller;
 
 import com.Project.ecommerce.co.product.AddProductCO;
 import com.Project.ecommerce.co.product.AddProductVariationCO;
+import com.Project.ecommerce.dto.category.admin.CategoryResponseDTO;
+import com.Project.ecommerce.dto.product.seller.SellerProductDTO;
+import com.Project.ecommerce.dto.product.seller.SellerProductVariationDTO;
 import com.Project.ecommerce.entities.category.Category;
+import com.Project.ecommerce.entities.category.CategoryMetaDataFieldValues;
 import com.Project.ecommerce.entities.product.Product;
+import com.Project.ecommerce.entities.product.ProductReview;
 import com.Project.ecommerce.entities.product.ProductVariation;
 import com.Project.ecommerce.entities.user.Seller;
 import com.Project.ecommerce.exceptions.customExceptions.*;
@@ -11,18 +16,27 @@ import com.Project.ecommerce.repositories.category.CategoryRepository;
 import com.Project.ecommerce.repositories.product.ProductRepository;
 import com.Project.ecommerce.repositories.product.ProductVariationRepository;
 import com.Project.ecommerce.repositories.user.SellerRepository;
+import com.Project.ecommerce.services.category.CategoryService;
 import com.Project.ecommerce.utils.ImageUtil;
 import com.Project.ecommerce.utils.JsonUtil;
+import com.Project.ecommerce.utils.specifications.ProductSpecifications;
 import com.Project.ecommerce.utils.validator.ProductVariationUtil;
 import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -30,13 +44,14 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class ProductService {
-    private ProductRepository productRepository;
-    private CategoryRepository categoryRepository;
-    private SellerProductEmailService sellerProductEmailService;
-    private SellerRepository sellerRepository;
-    private ProductVariationRepository productVariationRepository;
-    private ImageUtil imageUtil;
-    private ProductVariationUtil productVariationValidator;
+    private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
+    private final SellerProductEmailService sellerProductEmailService;
+    private final SellerRepository sellerRepository;
+    private final ProductVariationRepository productVariationRepository;
+    private final ImageUtil imageUtil;
+    private final ProductVariationUtil productVariationValidator;
+    private final CategoryService categoryService;
 
     public String addProduct(Principal principal, AddProductCO addProductCO) throws MessagingException {
         Seller seller = sellerRepository.findByEmail(principal.getName()).orElseThrow(() -> new UsernameNotFoundException("Seller not found"));
@@ -106,5 +121,92 @@ public class ProductService {
         productVariationValidator.validateMetadataStructure(product, metadata);
         productVariation.setMetaData(JsonUtil.mapToJson(co.getMetadata()));
         return productVariation;
+    }
+
+    public SellerProductDTO getSellerProduct(Principal principal, String productId){
+        String sellerEmail = principal.getName();
+        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new UserNotFoundException("Seller not found"));
+
+        Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product not found"));
+
+        if(product.getIsDeleted()){
+            throw new DeletedProductException("Product is deleted please ask admin to add it");
+        }
+
+        if(!product.getSeller().getId().equals(seller.getId())){
+            throw new UnauthorizedAccessException("You do not have permission to view this product.");
+        }
+
+        return createSellerProductDTO(product);
+    }
+
+    private SellerProductDTO createSellerProductDTO(Product product){
+        SellerProductDTO dto = new SellerProductDTO();
+
+        dto.setName(product.getName());
+        dto.setBrand(product.getBrand());
+        dto.setDescription(product.getDescription());
+        dto.setIsReturnable(product.getIsReturnable());
+        dto.setIsCancellable(product.getIsCancellable());
+        dto.setIsActive(product.getIsActive());
+
+        Category category = product.getCategory();
+        List<CategoryMetaDataFieldValues> metaDataFieldValues = category.getMetadataFieldValues();
+        CategoryResponseDTO categoryDTO =categoryService.saveCategoryInDTO(category.getId(), category, metaDataFieldValues);
+
+        dto.setCategory(categoryDTO);
+
+        return dto;
+    }
+
+    public SellerProductVariationDTO getSellerProductVariation(Principal principal, String productVariationId){
+        String sellerEmail = principal.getName();
+        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new UserNotFoundException("Seller not found"));
+
+        ProductVariation productVariation = productVariationRepository.findById(productVariationId).orElseThrow(()->new ResourceNotFoundException("Product variation not found"));
+
+        if(!productVariation.getProduct().getSeller().getId().equals(seller.getId())){
+            throw new UnauthorizedAccessException("You do not have permission to view this product variation.");
+        }
+
+        Product product = productVariation.getProduct();
+
+        if(product.getIsDeleted()){
+            throw new DeletedProductException("Product is deleted please ask admin to add it");
+        }
+        return createSellerProductVariationDTO(productVariation, product);
+    }
+
+    private SellerProductVariationDTO createSellerProductVariationDTO(ProductVariation productVariation, Product product){
+        SellerProductVariationDTO dto = new SellerProductVariationDTO();
+
+        dto.setPrice(productVariation.getPrice());
+        dto.setQuantityAvailable(productVariation.getQuantityAvailable());
+        dto.setMetaData(JsonUtil.jsonToMap(productVariation.getMetaData()));
+        dto.setProduct(createSellerProductDTO(product));
+        dto.setIsActive(productVariation.getIsActive());
+        dto.setPrimaryImageName(imageUtil.getProductVariationPrimaryImage(product.getId()));
+        dto.setSecondaryImageNames(imageUtil.getProductVariationSecondaryImages(product.getId()));
+        return dto;
+    }
+
+    public List<SellerProductDTO> getSellerAllProducts(Principal principal, int pageNo, int pageSize, String sortField, String direction, String query){
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(direction), sortField));
+
+        String sellerEmail = principal.getName();
+        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new UserNotFoundException("Seller not found"));
+
+        Specification<Product> specification = ProductSpecifications.bySeller(seller.getId()).and(ProductSpecifications.isNotDeleted());
+        if (query != null && !query.isBlank()) {
+            specification = specification.and(ProductSpecifications.fromQueryString(query));
+        }
+
+        Page<Product> sellerProducts = productRepository.findAll(specification, pageable);
+        List<SellerProductDTO> sellerProductDTOs = new ArrayList<>();
+        for(Product sellerProduct : sellerProducts.getContent()){
+            SellerProductDTO dto = createSellerProductDTO(sellerProduct);
+            sellerProductDTOs.add(dto);
+        }
+        return sellerProductDTOs;
     }
 }

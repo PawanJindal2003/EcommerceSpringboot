@@ -2,6 +2,8 @@ package com.Project.ecommerce.controllers.product;
 
 import com.Project.ecommerce.co.product.AddProductCO;
 import com.Project.ecommerce.co.product.AddProductVariationCO;
+import com.Project.ecommerce.dto.product.seller.SellerProductDTO;
+import com.Project.ecommerce.dto.product.seller.SellerProductVariationDTO;
 import com.Project.ecommerce.dto.response.SuccessResponse;
 import com.Project.ecommerce.services.product.seller.ProductService;
 import com.Project.ecommerce.utils.ResponseUtil;
@@ -46,5 +48,30 @@ public class ProductController {
             @RequestPart(required = false)List<MultipartFile> secondaryImages) throws IOException {
         String responseMessage = productService.addProductVariation(addProductVariationCO, primaryImage, secondaryImages);
         return new ResponseEntity<>(responseUtil.success(HttpStatus.CREATED, responseMessage), HttpStatus.CREATED);
+    }
+
+    @PreAuthorize("hasRole('SELLER')")
+    @GetMapping(value = "/{productId}")
+    public ResponseEntity<SuccessResponse> getSellerProduct(Principal principal, @PathVariable String productId) throws IOException {
+        SellerProductDTO product = productService.getSellerProduct(principal, productId);
+        return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, product), HttpStatus.OK);
+    }
+    @PreAuthorize("hasRole('SELLER')")
+    @GetMapping(value = "/product-variation/{productVariationId}")
+    public ResponseEntity<SuccessResponse> getSellerProductVariation(Principal principal, @PathVariable String productVariationId) throws IOException {
+        SellerProductVariationDTO productVariation = productService.getSellerProductVariation(principal, productVariationId);
+        return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, productVariation), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('SELLER')")
+    @GetMapping(value = "/all-products")
+    public ResponseEntity<SuccessResponse> getSellerAllProducts(Principal principal,
+                                                                @RequestParam(required = false, defaultValue = "0") int page,
+                                                                @RequestParam(required = false, defaultValue = "10") int size,
+                                                                @RequestParam(required = false, defaultValue = "id") String sortField,
+                                                                @RequestParam(required = false, defaultValue = "ASC") String direction,
+                                                                @RequestParam(required = false) String query) throws IOException {
+        List<SellerProductDTO> sellerProducts = productService.getSellerAllProducts(principal, page, size, sortField, direction, query);
+        return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, sellerProducts), HttpStatus.OK);
     }
 }
