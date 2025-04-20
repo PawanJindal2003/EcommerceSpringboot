@@ -132,7 +132,7 @@ public class CategoryService {
         return messageSource.getMessage("sub.category.added", null, LocaleContextHolder.getLocale());
     }
 
-    CategoryResponseDTO saveCategoryInDTO(String id, Category category, List<CategoryMetaDataFieldValues> categoryMetaDataFieldValues) {
+    public CategoryResponseDTO saveCategoryInDTO(String id, Category category, List<CategoryMetaDataFieldValues> categoryMetaDataFieldValues) {
         CategoryResponseDTO dto = new CategoryResponseDTO();
         //name and id
         dto.setId(category.getId());
