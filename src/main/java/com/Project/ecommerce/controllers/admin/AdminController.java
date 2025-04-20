@@ -29,8 +29,8 @@ public class AdminController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/all-customers")
-    public ResponseEntity<SuccessResponse> getAllCustomers(@RequestParam(required = true, defaultValue = "0") int page,
-                                                           @RequestParam(required = true, defaultValue = "10") int size,
+    public ResponseEntity<SuccessResponse> getAllCustomers(@RequestParam(required = false, defaultValue = "0") int page,
+                                                           @RequestParam(required = false, defaultValue = "10") int size,
                                                            @RequestParam(required = false) String email,
                                                            @RequestParam(required = false, defaultValue = "id") String sortField,
                                                            @RequestParam(required = false, defaultValue = "ASC") String direction){
