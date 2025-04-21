@@ -157,14 +157,14 @@ public class ProductController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "/admin/activate/{productId}")
-    public ResponseEntity<SuccessResponse> activateProduct(@PathVariable String productId) {
+    public ResponseEntity<SuccessResponse> activateProduct(@PathVariable String productId) throws MessagingException {
         String responseMessage = productService.activateDeactivateProduct(productId, "activate");
         return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, responseMessage), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "/admin/de-activate/{productId}")
-    public ResponseEntity<SuccessResponse> deactivateProduct(@PathVariable String productId) {
+    public ResponseEntity<SuccessResponse> deactivateProduct(@PathVariable String productId) throws MessagingException {
         String responseMessage = productService.activateDeactivateProduct(productId, "deactivate");
         return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, responseMessage), HttpStatus.OK);
     }
