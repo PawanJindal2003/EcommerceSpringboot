@@ -74,7 +74,8 @@ public class CustomSecurityConfig {
                                 "/api/product/add-product",
                                 "/api/product/add-product-variation",
                                 "/api/product/**",
-                                "/api/product/customer/**"
+                                "/api/product/customer/**",
+                                "/api/product/admin/**"
                         ).authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Set session management to stateless
                 .authenticationProvider(authenticationProvider()) // Register the authentication provider
