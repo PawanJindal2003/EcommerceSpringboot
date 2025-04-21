@@ -16,6 +16,10 @@ public class ProductSpecifications {
         return ((root, query, cb) -> cb.isFalse(root.get("isDeleted")));
     }
 
+    public static Specification<Product> isActive(){
+        return ((root, query, cb) -> cb.isTrue(root.get("isActive")));
+    }
+
     public static Specification<Product> fromQueryString(String queryString) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -31,5 +35,9 @@ public class ProductSpecifications {
             }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
+    }
+
+    public static Specification<Product> byCategories(List<String> categoryIds) {
+        return (root, query, cb) -> root.get("category").get("id").in(categoryIds);
     }
 }
