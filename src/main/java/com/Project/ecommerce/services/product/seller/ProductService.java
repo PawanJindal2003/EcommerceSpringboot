@@ -5,6 +5,8 @@ import com.Project.ecommerce.co.product.AddProductVariationCO;
 import com.Project.ecommerce.co.product.UpdateProductCO;
 import com.Project.ecommerce.co.product.UpdateProductVariationCO;
 import com.Project.ecommerce.dto.category.admin.CategoryResponseDTO;
+import com.Project.ecommerce.dto.category.customer.CustomerCategoryResponseDTO;
+import com.Project.ecommerce.dto.product.customer.CustomerProductCategoryDTO;
 import com.Project.ecommerce.dto.product.customer.CustomerProductDTO;
 import com.Project.ecommerce.dto.product.customer.CustomerProductVariationDTO;
 import com.Project.ecommerce.dto.product.seller.SellerProductDTO;
@@ -298,13 +300,18 @@ public class ProductService {
         productValidator.validateIsActiveProduct(product);
         productValidator.containsValidProductVariation(product);
 
+        return createCustomerProductDTO(product, productId);
+    }
+
+    private CustomerProductDTO createCustomerProductDTO(Product product, String productId){
         CustomerProductDTO customerProductDTO = new CustomerProductDTO();
         customerProductDTO.setName(product.getName());
         customerProductDTO.setBrand(product.getBrand());
         customerProductDTO.setDescription(product.getDescription());
         customerProductDTO.setIsCancellable(product.getIsCancellable());
         customerProductDTO.setIsReturnable(product.getIsReturnable());
-        customerProductDTO.setCategory(product.getCategory().getName());
+        List<CustomerProductCategoryDTO> categoryDTOs = createCustomerProductCategoryDTOs(product);
+        customerProductDTO.setCategory(categoryDTOs);
 
         List<CustomerProductVariationDTO> productVariationDTOs = new ArrayList<>();
         List<ProductVariation> productVariations = product.getProductVariations();
@@ -318,6 +325,30 @@ public class ProductService {
             productVariationDTOs.add(dto);
         }
         customerProductDTO.setProductVariation(productVariationDTOs);
+
         return customerProductDTO;
     }
+
+    private List<CustomerProductCategoryDTO> createCustomerProductCategoryDTOs(Product product) {
+        List<CustomerProductCategoryDTO> categoryDTOs = new ArrayList<>();
+
+        Category category = product.getCategory();
+        while(category.getParentCategory() != null){
+            CustomerProductCategoryDTO categoryDTO = new CustomerProductCategoryDTO();
+            categoryDTO.setCategoryId(category.getId());
+            categoryDTO.setCategoryName(category.getName());
+            categoryDTO.setCategoryParentId(category.getParentCategory().getId());
+
+            categoryDTOs.add(categoryDTO);
+            category = category.getParentCategory();
+        }
+        CustomerProductCategoryDTO categoryDTO = new CustomerProductCategoryDTO();
+        categoryDTO.setCategoryId(category.getId());
+        categoryDTO.setCategoryName(category.getName());
+        categoryDTO.setCategoryParentId("NULL");
+        categoryDTOs.add(categoryDTO);
+        return categoryDTOs;
+    }
+
+
 }
