@@ -1,4 +1,4 @@
-package com.Project.ecommerce.services.product.seller;
+package com.Project.ecommerce.services.product;
 
 import com.Project.ecommerce.entities.product.Product;
 import com.Project.ecommerce.entities.user.User;
