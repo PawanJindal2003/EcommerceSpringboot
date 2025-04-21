@@ -428,6 +428,33 @@ public class ProductService {
         return productDTO;
     }
 
+    public List<CustomerProductDTO> getCustomerSimilarProducts(int pageNo, int pageSize, String sortField, String direction, String query, String productId){
+        Product product = productRepository.findById(productId).orElseThrow(()-> new ResourceNotFoundException("Product not found"));
+
+        //giving similar products by printing rest products of that category
+        //1. other products in that category
+        //2. products of same brand
+
+        Category parentCategory = product.getCategory().getParentCategory();
+        Specification<Product> specification = ProductSpecifications.isActive().and(ProductSpecifications.isNotDeleted()).and(ProductSpecifications.byCategories(List.of(parentCategory.getId())));
+        if(query!=null && !query.isBlank()){
+            specification = specification.and(ProductSpecifications.fromQueryString(query));
+        }
+        if(product.getBrand()!=null && !product.getBrand().isBlank()){
+            specification = specification.and(ProductSpecifications.byBrand(product.getBrand())).and(ProductSpecifications.excludeProductId(productId));
+        }
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(direction), sortField));
+        Page<Product> similarProducts = productRepository.findAll(specification, pageable);
+
+        List<CustomerProductDTO> similarProductsDTOs= new ArrayList<>();
+
+        for(Product similarProduct:similarProducts.getContent()){
+            CustomerProductDTO similarProductDTO = createCustomerProductDTO(similarProduct, similarProduct.getId());
+            similarProductsDTOs.add(similarProductDTO);
+        }
+        return similarProductsDTOs;
+    }
+
     public AdminProductDTO getAdminProduct(String productId){
         Product product = productRepository.findById(productId).orElseThrow(()->new ResourceNotFoundException("Product not found"));
 

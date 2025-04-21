@@ -28,7 +28,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/product")
 public class ProductController {
-    ObjectMapper objectMapper = new ObjectMapper();
     private ProductService productService;
     private ResponseUtil responseUtil;
 
@@ -134,6 +133,18 @@ public class ProductController {
                                                                  @RequestParam(required = false, defaultValue = "ASC") String direction,
                                                                  @RequestParam(required = false) String query) {
         List<CustomerAllProductsDTO> products = productService.getCustomerAllProduct(page, size, sortField, direction, query, categoryId);
+        return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, products), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('CUSTOMER')")
+    @GetMapping(value = "/customer/similar-products/{productId}")
+    public ResponseEntity<SuccessResponse> getCustomerSimilarProducts(@PathVariable String productId,
+                                                                 @RequestParam(required = false, defaultValue = "0") int page,
+                                                                 @RequestParam(required = false, defaultValue = "10") int size,
+                                                                 @RequestParam(required = false, defaultValue = "id") String sortField,
+                                                                 @RequestParam(required = false, defaultValue = "ASC") String direction,
+                                                                 @RequestParam(required = false) String query) {
+        List<CustomerProductDTO> products = productService.getCustomerSimilarProducts(page, size, sortField, direction, query, productId);
         return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, products), HttpStatus.OK);
     }
 
