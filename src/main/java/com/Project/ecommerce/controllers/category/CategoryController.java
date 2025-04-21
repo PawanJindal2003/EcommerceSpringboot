@@ -6,6 +6,7 @@ import com.Project.ecommerce.co.category.categoryMetaDataField.AddCategoryMetaDa
 import com.Project.ecommerce.dto.category.admin.CategoryMetaFieldsDTO;
 import com.Project.ecommerce.dto.category.admin.CategoryResponseDTO;
 import com.Project.ecommerce.dto.category.customer.CustomerCategoryResponseDTO;
+import com.Project.ecommerce.dto.category.customer.CustomerFilterCategoryDTO;
 import com.Project.ecommerce.dto.response.SuccessResponse;
 import com.Project.ecommerce.services.category.CategoryService;
 import com.Project.ecommerce.utils.ResponseUtil;
@@ -126,5 +127,12 @@ public class CategoryController {
             categories = categoryService.getCustomerCategories(categoryId);
         }
         return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, categories), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('CUSTOMER')")
+    @GetMapping("/customer/{categoryId}")
+    public ResponseEntity<SuccessResponse> getFilteredCategories(@PathVariable(required = false) String categoryId) {
+        CustomerFilterCategoryDTO filteredData = categoryService.getFilteredCategories(categoryId);
+        return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, filteredData), HttpStatus.OK);
     }
 }

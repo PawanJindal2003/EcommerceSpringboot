@@ -7,10 +7,14 @@ import com.Project.ecommerce.dto.category.admin.CategoryMetadataFieldDTO;
 import com.Project.ecommerce.dto.category.admin.CategoryResponseDTO;
 import com.Project.ecommerce.dto.category.admin.SubCategoryResponseDTO;
 import com.Project.ecommerce.dto.category.customer.CustomerCategoryResponseDTO;
+import com.Project.ecommerce.dto.category.customer.CustomerFilterCategoryDTO;
+import com.Project.ecommerce.dto.category.customer.PriceRangeDTO;
 import com.Project.ecommerce.entities.category.Category;
 import com.Project.ecommerce.entities.category.CategoryMetaDataField;
 import com.Project.ecommerce.entities.category.CategoryMetaDataFieldValues;
 import com.Project.ecommerce.entities.category.CategoryMetaDataFieldValuesId;
+import com.Project.ecommerce.entities.product.Product;
+import com.Project.ecommerce.entities.product.ProductVariation;
 import com.Project.ecommerce.exceptions.customExceptions.*;
 import com.Project.ecommerce.repositories.category.CategoryMetaDataFieldRepository;
 import com.Project.ecommerce.repositories.category.CategoryMetaDataFieldValuesRepository;
@@ -24,6 +28,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CategoryService {
@@ -429,4 +434,74 @@ public class CategoryService {
         }
         return rootCategoriesDTOs;
     }
+
+    public CustomerFilterCategoryDTO getFilteredCategories(String categoryId){
+        Category category = categoryRepository.findById(categoryId).orElseThrow(()->new ResourceNotFoundException("Category not found"));
+        List<Category> associatedCategories = new ArrayList<>();
+
+        if(category.getIsLeafCategory()){
+            associatedCategories.add(category);
+        }
+        else{
+            List<Category> leafCategories = findAssociatedLeafCategories(category);
+            associatedCategories.addAll(leafCategories);
+        }
+
+        CustomerFilterCategoryDTO customerFilterCategoryDTO = new CustomerFilterCategoryDTO();
+
+        List<CategoryMetadataFieldDTO> allMetadata = new ArrayList<>();
+        List<String> brands = new ArrayList<>();
+        PriceRangeDTO priceRangeDTO = new PriceRangeDTO();
+
+        long minPrice = Long.MAX_VALUE;
+        long maxPrice = Long.MIN_VALUE;
+
+        for(Category associatedCategory: associatedCategories){
+            brands = associatedCategory.getProducts().stream().map(product -> product.getBrand()).collect(Collectors.toList());
+
+            allMetadata = associatedCategory.getMetadataFieldValues().stream().map(cmfv->{
+                CategoryMetadataFieldDTO categoryMetadataFieldDTO = new CategoryMetadataFieldDTO();
+                categoryMetadataFieldDTO.setFieldName(cmfv.getCategoryMetaDataField().getName());
+                categoryMetadataFieldDTO.setFieldValues(cmfv.getValue());
+                return categoryMetadataFieldDTO;
+            }).collect(Collectors.toList());
+
+            List<Product> products = associatedCategory.getProducts();
+            for(Product product:products){
+                for(ProductVariation productVariation : product.getProductVariations()){
+                    if(productVariation.getPrice() < minPrice){
+                        minPrice = productVariation.getPrice();
+                    }
+                    if(productVariation.getPrice() > maxPrice){
+                        maxPrice = productVariation.getPrice();
+                    }
+                }
+            }
+        }
+        priceRangeDTO.setMinPrice(minPrice);
+        priceRangeDTO.setMaxPrice(maxPrice);
+
+        customerFilterCategoryDTO.setBrands(brands);
+        customerFilterCategoryDTO.setMetadata(allMetadata);
+        customerFilterCategoryDTO.setPriceRange(priceRangeDTO);
+
+        return customerFilterCategoryDTO;
+    }
+    private List<Category> findAssociatedLeafCategories(Category category){
+        List<Category> leafCategories = new ArrayList<>();
+        Queue<Category> queue = new LinkedList<>();
+        queue.add(category);
+        while (!queue.isEmpty()){
+            Category currentCategory = queue.poll();
+
+            if(currentCategory.getIsLeafCategory()){
+                leafCategories.add(currentCategory);
+            }
+            else{
+                queue.addAll(categoryRepository.findAllByParentCategoryId(currentCategory.getId()).orElseThrow(()-> new InvalidIdException("Invalid category id provided")));
+            }
+        }
+        return leafCategories;
+    }
+
 }
