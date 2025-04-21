@@ -40,4 +40,11 @@ public class ProductSpecifications {
     public static Specification<Product> byCategories(List<String> categoryIds) {
         return (root, query, cb) -> root.get("category").get("id").in(categoryIds);
     }
+
+    public static Specification<Product> excludeProductId(String productId){
+        return (root, query, cb) -> cb.notEqual(root.get("id"), productId);
+    }
+    public static Specification<Product> byBrand(String brandName){
+        return (root, query, cb)->cb.like(cb.lower(root.get("brand")), "%" + brandName.toLowerCase() + "%");
+    }
 }
