@@ -4,11 +4,13 @@ import com.Project.ecommerce.co.product.AddProductCO;
 import com.Project.ecommerce.co.product.AddProductVariationCO;
 import com.Project.ecommerce.co.product.UpdateProductCO;
 import com.Project.ecommerce.co.product.UpdateProductVariationCO;
+import com.Project.ecommerce.dto.product.admin.AdminProductDTO;
+import com.Project.ecommerce.dto.product.customer.CustomerAllProductsDTO;
 import com.Project.ecommerce.dto.product.customer.CustomerProductDTO;
 import com.Project.ecommerce.dto.product.seller.SellerProductDTO;
 import com.Project.ecommerce.dto.product.seller.SellerProductVariationDTO;
 import com.Project.ecommerce.dto.response.SuccessResponse;
-import com.Project.ecommerce.services.product.seller.ProductService;
+import com.Project.ecommerce.services.product.ProductService;
 import com.Project.ecommerce.utils.ResponseUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.mail.MessagingException;
@@ -19,7 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
@@ -122,5 +123,49 @@ public class ProductController {
     public ResponseEntity<SuccessResponse> getCustomerProduct(@PathVariable String productId) throws IOException {
         CustomerProductDTO product = productService.getCustomerProduct(productId);
         return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, product), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('CUSTOMER')")
+    @GetMapping(value = "/customer/all-products/{categoryId}")
+    public ResponseEntity<SuccessResponse> getCustomerAllProduct(@PathVariable String categoryId,
+                                                                 @RequestParam(required = false, defaultValue = "0") int page,
+                                                                 @RequestParam(required = false, defaultValue = "10") int size,
+                                                                 @RequestParam(required = false, defaultValue = "id") String sortField,
+                                                                 @RequestParam(required = false, defaultValue = "ASC") String direction,
+                                                                 @RequestParam(required = false) String query) {
+        List<CustomerAllProductsDTO> products = productService.getCustomerAllProduct(page, size, sortField, direction, query, categoryId);
+        return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, products), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping(value = "/admin/{productId}")
+    public ResponseEntity<SuccessResponse> getAdminProduct(@PathVariable String productId) {
+        AdminProductDTO product = productService.getAdminProduct(productId);
+        return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, product), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping(value = "/admin/all-products")
+    public ResponseEntity<SuccessResponse> getAdminAllProducts(@RequestParam(required = false, defaultValue = "0") int page,
+                                                               @RequestParam(required = false, defaultValue = "10") int size,
+                                                               @RequestParam(required = false, defaultValue = "id") String sortField,
+                                                               @RequestParam(required = false, defaultValue = "ASC") String direction,
+                                                               @RequestParam(required = false) String query) {
+        List<AdminProductDTO> products = productService.getAdminAllProducts(page, size, sortField, direction, query);
+        return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, products), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping(value = "/admin/activate/{productId}")
+    public ResponseEntity<SuccessResponse> activateProduct(@PathVariable String productId) {
+        String responseMessage = productService.activateDeactivateProduct(productId, "activate");
+        return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, responseMessage), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping(value = "/admin/de-activate/{productId}")
+    public ResponseEntity<SuccessResponse> deactivateProduct(@PathVariable String productId) {
+        String responseMessage = productService.activateDeactivateProduct(productId, "deactivate");
+        return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, responseMessage), HttpStatus.OK);
     }
 }

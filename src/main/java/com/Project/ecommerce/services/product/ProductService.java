@@ -1,20 +1,19 @@
-package com.Project.ecommerce.services.product.seller;
+package com.Project.ecommerce.services.product;
 
 import com.Project.ecommerce.co.product.AddProductCO;
 import com.Project.ecommerce.co.product.AddProductVariationCO;
 import com.Project.ecommerce.co.product.UpdateProductCO;
 import com.Project.ecommerce.co.product.UpdateProductVariationCO;
 import com.Project.ecommerce.dto.category.admin.CategoryResponseDTO;
-import com.Project.ecommerce.dto.category.customer.CustomerCategoryResponseDTO;
-import com.Project.ecommerce.dto.product.customer.CustomerProductCategoryDTO;
-import com.Project.ecommerce.dto.product.customer.CustomerProductDTO;
-import com.Project.ecommerce.dto.product.customer.CustomerProductVariationDTO;
+import com.Project.ecommerce.dto.product.admin.AdminProductDTO;
+import com.Project.ecommerce.dto.product.admin.AdminProductVariationDTO;
+import com.Project.ecommerce.dto.product.admin.SellerDetailsDTO;
+import com.Project.ecommerce.dto.product.customer.*;
 import com.Project.ecommerce.dto.product.seller.SellerProductDTO;
 import com.Project.ecommerce.dto.product.seller.SellerProductVariationDTO;
 import com.Project.ecommerce.entities.category.Category;
 import com.Project.ecommerce.entities.category.CategoryMetaDataFieldValues;
 import com.Project.ecommerce.entities.product.Product;
-import com.Project.ecommerce.entities.product.ProductReview;
 import com.Project.ecommerce.entities.product.ProductVariation;
 import com.Project.ecommerce.entities.user.Seller;
 import com.Project.ecommerce.exceptions.customExceptions.*;
@@ -31,9 +30,7 @@ import com.Project.ecommerce.utils.validator.ProductUtil;
 import com.Project.ecommerce.utils.validator.ProductVariationUtil;
 import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -45,10 +42,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -62,6 +56,7 @@ public class ProductService {
     private final ProductVariationUtil productVariationValidator;
     private final ProductUtil productValidator;
     private final CategoryService categoryService;
+    private final AdminProductEmailService adminProductEmailService;
 
     public String addProduct(Principal principal, AddProductCO addProductCO) throws MessagingException {
         Seller seller = sellerRepository.findByEmail(principal.getName()).orElseThrow(() -> new UsernameNotFoundException("Seller not found"));
@@ -350,5 +345,183 @@ public class ProductService {
         return categoryDTOs;
     }
 
+    public List<CustomerAllProductsDTO> getCustomerAllProduct(int pageNo, int pageSize, String sortField, String direction, String query, String categoryId){
+        Category category = categoryRepository.findById(categoryId).orElseThrow(()->new ResourceNotFoundException("Category not found"));
 
+        List<String> leafCategoryIds = new ArrayList<>();
+
+        if(category.getIsLeafCategory()){
+            leafCategoryIds.add(categoryId);
+        }
+        else{
+            List<Category> leafCategories = findAssociatedLeafCategories(category);
+            for(Category leafCategory : leafCategories){
+                leafCategoryIds.add(leafCategory.getId());
+            }
+        }
+
+        Specification<Product> specification = ProductSpecifications.byCategories(leafCategoryIds).and(ProductSpecifications.isNotDeleted().and(ProductSpecifications.isActive()));
+        if(query != null && !query.isBlank()){
+            specification = ProductSpecifications.byCategories(leafCategoryIds).and(ProductSpecifications.isNotDeleted().and(ProductSpecifications.isActive().and(ProductSpecifications.fromQueryString(query))));
+        }
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(direction), sortField));
+
+        Page<Product> products  = productRepository.findAll(specification, pageable);
+
+        List<CustomerAllProductsDTO> productsDTOs = new ArrayList<>();
+        for(Product product:products){
+            productValidator.containsValidProductVariation(product);
+            Category associatedCategory = product.getCategory();
+            CustomerAllProductsDTO dto = createCustomerAllProductDTO(product, associatedCategory, associatedCategory.getId());
+            productsDTOs.add(dto);
+        }
+        return productsDTOs;
+    }
+
+    private List<Category> findAssociatedLeafCategories(Category category){
+        List<Category> leafCategories = new ArrayList<>();
+        Queue<Category> queue = new LinkedList<>();
+        queue.add(category);
+        while (!queue.isEmpty()){
+            Category currentCategory = queue.poll();
+
+            if(currentCategory.getIsLeafCategory()){
+                leafCategories.add(currentCategory);
+            }
+            else{
+                queue.addAll(categoryRepository.findAllByParentCategoryId(currentCategory.getId()).orElseThrow(()-> new InvalidIdException("Invalid category id provided")));
+            }
+        }
+        return leafCategories;
+    }
+
+    private CustomerAllProductsDTO createCustomerAllProductDTO(Product product, Category category, String categoryId){
+        CustomerAllProductsDTO productDTO = new CustomerAllProductsDTO();
+        productDTO.setId(product.getId());
+        productDTO.setName(product.getName());
+        productDTO.setBrand(product.getBrand());
+        productDTO.setRetailer(product.getSeller().getCompanyName());
+
+        List<CustomerAllProductsVariationsDTO> productVariationsDTOs = new ArrayList<>();
+        List<ProductVariation> productVariations = product.getProductVariations();
+        for(ProductVariation productVariation:productVariations){
+            CustomerAllProductsVariationsDTO productsVariationDTO = new CustomerAllProductsVariationsDTO();
+            productsVariationDTO.setProductVariationId(productVariation.getId());
+            productsVariationDTO.setPrimaryImage(imageUtil.getProductVariationPrimaryImage(product.getId()));
+            productsVariationDTO.setPrice(productVariation.getPrice());
+            productVariationsDTOs.add(productsVariationDTO);
+        }
+        productDTO.setProductVariations(productVariationsDTOs);
+
+        CustomerProductCategoryDTO categoryDTO = new CustomerProductCategoryDTO();
+        categoryDTO.setCategoryId(categoryId);
+        categoryDTO.setCategoryName(category.getName());
+
+        if(category.getParentCategory().getId() == null){
+            categoryDTO.setCategoryParentId("NULL");
+        }
+        else{
+            categoryDTO.setCategoryParentId(category.getParentCategory().getId());
+        }
+        productDTO.setCategories(categoryDTO);
+
+        return productDTO;
+    }
+
+    public AdminProductDTO getAdminProduct(String productId){
+        Product product = productRepository.findById(productId).orElseThrow(()->new ResourceNotFoundException("Product not found"));
+
+        return createAdminProductDTO(product);
+    }
+
+    private AdminProductDTO createAdminProductDTO(Product product){
+        AdminProductDTO adminProductDTO = new AdminProductDTO();
+        adminProductDTO.setName(product.getName());
+        adminProductDTO.setBrand(product.getBrand());
+        adminProductDTO.setDescription(product.getDescription());
+        adminProductDTO.setIsReturnable(product.getIsReturnable());
+        adminProductDTO.setIsCancellable(product.getIsCancellable());
+        adminProductDTO.setIsActive(product.getIsActive());
+        adminProductDTO.setIsDeleted(product.getIsDeleted());
+
+        List<ProductVariation> productVariations = product.getProductVariations();
+        List<AdminProductVariationDTO> productVariationDTOs = new ArrayList<>();
+        for(ProductVariation productVariation:productVariations){
+            AdminProductVariationDTO productVariationDTO = new AdminProductVariationDTO();
+            productVariationDTO.setProductVariationId(productVariation.getId());
+            productVariationDTO.setPrimaryImage(imageUtil.getProductVariationPrimaryImage(product.getId()));
+
+            productVariationDTOs.add(productVariationDTO);
+        }
+        adminProductDTO.setVariations(productVariationDTOs);
+
+        Category category = product.getCategory();
+        CustomerProductCategoryDTO categoryDTO = new CustomerProductCategoryDTO();
+        categoryDTO.setCategoryId(category.getId());
+        categoryDTO.setCategoryName(category.getName());
+        if(category.getParentCategory().getId() == null){
+            categoryDTO.setCategoryParentId("null");
+        }
+        else{
+            categoryDTO.setCategoryParentId(category.getParentCategory().getId());
+        }
+        adminProductDTO.setCategory(categoryDTO);
+
+        SellerDetailsDTO sellerDetailsDTO = new SellerDetailsDTO();
+        sellerDetailsDTO.setSellerId(product.getSeller().getId());
+        sellerDetailsDTO.setName(product.getSeller().getFirstName() + " " + product.getSeller().getLastName());
+        sellerDetailsDTO.setIsActiveSeller(product.getSeller().getIsActive());
+        sellerDetailsDTO.setCompanyContact(product.getSeller().getCompanyContact());
+        sellerDetailsDTO.setCompanyName(product.getSeller().getCompanyName());
+        sellerDetailsDTO.setGST(product.getSeller().getGST());
+
+        adminProductDTO.setSellerDetails(sellerDetailsDTO);
+
+        return adminProductDTO;
+    }
+
+    public List<AdminProductDTO> getAdminAllProducts(int pageNo, int pageSize, String sortField, String direction, String query){
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(direction), sortField));
+        Specification<Product> specification = null;
+        if(query!=null && !query.isBlank()){
+            specification = ProductSpecifications.fromQueryString(query);
+        }
+        Page<Product> allProducts = productRepository.findAll(specification, pageable);
+
+        List<AdminProductDTO> allProductsDTOs = new ArrayList<>();
+        for(Product product:allProducts.getContent()){
+            AdminProductDTO adminProductDTO = createAdminProductDTO(product);
+            allProductsDTOs.add(adminProductDTO);
+        }
+        return allProductsDTOs;
+    }
+
+    public String activateDeactivateProduct(String productId, String action) throws MessagingException {
+        Product product = productRepository.findById(productId).orElseThrow(()->new ResourceNotFoundException("Product not found"));
+
+        Boolean isProductActive = product.getIsActive();
+        if(Objects.equals(action, "deactivate")){
+            if(isProductActive){
+                product.setIsActive(false);
+                productRepository.save(product);
+                adminProductEmailService.sendProductDeactivationEmail(product.getSeller().getEmail(), product);
+                return "Product deactivated";
+            }
+            else{
+                return "Product is already deactivated";
+            }
+        }
+        else if(Objects.equals(action, "activate")){
+            if(!isProductActive){
+                product.setIsActive(true);
+                productRepository.save(product);
+                adminProductEmailService.sendProductActivationEmail(product.getSeller().getEmail(), product);
+                return "Product activated";
+            }
+            else{
+                return "Product is already activated";
+            }
+        }
+        return "Failed to activate-deactivate product";
+    }
 }
