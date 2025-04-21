@@ -53,7 +53,7 @@ public class JwtFilter extends OncePerRequestFilter {
             "/api/category/add-metadata-category",
             "/api/category/update-metadata-category",
             "/api/category/seller/all-categories",
-            "/api/category/customer/categories/**",
+            "/api/category/customer/**",
             "/api/product/add-product",
             "/api/product/add-product-variation",
             "/api/product/**",
