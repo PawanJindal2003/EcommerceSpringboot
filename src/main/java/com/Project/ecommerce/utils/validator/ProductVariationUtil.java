@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import static com.Project.ecommerce.utils.JsonUtil.isDuplicateVariation;
 
 @Component
 public class ProductVariationUtil {
@@ -35,7 +34,7 @@ public class ProductVariationUtil {
 
     // ensuring each variation of a product should be unique
     public void checkDuplicateVariation(Product product, Map<String, String> metadata){
-        if (isDuplicateVariation(product, metadata)) {
+        if (JsonUtil.isDuplicateVariation(product, metadata)) {
             throw new DuplicateResourceException("A variation with identical metadata already exists.");
         }
     }
@@ -58,7 +57,6 @@ public class ProductVariationUtil {
 
             List<String> allowedValues = allowedFieldValuesMap.get(fieldName);
             if (!allowedValues.contains(fieldValue)) {
-                ;
                 throw new InactiveResourceException(
                         "Invalid value '" + fieldValue + "' for field '" + fieldName +
                                 "'. Allowed values: " + allowedValues
