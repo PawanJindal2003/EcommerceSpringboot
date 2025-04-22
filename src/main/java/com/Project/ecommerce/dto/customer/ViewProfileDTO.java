@@ -7,9 +7,7 @@ import lombok.Setter;
 @Setter
 public class ViewProfileDTO {
     private String id;
-    private String firstName;
-    private String middleName;
-    private String lastName;
+    private String name;
     private Boolean isActive;
     private String customerContact;
     private String profilePicUrl;
