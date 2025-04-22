@@ -6,11 +6,9 @@ import com.Project.ecommerce.entities.user.Seller;
 import com.github.f4b6a3.uuid.UuidCreator;
 import jakarta.persistence.*;
 import lombok.*;
-aimport org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
-
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Getter
