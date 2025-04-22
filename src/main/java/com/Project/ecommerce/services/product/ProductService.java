@@ -212,12 +212,15 @@ public class ProductService {
 
         Page<ProductVariation> sellerProductVariations;
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(direction), sortField));
+
+        Specification<ProductVariation> specification = ProductVariationSpecification.byProductId(productId);
+
         if(query!=null && !query.isBlank()){
-            Specification<ProductVariation> specification = ProductVariationSpecification.fromQueryString(query);
+            specification = specification.and(ProductVariationSpecification.fromQueryString(query));
             sellerProductVariations =  productVariationRepository.findAll(specification, pageable);
         }
         else{
-            sellerProductVariations = productVariationRepository.findAll(pageable);
+            sellerProductVariations = productVariationRepository.findAll(specification, pageable);
         }
 
         List<SellerProductVariationDTO> sellerProductVariationDTOS = new ArrayList<>();
