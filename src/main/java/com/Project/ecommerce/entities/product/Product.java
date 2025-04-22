@@ -6,6 +6,8 @@ import com.Project.ecommerce.entities.user.Seller;
 import com.github.f4b6a3.uuid.UuidCreator;
 import jakarta.persistence.*;
 import lombok.*;
+aimport org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,6 +17,9 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+
+@SQLDelete(sql = "update address set is_deleted = true where id=?")
+@Where(clause = "is_deleted = false")
 public class Product extends Auditable {
     @Id
     @Column(length = 36)
