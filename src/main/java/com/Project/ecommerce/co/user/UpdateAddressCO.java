@@ -6,7 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UpdateAddressCO {
-    private String id;
     private String city;
     private String state;
     private String country;
