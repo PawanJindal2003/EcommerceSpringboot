@@ -435,12 +435,11 @@ public class ProductService {
         //1. other products in that category
         //2. products of same brand
 
-        Category parentCategory = product.getCategory().getParentCategory();
-        Specification<Product> specification = ProductSpecifications.isActive().and(ProductSpecifications.isNotDeleted()).and(ProductSpecifications.byCategories(List.of(parentCategory.getId())));
+        Specification<Product> specification = ProductSpecifications.isActive().and(ProductSpecifications.isNotDeleted()).and(ProductSpecifications.byCategories(List.of(product.getCategory().getId())));
         if(query!=null && !query.isBlank()){
             specification = specification.and(ProductSpecifications.fromQueryString(query));
         }
-        if(product.getBrand()!=null && !product.getBrand().isBlank()){
+        if(product.getBrand() != null && !product.getBrand().isBlank()){
             specification = specification.and(ProductSpecifications.byBrand(product.getBrand())).and(ProductSpecifications.excludeProductId(productId));
         }
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(direction), sortField));
