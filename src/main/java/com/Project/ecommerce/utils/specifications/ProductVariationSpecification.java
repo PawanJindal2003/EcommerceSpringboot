@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ProductVariationSpecification {
-    public static Specification<ProductVariation> fromQueryString(String queryString){
-        return (root, query, cb )-> {
+    public static Specification<ProductVariation> fromQueryString(String queryString) {
+        return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             String[] filters = queryString.split(",");
 
@@ -17,10 +17,15 @@ public class ProductVariationSpecification {
                 if (parts.length == 2) {
                     String field = parts[0];
                     String value = parts[1];
-                    predicates.add(cb.like(cb.lower(root.get(field)),"%"+value.toLowerCase() + "%"));
+                    predicates.add(cb.like(cb.lower(root.get(field)), "%" + value.toLowerCase() + "%"));
                 }
             }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
+    }
+
+    public static Specification<ProductVariation> byProductId(String productId) {
+        return (root, query, cb) ->
+                cb.equal(root.get("product").get("id"), productId);
     }
 }
