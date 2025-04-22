@@ -13,32 +13,22 @@ import com.Project.ecommerce.repositories.user.UserRepository;
 import com.Project.ecommerce.security.jwt.JwtService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.mail.MessagingException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class CustomerRegisterService {
-    private CustomerRepository customerRepository;
-    private UserRepository userRepository;
-    private RoleRepository roleRepository;
-    private CustomerEmailService customerEmailService;
-    private JwtService jwtService;
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
-    private MessageSource messageSource;
-
-    @Autowired
-    public CustomerRegisterService(CustomerRepository customerRepository, UserRepository userRepository, RoleRepository roleRepository, CustomerEmailService customerEmailService, JwtService jwtService, BCryptPasswordEncoder bCryptPasswordEncoder, MessageSource messageSource) {
-        this.customerRepository = customerRepository;
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.customerEmailService = customerEmailService;
-        this.jwtService = jwtService;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-        this.messageSource = messageSource;
-    }
+    private final CustomerRepository customerRepository;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final CustomerEmailService customerEmailService;
+    private final JwtService jwtService;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final MessageSource messageSource;
 
     public String registerCustomer(CustomerCO customerCO) throws MessagingException {
         // validations

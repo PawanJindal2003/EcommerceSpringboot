@@ -4,14 +4,13 @@ import com.Project.ecommerce.co.login.UserCO;
 import com.Project.ecommerce.entities.user.User;
 import com.Project.ecommerce.exceptions.customExceptions.InactiveResourceException;
 import com.Project.ecommerce.exceptions.customExceptions.ResourceNotFoundException;
-import com.Project.ecommerce.repositories.Jwt.RefreshTokenRepository;
 import com.Project.ecommerce.repositories.user.UserRepository;
 import com.Project.ecommerce.security.jwt.JwtService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.authentication.*;
@@ -21,19 +20,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UserLoginService {
-    private UserRepository userRepository;
-    private AuthenticationManager authenticationManager;
-    private JwtService jwtService;
-    private MessageSource messageSource;
-
-    @Autowired
-    public UserLoginService(UserRepository userRepository, AuthenticationManager authenticationManager, JwtService jwtService, RefreshTokenRepository refreshTokenRepository, MessageSource messageSource) {
-        this.userRepository = userRepository;
-        this.authenticationManager = authenticationManager;
-        this.jwtService = jwtService;
-        this.messageSource = messageSource;
-    }
+    private final UserRepository userRepository;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
+    private final MessageSource messageSource;
 
     public List<String> loginUser(@Valid @RequestBody UserCO userCO, HttpServletResponse response) {
         User user = userRepository.findByEmail(userCO.getEmail())

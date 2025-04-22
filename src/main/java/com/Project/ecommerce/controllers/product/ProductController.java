@@ -12,9 +12,9 @@ import com.Project.ecommerce.dto.product.seller.SellerProductVariationDTO;
 import com.Project.ecommerce.dto.response.SuccessResponse;
 import com.Project.ecommerce.services.product.ProductService;
 import com.Project.ecommerce.utils.ResponseUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,14 +27,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/product")
+@RequiredArgsConstructor
 public class ProductController {
-    private ProductService productService;
-    private ResponseUtil responseUtil;
-
-    public ProductController(ProductService productService, ResponseUtil responseUtil){
-        this.productService = productService;
-        this.responseUtil = responseUtil;
-    }
+    private final ProductService productService;
+    private final ResponseUtil responseUtil;
 
     @PreAuthorize("hasRole('SELLER')")
     @PostMapping("/add-product")
@@ -119,7 +115,7 @@ public class ProductController {
     //customer apis
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping(value = "/customer/{productId}")
-    public ResponseEntity<SuccessResponse> getCustomerProduct(@PathVariable String productId) throws IOException {
+    public ResponseEntity<SuccessResponse> getCustomerProduct(@PathVariable String productId) {
         CustomerProductDTO product = productService.getCustomerProduct(productId);
         return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, product), HttpStatus.OK);
     }

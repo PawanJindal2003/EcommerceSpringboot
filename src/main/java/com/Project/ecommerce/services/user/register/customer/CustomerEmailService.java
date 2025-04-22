@@ -54,7 +54,6 @@ public class CustomerEmailService {
     }
 
     private String generateActivationUrl(String token) {
-        String baseUrl = "http://localhost:8080/api/auth/customer/activate";
-        return baseUrl + "?token=" + token;
+        return "http://localhost:8080/api/auth/customer/activate/" + token;
     }
 }

@@ -9,7 +9,7 @@ import com.Project.ecommerce.exceptions.customExceptions.ResourceNotFoundExcepti
 import com.Project.ecommerce.repositories.user.UserRepository;
 import com.Project.ecommerce.security.jwt.JwtService;
 import jakarta.mail.MessagingException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -21,22 +21,13 @@ import java.time.Instant;
 import java.util.Date;
 
 @Service
+@RequiredArgsConstructor
 public class ForgetPasswordService {
-
-    private UserRepository userRepository;
-    private JwtService jwtService;
-    private ForgetPasswordEmailService forgetPasswordEmailService;
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
-    private MessageSource messageSource;
-
-    @Autowired
-    public ForgetPasswordService(UserRepository userRepository, JwtService jwtService, ForgetPasswordEmailService forgetPasswordEmailService, BCryptPasswordEncoder bCryptPasswordEncoder, MessageSource messageSource) {
-        this.userRepository = userRepository;
-        this.jwtService = jwtService;
-        this.forgetPasswordEmailService = forgetPasswordEmailService;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-        this.messageSource = messageSource;
-    }
+    private final UserRepository userRepository;
+    private final JwtService jwtService;
+    private final ForgetPasswordEmailService forgetPasswordEmailService;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final MessageSource messageSource;
 
     public String sendResetPasswordMail(String email) throws MessagingException {
         User user = userRepository.findByEmail(email)

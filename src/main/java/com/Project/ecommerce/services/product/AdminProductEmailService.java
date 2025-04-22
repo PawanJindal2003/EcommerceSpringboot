@@ -1,10 +1,8 @@
 package com.Project.ecommerce.services.product;
 
 import com.Project.ecommerce.entities.product.Product;
-import com.Project.ecommerce.repositories.product.ProductRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -14,7 +12,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class AdminProductEmailService {
     private final JavaMailSender emailSender;
-
 
     @Value("${spring.mail.username}")
     private String fromEmail;

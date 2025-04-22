@@ -7,21 +7,17 @@ import com.Project.ecommerce.services.user.forgetPassword.ForgetPasswordService;
 import com.Project.ecommerce.utils.ResponseUtil;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("api/auth")
 @RestController
+@RequiredArgsConstructor
 public class ForgetPasswordController {
-    private ForgetPasswordService forgetPasswordService;
-    private ResponseUtil responseUtil;
-    @Autowired
-    public ForgetPasswordController(ForgetPasswordService forgetPasswordService, ResponseUtil responseUtil){
-        this.forgetPasswordService = forgetPasswordService;
-        this.responseUtil = responseUtil;
-    }
+    private final ForgetPasswordService forgetPasswordService;
+    private final ResponseUtil responseUtil;
 
     @PostMapping("/forget-password")
     public ResponseEntity<SuccessResponse> forgetPassword(@Valid @RequestBody ForgetPasswordCO forgetPasswordCO) throws MessagingException {

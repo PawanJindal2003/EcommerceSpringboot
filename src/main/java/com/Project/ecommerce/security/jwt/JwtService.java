@@ -11,11 +11,9 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
 import java.security.Key;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
@@ -24,17 +22,12 @@ import java.util.Optional;
 import java.util.function.Function;
 
 @Component
+@RequiredArgsConstructor
 public class JwtService {
-    private ActivationTokenRepository activationTokenRepository;
-    private RefreshTokenRepository refreshTokenRepository;
-    private ForgetPasswordTokenRepository forgetPasswordTokenRepository;
+    private final ActivationTokenRepository activationTokenRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final ForgetPasswordTokenRepository forgetPasswordTokenRepository;
 
-    @Autowired
-    public JwtService(ActivationTokenRepository activationTokenRepository, RefreshTokenRepository refreshTokenRepository, ForgetPasswordTokenRepository forgetPasswordTokenRepository){
-        this.activationTokenRepository = activationTokenRepository;
-        this.refreshTokenRepository = refreshTokenRepository;
-        this.forgetPasswordTokenRepository = forgetPasswordTokenRepository;
-    }
 
     // Secret Key for signing the JWT. It should be kept private.
     private static final String SECRET = "TmV3U2VjcmV0S2V5Rm9ySldUU2lnbmluZ1B1cnBvc2VzMTIzNDU2Nzgjbhgtyret";

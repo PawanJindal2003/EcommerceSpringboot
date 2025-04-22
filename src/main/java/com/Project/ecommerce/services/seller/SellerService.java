@@ -6,47 +6,41 @@ import com.Project.ecommerce.co.seller.UpdateProfileCO;
 import com.Project.ecommerce.dto.seller.ViewProfileDTO;
 import com.Project.ecommerce.entities.address.Address;
 import com.Project.ecommerce.entities.user.Seller;
-import com.Project.ecommerce.exceptions.customExceptions.ConfirmPasswordMismatchException;
-import com.Project.ecommerce.exceptions.customExceptions.DuplicateResourceException;
-import com.Project.ecommerce.exceptions.customExceptions.ResourceNotFoundException;
+import com.Project.ecommerce.exceptions.customExceptions.*;
 import com.Project.ecommerce.repositories.user.AddressRepository;
 import com.Project.ecommerce.repositories.user.SellerRepository;
 import com.Project.ecommerce.security.jwt.JwtService;
 import com.Project.ecommerce.utils.ImageUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.security.Principal;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class SellerService {
-    private JwtService jwtService;
-    private SellerRepository sellerRepository;
-    private AddressRepository addressRepository;
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
-    private ImageUtil imageUtil;
-    private MessageSource messageSource;
-    @Autowired
-    public SellerService(JwtService jwtService, SellerRepository sellerRepository, AddressRepository addressRepository, BCryptPasswordEncoder bCryptPasswordEncoder, ImageUtil imageUtil, MessageSource messageSource){
-        this.jwtService = jwtService;
-        this.sellerRepository = sellerRepository;
-        this.addressRepository = addressRepository;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-        this.imageUtil = imageUtil;
-        this.messageSource = messageSource;
-    }
-    public ViewProfileDTO viewProfile(HttpServletRequest request){
+    private final JwtService jwtService;
+    private final SellerRepository sellerRepository;
+    private final AddressRepository addressRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final ImageUtil imageUtil;
+    private final MessageSource messageSource;
+
+    public ViewProfileDTO viewProfile(HttpServletRequest request) {
         String accessToken = null;
-        if(request.getCookies()!=null){
-            for(Cookie cookie : request.getCookies()){
-                if(cookie.getName().equals("accessToken")) {
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (cookie.getName().equals("accessToken")) {
                     accessToken = cookie.getValue();
                     break;
                 }
@@ -54,7 +48,7 @@ public class SellerService {
         }
         ViewProfileDTO viewProfileDTO = new ViewProfileDTO();
         String email = jwtService.extractEmail(accessToken);
-        Seller seller = sellerRepository.findByEmail(email).orElseThrow(()->new ResourceNotFoundException(messageSource.getMessage("seller.not.found", null, request.getLocale())));
+        Seller seller = sellerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("seller.not.found", null, request.getLocale())));
 
         viewProfileDTO.setId(seller.getId());
         viewProfileDTO.setFirstName(seller.getFirstName());
@@ -75,20 +69,20 @@ public class SellerService {
         return viewProfileDTO;
     }
 
-    public String updateProfile(HttpServletRequest request, UpdateProfileCO updateProfileCO, MultipartFile multipartFile){
+    public String updateProfile(HttpServletRequest request, UpdateProfileCO updateProfileCO, MultipartFile multipartFile) {
         String accessToken = null;
-        if(request.getCookies()!=null){
-            for(Cookie cookie : request.getCookies()){
-                if(cookie.getName().equals("accessToken")) {
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (cookie.getName().equals("accessToken")) {
                     accessToken = cookie.getValue();
                     break;
                 }
             }
         }
         String email = jwtService.extractEmail(accessToken);
-        Seller seller = sellerRepository.findByEmail(email).orElseThrow(()-> new ResourceNotFoundException(messageSource.getMessage("seller.not.found", null, request.getLocale())));
+        Seller seller = sellerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("seller.not.found", null, request.getLocale())));
 
-        if(updateProfileCO!=null) {
+        if (updateProfileCO != null) {
             Optional.ofNullable(updateProfileCO.getFirstName()).ifPresent(seller::setFirstName);
             Optional.ofNullable(updateProfileCO.getMiddleName()).ifPresent(seller::setMiddleName);
             Optional.ofNullable(updateProfileCO.getLastName()).ifPresent(seller::setLastName);
@@ -109,22 +103,22 @@ public class SellerService {
         return messageSource.getMessage("profile.update.success", null, request.getLocale());
     }
 
-    public String updatePassword(HttpServletRequest request, UpdatePasswordCO updatePasswordCO){
+    public String updatePassword(HttpServletRequest request, UpdatePasswordCO updatePasswordCO) {
         // check if password and confirm password are not different
-        if(!updatePasswordCO.getPassword().equals(updatePasswordCO.getConfirmPassword())){
+        if (!updatePasswordCO.getPassword().equals(updatePasswordCO.getConfirmPassword())) {
             throw new ConfirmPasswordMismatchException(messageSource.getMessage("password.confirm.mismatch", null, request.getLocale()));
         }
         String accessToken = null;
-        if(request.getCookies()!=null){
-            for(Cookie cookie : request.getCookies()){
-                if(cookie.getName().equals("accessToken")) {
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (cookie.getName().equals("accessToken")) {
                     accessToken = cookie.getValue();
                     break;
                 }
             }
         }
         String email = jwtService.extractEmail(accessToken);
-        Seller seller = sellerRepository.findByEmail(email).orElseThrow(()-> new ResourceNotFoundException("Seller not found"));
+        Seller seller = sellerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
 
         //updating password
         seller.setPassword(bCryptPasswordEncoder.encode(updatePasswordCO.getPassword()));
@@ -136,37 +130,29 @@ public class SellerService {
         return messageSource.getMessage("password.update.success", null, request.getLocale());
     }
 
-    public String updateAddress(HttpServletRequest request, String addressId, UpdateAddressCO updateAddressCO){
+    public String updateAddress(Principal principal, String addressId, UpdateAddressCO updateAddressCO) {
         //is addressId existing
-        if(addressRepository.findById(addressId).isPresent()){
-            return messageSource.getMessage("address.not.found", null, request.getLocale());
+        if (!addressRepository.findById(addressId).isPresent()) {
+            throw new ResourceNotFoundException(messageSource.getMessage("address.not.found", null, LocaleContextHolder.getLocale()));
         }
-        //Doubt: validating addressId?
+        String sellerEmail = principal.getName();
 
-        String accessToken = null;
-        if(request.getCookies() != null){
-            for(Cookie cookie : request.getCookies()){
-                if(cookie.getName().equals("accessToken")){
-                    accessToken = cookie.getValue();
-                    break;
-                }
-            }
+        //validating seller address
+        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
+        if (!seller.getAddresses().get(0).getId().equals(addressId)) {
+            throw new UnauthorizedAccessException("Wrong address provided");
         }
 
-        String email = jwtService.extractEmail(accessToken);
-        Seller seller = sellerRepository.findByEmail(email).orElseThrow(()->new ResourceNotFoundException("Seller not found"));
-        Address address = new Address();
+        Address address = addressRepository.findById(addressId).orElseThrow(() -> new ResourceNotFoundException("Address not found"));
 
-        if(seller.getAddresses().get(0) != null){
-            Optional.ofNullable(updateAddressCO.getAddressLine()).ifPresent(address::setAddressLine);
-            Optional.ofNullable(updateAddressCO.getCity()).ifPresent(address::setCity);
-            Optional.ofNullable(updateAddressCO.getState()).ifPresent(address::setState);
-            Optional.ofNullable(updateAddressCO.getCountry()).ifPresent(address::setCountry);
-            Optional.ofNullable(updateAddressCO.getZipCode()).ifPresent(address::setZipCode);
-        }
+        Optional.ofNullable(updateAddressCO.getAddressLine()).ifPresent(address::setAddressLine);
+        Optional.ofNullable(updateAddressCO.getCity()).ifPresent(address::setCity);
+        Optional.ofNullable(updateAddressCO.getState()).ifPresent(address::setState);
+        Optional.ofNullable(updateAddressCO.getCountry()).ifPresent(address::setCountry);
+        Optional.ofNullable(updateAddressCO.getZipCode()).ifPresent(address::setZipCode);
 
-        sellerRepository.save(seller);
+        addressRepository.save(address);
 
-        return messageSource.getMessage("address.update.success", null, request.getLocale());
+        return messageSource.getMessage("address.update.success", null, LocaleContextHolder.getLocale());
     }
 }

@@ -11,7 +11,7 @@ import com.Project.ecommerce.services.cutomer.CustomerService;
 import com.Project.ecommerce.utils.ResponseUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,15 +24,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/customer")
+@RequiredArgsConstructor
 public class CustomerController {
-    private CustomerService customerService;
-    private ResponseUtil responseUtil;
-
-    @Autowired
-    public CustomerController(CustomerService customerService, ResponseUtil responseUtil){
-        this.customerService = customerService;
-        this.responseUtil = responseUtil;
-    }
+    private final CustomerService customerService;
+    private final ResponseUtil responseUtil;
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/me")

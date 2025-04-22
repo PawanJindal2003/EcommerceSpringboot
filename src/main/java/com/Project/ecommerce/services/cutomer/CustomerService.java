@@ -15,7 +15,7 @@ import com.Project.ecommerce.security.jwt.JwtService;
 import com.Project.ecommerce.utils.ImageUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -27,23 +27,14 @@ import java.time.Instant;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class CustomerService {
-    private JwtService jwtService;
-    private CustomerRepository customerRepository;
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
-    private ImageUtil imageUtil;
-    private MessageSource messageSource;
-    private AddressRepository addressRepository;
-
-    @Autowired
-    public CustomerService(JwtService jwtService, CustomerRepository customerRepository, BCryptPasswordEncoder bCryptPasswordEncoder, ImageUtil imageUtil, MessageSource messageSource, AddressRepository addressRepository) {
-        this.jwtService = jwtService;
-        this.customerRepository = customerRepository;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-        this.imageUtil = imageUtil;
-        this.messageSource = messageSource;
-        this.addressRepository = addressRepository;
-    }
+    private final JwtService jwtService;
+    private final CustomerRepository customerRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final ImageUtil imageUtil;
+    private final MessageSource messageSource;
+    private final AddressRepository addressRepository;
 
     public ViewProfileDTO viewProfile(HttpServletRequest request) {
         String accessToken = null;

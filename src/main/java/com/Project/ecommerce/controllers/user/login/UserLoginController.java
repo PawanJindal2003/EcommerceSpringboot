@@ -7,7 +7,7 @@ import com.Project.ecommerce.utils.ResponseUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,17 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
- @RequestMapping("/api/auth")
+@RequestMapping("/api/auth")
 @RestController
+@RequiredArgsConstructor
 public class UserLoginController {
-    private UserLoginService userLoginService;
-    private ResponseUtil responseUtil;
-
-    @Autowired
-    public UserLoginController(UserLoginService userLoginService, ResponseUtil responseUtil) {
-        this.userLoginService = userLoginService;
-        this.responseUtil = responseUtil;
-    }
+    private final UserLoginService userLoginService;
+    private final ResponseUtil responseUtil;
 
     @PostMapping("/login")
     public ResponseEntity<SuccessResponse> loginUser(@Valid @RequestBody UserCO userCO, HttpServletResponse response) {

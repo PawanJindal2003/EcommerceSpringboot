@@ -9,28 +9,20 @@ import com.Project.ecommerce.exceptions.customExceptions.EmailAlreadyExistsExcep
 import com.Project.ecommerce.repositories.user.RoleRepository;
 import com.Project.ecommerce.repositories.user.SellerRepository;
 import jakarta.mail.MessagingException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class SellerRegisterService {
-    private SellerRepository sellerRepository;
-    private RoleRepository roleRepository;
-    private SellerEmailService sellerEmailService;
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
-    private MessageSource messageSource;
-
-    @Autowired
-    public SellerRegisterService(SellerRepository sellerRepository, RoleRepository roleRepository, SellerEmailService sellerEmailService, BCryptPasswordEncoder bCryptPasswordEncoder, MessageSource messageSource) {
-        this.sellerRepository = sellerRepository;
-        this.sellerEmailService = sellerEmailService;
-        this.roleRepository = roleRepository;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-        this.messageSource = messageSource;
-    }
+    private final SellerRepository sellerRepository;
+    private final RoleRepository roleRepository;
+    private final SellerEmailService sellerEmailService;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final MessageSource messageSource;
 
     public String registerSeller(SellerCO sellerCO) throws MessagingException {
         if (sellerRepository.findByEmail(sellerCO.getEmail()).isPresent()) {

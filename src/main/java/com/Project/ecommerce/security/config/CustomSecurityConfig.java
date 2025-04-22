@@ -45,10 +45,7 @@ public class CustomSecurityConfig {
                         ).permitAll()
                         .requestMatchers(
                                 "/api/auth/logout",
-                                "/api/admin/all-customers/**",
-                                "/api/admin/all-sellers/**",
-                                "/api/admin/activate/user/**",
-                                "/api/admin/deactivate/user/**",
+                                "/api/admin/**",
                                 "/api/seller/me",
                                 "/api/seller/update-profile",
                                 "/api/seller/update-address/**",

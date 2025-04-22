@@ -6,13 +6,14 @@ import com.Project.ecommerce.utils.ResponseUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.LockedException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -23,13 +24,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
-    private ResponseUtil responseUtil;
+    private final ResponseUtil responseUtil;
 
-    @Autowired
-    public GlobalExceptionHandler(ResponseUtil responseUtil){
-        this.responseUtil = responseUtil;
-    }
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex){
         List<String> errorMessages = ex.getBindingResult().getFieldErrors().stream().map(FieldError::getDefaultMessage).collect(Collectors.toList());
@@ -157,6 +155,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidResourceException.class)
     public ResponseEntity<ErrorResponse> handleInvalidResourceException(InvalidResourceException ex){
         List<String> errorMessages = List.of(ex.getMessage());
-        return new ResponseEntity<>(responseUtil.fail(HttpStatus.BAD_REQUEST, errorMessages), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(responseUtil.fail(HttpStatus.FORBIDDEN, errorMessages), HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAuthorizationDeniedException(AuthorizationDeniedException ex){
+        List<String> errorMessages = List.of(ex.getMessage() + " : you do not have permission to perform this action.");
+        return new ResponseEntity<>(responseUtil.fail(HttpStatus.FORBIDDEN, errorMessages), HttpStatus.FORBIDDEN);
     }
 }

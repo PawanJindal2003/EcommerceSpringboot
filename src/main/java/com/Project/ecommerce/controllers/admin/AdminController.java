@@ -1,12 +1,12 @@
 package com.Project.ecommerce.controllers.admin;
 
-import com.Project.ecommerce.co.admin.GetIdCO;
 import com.Project.ecommerce.dto.response.SuccessResponse;
 import com.Project.ecommerce.dto.admin.GetAllCustomersDTO;
 import com.Project.ecommerce.dto.admin.GetAllSellersDTO;
 import com.Project.ecommerce.services.admin.AdminService;
 import com.Project.ecommerce.utils.ResponseUtil;
 import jakarta.mail.MessagingException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -18,17 +18,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
+@RequiredArgsConstructor
 public class AdminController {
-    private AdminService adminService;
-    private ResponseUtil responseUtil;
-
-    public AdminController(AdminService adminService, ResponseUtil responseUtil) {
-        this.adminService = adminService;
-        this.responseUtil = responseUtil;
-    }
+    private final AdminService adminService;
+    private final ResponseUtil responseUtil;
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/all-customers")
+    @GetMapping("/customers")
     public ResponseEntity<SuccessResponse> getAllCustomers(@RequestParam(required = false, defaultValue = "0") int page,
                                                            @RequestParam(required = false, defaultValue = "10") int size,
                                                            @RequestParam(required = false) String email,
@@ -46,7 +42,7 @@ public class AdminController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/all-sellers")
+    @GetMapping("/sellers")
     public ResponseEntity<SuccessResponse> getAllSellers(@RequestParam(required = false, defaultValue = "0") int page,
                                                                   @RequestParam(required = false, defaultValue = "10") int size,
                                                                   @RequestParam(required = false) String email){
@@ -63,15 +59,15 @@ public class AdminController {
 
     //common for customer and seller
     @PreAuthorize("hasRole('ADMIN')")
-    @PatchMapping("/activate/user")
-    public ResponseEntity<SuccessResponse> activateUser(@RequestBody GetIdCO getIdCO) throws MessagingException {
-        String responseMessage = adminService.activateDeactivateUser(getIdCO.getId(), true);
+    @PatchMapping("/activate/user/{userId}")
+    public ResponseEntity<SuccessResponse> activateUser(@PathVariable String userId) throws MessagingException {
+        String responseMessage = adminService.activateDeactivateUser(userId, true);
         return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, responseMessage), HttpStatus.OK);
     }
     @PreAuthorize("hasRole('ADMIN')")
-    @PatchMapping("/deactivate/user")
-    public ResponseEntity<SuccessResponse> deactivateUser(@RequestBody GetIdCO getIdCO) throws MessagingException {
-        String responseMessage = adminService.activateDeactivateUser(getIdCO.getId(), false);
+    @PatchMapping("/deactivate/user/{userId}")
+    public ResponseEntity<SuccessResponse> deactivateUser(@PathVariable String userId) throws MessagingException {
+        String responseMessage = adminService.activateDeactivateUser(userId, false);
         return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, responseMessage), HttpStatus.OK);
     }
 }

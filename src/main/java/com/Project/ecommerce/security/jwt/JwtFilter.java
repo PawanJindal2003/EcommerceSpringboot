@@ -29,10 +29,7 @@ import java.util.stream.Collectors;
 public class JwtFilter extends OncePerRequestFilter {
     private static final List<String> NON_PUBLIC_URLS = List.of(
             "/api/auth/logout",
-            "/api/admin/all-customers/**",
-            "/api/admin/all-sellers/**",
-            "/api/admin/activate/user/**",
-            "/api/admin/deactivate/user/**",
+            "/api/admin/**",
             "/api/seller/me",
             "/api/seller/update-profile",
             "/api/seller/update-address/**",

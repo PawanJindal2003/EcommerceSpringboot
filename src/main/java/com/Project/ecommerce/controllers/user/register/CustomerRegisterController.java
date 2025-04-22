@@ -9,22 +9,17 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("/api/auth/customer")
 @RestController
+@RequiredArgsConstructor
 public class CustomerRegisterController {
-    private CustomerRegisterService customerRegisterService;
-    private ResponseUtil responseUtil;
-
-    @Autowired
-    public CustomerRegisterController(CustomerRegisterService customerRegisterService, ResponseUtil responseUtil) {
-        this.customerRegisterService = customerRegisterService;
-        this.responseUtil = responseUtil;
-    }
+    private final CustomerRegisterService customerRegisterService;
+    private final ResponseUtil responseUtil;
 
     @PostMapping("/register")
     public ResponseEntity<SuccessResponse> registerCustomer(@Valid @RequestBody CustomerCO customerCO) throws MessagingException {
@@ -32,8 +27,8 @@ public class CustomerRegisterController {
         return new ResponseEntity<>(responseUtil.success(HttpStatus.CREATED, response), HttpStatus.CREATED);
     }
 
-    @PutMapping("/activate")
-    public ResponseEntity<SuccessResponse> activateCustomer(@RequestParam("token") String token) throws MessagingException {
+    @PutMapping("/activate/{token}")
+    public ResponseEntity<SuccessResponse> activateCustomer(@PathVariable String token) throws MessagingException {
         String response = customerRegisterService.activateCustomer(token);
         return new ResponseEntity<>(responseUtil.success(HttpStatus.CREATED, response), HttpStatus.CREATED);
     }

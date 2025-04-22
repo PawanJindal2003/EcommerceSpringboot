@@ -20,6 +20,7 @@ import com.Project.ecommerce.repositories.category.CategoryMetaDataFieldReposito
 import com.Project.ecommerce.repositories.category.CategoryMetaDataFieldValuesRepository;
 import com.Project.ecommerce.repositories.category.CategoryRepository;
 import com.Project.ecommerce.repositories.product.ProductRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
@@ -31,20 +32,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class CategoryService {
-    private CategoryMetaDataFieldRepository categoryMetaDataFieldRepository;
-    private MessageSource messageSource;
-    private CategoryRepository categoryRepository;
-    private ProductRepository productRepository;
-    private CategoryMetaDataFieldValuesRepository categoryMetaDataFieldValuesRepository;
-
-    public CategoryService(CategoryMetaDataFieldRepository categoryMetaDataFieldRepository, MessageSource messageSource, CategoryRepository categoryRepository, ProductRepository productRepository, CategoryMetaDataFieldValuesRepository categoryMetaDataFieldValuesRepository) {
-        this.categoryMetaDataFieldRepository = categoryMetaDataFieldRepository;
-        this.messageSource = messageSource;
-        this.categoryRepository = categoryRepository;
-        this.productRepository = productRepository;
-        this.categoryMetaDataFieldValuesRepository = categoryMetaDataFieldValuesRepository;
-    }
+    private final CategoryMetaDataFieldRepository categoryMetaDataFieldRepository;
+    private final MessageSource messageSource;
+    private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
+    private final CategoryMetaDataFieldValuesRepository categoryMetaDataFieldValuesRepository;
 
     public List<String> addCategoryMetaDataField(String value) {
         if (categoryMetaDataFieldRepository.findByName(value).isPresent()) {

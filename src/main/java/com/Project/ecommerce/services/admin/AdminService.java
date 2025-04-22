@@ -8,7 +8,7 @@ import com.Project.ecommerce.repositories.user.CustomerRepository;
 import com.Project.ecommerce.repositories.user.SellerRepository;
 import com.Project.ecommerce.repositories.user.UserRepository;
 import jakarta.mail.MessagingException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Pageable;
@@ -20,21 +20,13 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class AdminService {
-    private CustomerRepository customerRepository;
-    private SellerRepository sellerRepository;
-    private UserRepository userRepository;
-    private AdminEmailService adminEmailService;
-    private MessageSource messageSource;
-
-    @Autowired
-    public AdminService(CustomerRepository customerRepository, SellerRepository sellerRepository, UserRepository userRepository, AdminEmailService adminEmailService, MessageSource messageSource) {
-        this.customerRepository = customerRepository;
-        this.sellerRepository = sellerRepository;
-        this.userRepository = userRepository;
-        this.adminEmailService = adminEmailService;
-        this.messageSource = messageSource;
-    }
+    private final CustomerRepository customerRepository;
+    private final SellerRepository sellerRepository;
+    private final UserRepository userRepository;
+    private final AdminEmailService adminEmailService;
+    private final MessageSource messageSource;
 
     public List<GetAllCustomersDTO> getAllCustomers(Pageable pageable) {
         return customerRepository.findAll(pageable).stream().map(customer -> {

@@ -9,7 +9,7 @@ import com.Project.ecommerce.services.seller.SellerService;
 import com.Project.ecommerce.utils.ResponseUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,19 +17,16 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/seller")
+@RequiredArgsConstructor
 public class SellerController {
-    private SellerService sellerService;
-    private ResponseUtil responseUtil;
+    private final SellerService sellerService;
+    private final ResponseUtil responseUtil;
 
-    @Autowired
-    public SellerController(SellerService sellerService, ResponseUtil responseUtil){
-        this.sellerService = sellerService;
-        this.responseUtil = responseUtil;
-    }
     @PreAuthorize("hasRole('SELLER')")
     @GetMapping("/me")
     public ResponseEntity<SuccessResponse> viewProfile(HttpServletRequest request){
@@ -54,9 +51,9 @@ public class SellerController {
     }
 
     @PreAuthorize("hasRole('SELLER')")
-    @PatchMapping("/update-address")
-    public ResponseEntity<SuccessResponse> updateAddress(HttpServletRequest request, @Valid @RequestBody String addressId, @Valid @RequestBody UpdateAddressCO updateAddressCO){
-        String responseMessage = sellerService.updateAddress(request, addressId , updateAddressCO);
+    @PatchMapping("/update-address/{addressId}")
+    public ResponseEntity<SuccessResponse> updateAddress(Principal principal, @Valid @PathVariable String addressId, @Valid @RequestBody UpdateAddressCO updateAddressCO){
+        String responseMessage = sellerService.updateAddress(principal, addressId , updateAddressCO);
         return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, responseMessage), HttpStatus.OK);
     }
 }

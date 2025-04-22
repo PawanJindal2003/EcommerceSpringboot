@@ -11,6 +11,7 @@ import com.Project.ecommerce.dto.response.SuccessResponse;
 import com.Project.ecommerce.services.category.CategoryService;
 import com.Project.ecommerce.utils.ResponseUtil;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,14 +21,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/category")
+@RequiredArgsConstructor
 public class CategoryController {
-    private CategoryService categoryService;
-    private ResponseUtil responseUtil;
-
-    public CategoryController(CategoryService categoryService, ResponseUtil responseUtil) {
-        this.categoryService = categoryService;
-        this.responseUtil = responseUtil;
-    }
+    private final CategoryService categoryService;
+    private final ResponseUtil responseUtil;
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/add-categoryMetaDataField")
@@ -118,8 +115,8 @@ public class CategoryController {
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
-    @GetMapping("/customer/categories")
-    public ResponseEntity<SuccessResponse> getCustomerCategory(@RequestParam(required = false) String categoryId) {
+    @GetMapping("/customer/{categoryId}/categories")
+    public ResponseEntity<SuccessResponse> getCustomerCategory(@PathVariable(required = false) String categoryId) {
         List<CustomerCategoryResponseDTO> categories;
         if (categoryId == null) {
             categories = categoryService.getCustomerRootCategories();
