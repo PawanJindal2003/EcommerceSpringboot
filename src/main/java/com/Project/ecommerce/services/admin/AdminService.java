@@ -32,9 +32,12 @@ public class AdminService {
         return customerRepository.findAll(pageable).stream().map(customer -> {
             GetAllCustomersDTO customerDTO = new GetAllCustomersDTO();
             customerDTO.setId(customer.getId());
-            customerDTO.setFirstName(customer.getFirstName());
-            customerDTO.setMiddleName(customer.getMiddleName());
-            customerDTO.setLastName(customer.getLastName());
+            if(customer.getMiddleName()!=null){
+                customerDTO.setName(customer.getFirstName() + " " + customer.getMiddleName() + " " + customer.getLastName());
+            }
+            else{
+                customerDTO.setName(customer.getFirstName() + " " + customer.getLastName());
+            }
             customerDTO.setEmail(customer.getEmail());
             customerDTO.setIsActive(customer.getIsActive());
             return customerDTO;
@@ -45,9 +48,12 @@ public class AdminService {
         return customerRepository.findAllByEmail(email, pageable).stream().map(customer -> {
             GetAllCustomersDTO customerDTO = new GetAllCustomersDTO();
             customerDTO.setId(customer.getId());
-            customerDTO.setFirstName(customer.getFirstName());
-            customerDTO.setMiddleName(customer.getMiddleName());
-            customerDTO.setLastName(customer.getLastName());
+            if(customer.getMiddleName()!=null){
+                customerDTO.setName(customer.getFirstName() + " " + customer.getMiddleName() + " " + customer.getLastName());
+            }
+            else{
+                customerDTO.setName(customer.getFirstName() + " " + customer.getLastName());
+            }
             customerDTO.setEmail(customer.getEmail());
             customerDTO.setIsActive(customer.getIsActive());
             return customerDTO;
@@ -58,11 +64,17 @@ public class AdminService {
         return sellerRepository.findAll(pageable).stream().map(seller -> {
             GetAllSellersDTO sellersDTO = new GetAllSellersDTO();
             sellersDTO.setId(seller.getId());
-            sellersDTO.setFirstName(seller.getFirstName());
-            sellersDTO.setMiddleName(seller.getMiddleName());
-            sellersDTO.setLastName(seller.getLastName());
+            if(seller.getMiddleName()!=null){
+                sellersDTO.setName(seller.getFirstName() + " " + seller.getMiddleName() + " " + seller.getLastName());
+            }
+            else{
+                sellersDTO.setName(seller.getFirstName() + " " + seller.getLastName());
+            }
             sellersDTO.setEmail(seller.getEmail());
             sellersDTO.setIsActive(seller.getIsActive());
+            sellersDTO.setCompanyName(seller.getCompanyName());
+            sellersDTO.setCompanyAddress(seller.getAddresses().get(0));
+            sellersDTO.setCompanyContact(seller.getCompanyContact());
             return sellersDTO;
         }).collect(Collectors.toList());
     }
@@ -71,9 +83,12 @@ public class AdminService {
         return sellerRepository.findAllByEmail(email, pageable).stream().map(seller -> {
             GetAllSellersDTO sellersDTO = new GetAllSellersDTO();
             sellersDTO.setId(seller.getId());
-            sellersDTO.setFirstName(seller.getFirstName());
-            sellersDTO.setMiddleName(seller.getMiddleName());
-            sellersDTO.setLastName(seller.getLastName());
+            if(seller.getMiddleName()!=null){
+                sellersDTO.setName(seller.getFirstName() + " " + seller.getMiddleName() + " " + seller.getLastName());
+            }
+            else{
+                sellersDTO.setName(seller.getFirstName() + " " + seller.getLastName());
+            }
             sellersDTO.setEmail(seller.getEmail());
             sellersDTO.setIsActive(seller.getIsActive());
             sellersDTO.setCompanyName(seller.getCompanyName());
