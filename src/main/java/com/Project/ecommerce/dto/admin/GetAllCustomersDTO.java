@@ -9,9 +9,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class GetAllCustomersDTO {
     private String id;
-    private String firstName;
-    private String middleName;
-    private String lastName;
+    private String name;
     private String email;
     private Boolean isActive;
 }
