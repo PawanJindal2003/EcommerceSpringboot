@@ -1,5 +1,6 @@
 package com.Project.ecommerce.config;
 
+import com.Project.ecommerce.entities.user.Role;
 import com.Project.ecommerce.entities.user.User;
 import com.Project.ecommerce.repositories.user.RoleRepository;
 import com.Project.ecommerce.repositories.user.UserRepository;
@@ -9,7 +10,6 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
-
 import java.util.Optional;
 
 @Component
@@ -32,6 +32,12 @@ public class AdminBootstrap implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         Optional<User> existingAdmin = userRepository.findByEmail(email);
+
+        if(roleRepository.findByAuthority("ADMIN") == null && roleRepository.findByAuthority("CUSTOMER") == null && roleRepository.findByAuthority("SELLER") == null){
+            roleRepository.save(new Role("ADMIN"));
+            roleRepository.save(new Role("SELLER"));
+            roleRepository.save(new Role("CUSTOMER"));
+        }
 
         if(existingAdmin.isEmpty()){
             User admin = new User();
