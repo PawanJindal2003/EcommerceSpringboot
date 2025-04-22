@@ -2,8 +2,8 @@ package com.Project.ecommerce.services.user.login;
 
 import com.Project.ecommerce.co.login.UserCO;
 import com.Project.ecommerce.entities.user.User;
-import com.Project.ecommerce.exceptions.customExceptions.InactiveUserException;
-import com.Project.ecommerce.exceptions.customExceptions.UserNotFoundException;
+import com.Project.ecommerce.exceptions.customExceptions.InactiveResourceException;
+import com.Project.ecommerce.exceptions.customExceptions.ResourceNotFoundException;
 import com.Project.ecommerce.repositories.Jwt.RefreshTokenRepository;
 import com.Project.ecommerce.repositories.user.UserRepository;
 import com.Project.ecommerce.security.jwt.JwtService;
@@ -37,10 +37,10 @@ public class UserLoginService {
 
     public List<String> loginUser(@Valid @RequestBody UserCO userCO, HttpServletResponse response) {
         User user = userRepository.findByEmail(userCO.getEmail())
-                .orElseThrow(() -> new UserNotFoundException(messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale())));
+                .orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale())));
 
         if (!user.getIsActive()) {
-            throw new InactiveUserException(messageSource.getMessage("user.inactive", null, LocaleContextHolder.getLocale()));
+            throw new InactiveResourceException(messageSource.getMessage("user.inactive", null, LocaleContextHolder.getLocale()));
         }
 
         try {
@@ -75,7 +75,7 @@ public class UserLoginService {
 
     public void multipleLoginAttempts(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException(messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale())));
+                .orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale())));
 
         int attempts = user.getInvalidAttemptCount() + 1;
         user.setInvalidAttemptCount(attempts);

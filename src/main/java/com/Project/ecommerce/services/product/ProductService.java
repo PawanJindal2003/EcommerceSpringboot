@@ -73,7 +73,7 @@ public class ProductService {
         );
 
         if (existingProduct != null && existingProduct.getName().equalsIgnoreCase(addProductCO.getName())) {
-            throw new DuplicateCompanyException("Product name already exists, please add a unique product name.");
+            throw new DuplicateResourceException("Product name already exists, please add a unique product name.");
         }
 
         Product product = createProduct(addProductCO, category, seller);
@@ -102,7 +102,7 @@ public class ProductService {
 
     public String addProductVariation( AddProductVariationCO addProductVariationCO, MultipartFile primaryImage, List<MultipartFile> secondaryImages) throws IOException {
         Product product = productRepository.findById(addProductVariationCO.getProductId())
-                .orElseThrow(() -> new UserNotFoundException("Invalid Product id"));
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid Product id"));
         productVariationValidator.validateAndFetchProduct(product);
         ProductVariation productVariation = createProductVariation(product, addProductVariationCO, primaryImage, secondaryImages);
         productVariationRepository.save(productVariation);
@@ -134,8 +134,8 @@ public class ProductService {
 
     public SellerProductDTO getSellerProduct(Principal principal, String productId){
         String sellerEmail = principal.getName();
-        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new UserNotFoundException("Seller not found"));
-        Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product not found"));
+        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
+        Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         productValidator.validateIsDeletedProduct(product);
         productValidator.validateIsSellerProduct(seller, product);
         return createSellerProductDTO(product);
@@ -162,7 +162,7 @@ public class ProductService {
 
     public SellerProductVariationDTO getSellerProductVariation(Principal principal, String productVariationId){
         String sellerEmail = principal.getName();
-        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new UserNotFoundException("Seller not found"));
+        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
         ProductVariation productVariation = productVariationRepository.findById(productVariationId).orElseThrow(()->new ResourceNotFoundException("Product variation not found"));
         productVariationValidator.validateIsSellerProductVariation(seller, productVariation);
         Product product = productVariation.getProduct();
@@ -187,7 +187,7 @@ public class ProductService {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(direction), sortField));
 
         String sellerEmail = principal.getName();
-        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new UserNotFoundException("Seller not found"));
+        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
 
         Specification<Product> specification = ProductSpecifications.bySeller(seller.getId()).and(ProductSpecifications.isNotDeleted());
         if (query != null && !query.isBlank()) {
@@ -205,8 +205,8 @@ public class ProductService {
 
     public List<SellerProductVariationDTO> getSellerAllProductVariations(Principal principal, String productId, int pageNo, int pageSize, String sortField, String direction, String query){
         String sellerEmail = principal.getName();
-        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new UserNotFoundException("Seller not found"));
-        Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product not found"));
+        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
+        Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         productValidator.validateIsDeletedProduct(product);
         productValidator.validateIsSellerProduct(seller, product);
 
@@ -231,8 +231,8 @@ public class ProductService {
 
     public String deleteSellerProduct(Principal principal, String productId){
         String sellerEmail = principal.getName();
-        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new UserNotFoundException("Seller not found"));
-        Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product not found"));
+        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
+        Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         productValidator.validateIsSellerProduct(seller, product);
 
         productRepository.deleteById(productId);
@@ -242,7 +242,7 @@ public class ProductService {
     public String updateSellerProduct(Principal principal, String productId, UpdateProductCO updateProductCO){
         Seller seller = sellerRepository.findByEmail(principal.getName()).orElseThrow(()->new ResourceNotFoundException("Seller not found"));
         Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-        Category category = categoryRepository.findById(product.getCategory().getId()).orElseThrow(()->new UserNotFoundException("Category not found"));
+        Category category = categoryRepository.findById(product.getCategory().getId()).orElseThrow(()->new ResourceNotFoundException("Category not found"));
         productValidator.validateIsSellerProduct(seller, product);
 
         Product existingProduct = productRepository.getNameByBrandAndSellerIdAndCategoryId(
@@ -250,7 +250,7 @@ public class ProductService {
         );
 
         if (existingProduct != null && existingProduct.getName().equalsIgnoreCase(updateProductCO.getName())) {
-            throw new DuplicateCompanyException("Product name already exists, please add a unique product name.");
+            throw new DuplicateResourceException("Product name already exists, please add a unique product name.");
         }
 
         product.setName(updateProductCO.getName());
@@ -290,7 +290,7 @@ public class ProductService {
     }
 
     public CustomerProductDTO getCustomerProduct(String productId){
-        Product product = productRepository.findById(productId).orElseThrow(()->new UserNotFoundException("Product not found"));
+        Product product = productRepository.findById(productId).orElseThrow(()->new ResourceNotFoundException("Product not found"));
         productValidator.validateIsDeletedProduct(product);
         productValidator.validateIsActiveProduct(product);
         productValidator.containsValidProductVariation(product);
@@ -389,7 +389,7 @@ public class ProductService {
                 leafCategories.add(currentCategory);
             }
             else{
-                queue.addAll(categoryRepository.findAllByParentCategoryId(currentCategory.getId()).orElseThrow(()-> new InvalidIdException("Invalid category id provided")));
+                queue.addAll(categoryRepository.findAllByParentCategoryId(currentCategory.getId()).orElseThrow(()-> new InvalidResourceException("Invalid category id provided")));
             }
         }
         return leafCategories;

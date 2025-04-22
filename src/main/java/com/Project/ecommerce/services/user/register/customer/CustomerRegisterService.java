@@ -6,7 +6,7 @@ import com.Project.ecommerce.entities.user.Role;
 import com.Project.ecommerce.entities.user.User;
 import com.Project.ecommerce.exceptions.customExceptions.ConfirmPasswordMismatchException;
 import com.Project.ecommerce.exceptions.customExceptions.EmailAlreadyExistsException;
-import com.Project.ecommerce.exceptions.customExceptions.UserNotFoundException;
+import com.Project.ecommerce.exceptions.customExceptions.ResourceNotFoundException;
 import com.Project.ecommerce.repositories.user.RoleRepository;
 import com.Project.ecommerce.repositories.user.CustomerRepository;
 import com.Project.ecommerce.repositories.user.UserRepository;
@@ -81,7 +81,7 @@ public class CustomerRegisterService {
                 // validating the user
                 String extractedEmail = jwtService.extractEmail(token);
                 User customer = userRepository.findByEmail(extractedEmail)
-                        .orElseThrow(() -> new UserNotFoundException(messageSource.getMessage("customer.user.not.found", null, LocaleContextHolder.getLocale())));
+                        .orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("customer.user.not.found", null, LocaleContextHolder.getLocale())));
 
                 // activating the user
                 customer.setIsActive(true);
@@ -108,7 +108,7 @@ public class CustomerRegisterService {
 
     public String resendActivationEmail(String email) throws MessagingException {
         User customer = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException(messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale())));
+                .orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale())));
 
         jwtService.deleteToken(email);
         String newToken = jwtService.generateToken(customer.getEmail());

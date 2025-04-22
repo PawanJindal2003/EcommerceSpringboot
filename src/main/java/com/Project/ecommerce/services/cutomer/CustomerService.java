@@ -7,9 +7,8 @@ import com.Project.ecommerce.dto.customer.ViewAddressDTO;
 import com.Project.ecommerce.dto.customer.ViewProfileDTO;
 import com.Project.ecommerce.entities.address.Address;
 import com.Project.ecommerce.entities.user.Customer;
-import com.Project.ecommerce.exceptions.customExceptions.AddressNotFoundException;
 import com.Project.ecommerce.exceptions.customExceptions.ConfirmPasswordMismatchException;
-import com.Project.ecommerce.exceptions.customExceptions.UserNotFoundException;
+import com.Project.ecommerce.exceptions.customExceptions.ResourceNotFoundException;
 import com.Project.ecommerce.repositories.user.AddressRepository;
 import com.Project.ecommerce.repositories.user.CustomerRepository;
 import com.Project.ecommerce.security.jwt.JwtService;
@@ -56,7 +55,7 @@ public class CustomerService {
             }
         }
         String email = jwtService.extractEmail(accessToken);
-        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(messageSource.getMessage("email.not.found", null, request.getLocale())));
+        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("email.not.found", null, request.getLocale())));
 
         ViewProfileDTO viewProfileDTO = new ViewProfileDTO();
 
@@ -83,7 +82,7 @@ public class CustomerService {
         }
 
         String email = jwtService.extractEmail(accessToken);
-        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(messageSource.getMessage("email.not.found", null, request.getLocale())));
+        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("email.not.found", null, request.getLocale())));
 
         List<ViewAddressDTO> addressesDTO = new ArrayList<>();
 
@@ -115,7 +114,7 @@ public class CustomerService {
         }
 
         String email = jwtService.extractEmail(accessToken);
-        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(messageSource.getMessage("customer.not.found", null, request.getLocale())));
+        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("customer.not.found", null, request.getLocale())));
 
         if(updateProfileCO != null) {
             Optional.ofNullable(updateProfileCO.getFirstName()).ifPresent(customer::setFirstName);
@@ -146,7 +145,7 @@ public class CustomerService {
             }
         }
         String email = jwtService.extractEmail(accessToken);
-        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("Customer not found"));
+        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
         //updating password
         customer.setPassword(bCryptPasswordEncoder.encode(updatePasswordCO.getPassword()));
@@ -169,7 +168,7 @@ public class CustomerService {
             }
         }
         String email = jwtService.extractEmail(accessToken);
-        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("Customer not found"));
+        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
         Address newAddress = new Address();
         newAddress.setAddressLine(enteredNewAddress.getAddressLine());
@@ -191,13 +190,13 @@ public class CustomerService {
 
     public String deleteAddress(Principal principal, String addressId) {
         String email = principal.getName();
-        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("Customer not found"));
+        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
         // check id provided is valid
-        addressRepository.findById(addressId).orElseThrow(()->new AddressNotFoundException("Address not found"));
+        addressRepository.findById(addressId).orElseThrow(()->new ResourceNotFoundException("Address not found"));
 
         //check if provided address is customer's address
-        addressRepository.findByUserId(customer.getId()).orElseThrow(()->new AddressNotFoundException("Wrong addressId provided"));
+        addressRepository.findByUserId(customer.getId()).orElseThrow(()->new ResourceNotFoundException("Wrong addressId provided"));
 
         addressRepository.deleteById(addressId);
 
@@ -215,7 +214,7 @@ public class CustomerService {
             }
         }
         String email = jwtService.extractEmail(accessToken);
-        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("Customer not found"));
+        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
         List<Address> addresses = customer.getAddresses();
         String id = updateAddressCO.getId();

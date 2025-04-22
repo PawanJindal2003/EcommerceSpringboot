@@ -4,8 +4,7 @@ import com.Project.ecommerce.co.registration.SellerCO;
 import com.Project.ecommerce.entities.user.Role;
 import com.Project.ecommerce.entities.user.Seller;
 import com.Project.ecommerce.exceptions.customExceptions.ConfirmPasswordMismatchException;
-import com.Project.ecommerce.exceptions.customExceptions.DuplicateCompanyException;
-import com.Project.ecommerce.exceptions.customExceptions.DuplicateGSTException;
+import com.Project.ecommerce.exceptions.customExceptions.DuplicateResourceException;
 import com.Project.ecommerce.exceptions.customExceptions.EmailAlreadyExistsException;
 import com.Project.ecommerce.repositories.user.RoleRepository;
 import com.Project.ecommerce.repositories.user.SellerRepository;
@@ -15,9 +14,6 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Locale;
 
 @Service
 public class SellerRegisterService {
@@ -45,10 +41,10 @@ public class SellerRegisterService {
         }
         //not printing "enter a unique GST", security issue
         if(sellerRepository.findByGST(sellerCO.getGST()).isPresent()){
-            throw new DuplicateGSTException(messageSource.getMessage("seller.invalid.gst", null, LocaleContextHolder.getLocale()));
+            throw new DuplicateResourceException(messageSource.getMessage("seller.invalid.gst", null, LocaleContextHolder.getLocale()));
         }
         if(sellerRepository.findByCompanyName(sellerCO.getCompanyName()).isPresent()){
-            throw new DuplicateCompanyException(messageSource.getMessage("seller.duplicate.company.name", null, LocaleContextHolder.getLocale()));
+            throw new DuplicateResourceException(messageSource.getMessage("seller.duplicate.company.name", null, LocaleContextHolder.getLocale()));
         }
 
         Role role = roleRepository.findByAuthority("Seller");

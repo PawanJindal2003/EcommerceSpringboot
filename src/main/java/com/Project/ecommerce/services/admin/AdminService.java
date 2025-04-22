@@ -3,7 +3,7 @@ package com.Project.ecommerce.services.admin;
 import com.Project.ecommerce.dto.admin.GetAllCustomersDTO;
 import com.Project.ecommerce.dto.admin.GetAllSellersDTO;
 import com.Project.ecommerce.entities.user.User;
-import com.Project.ecommerce.exceptions.customExceptions.UserNotFoundException;
+import com.Project.ecommerce.exceptions.customExceptions.ResourceNotFoundException;
 import com.Project.ecommerce.repositories.user.CustomerRepository;
 import com.Project.ecommerce.repositories.user.SellerRepository;
 import com.Project.ecommerce.repositories.user.UserRepository;
@@ -100,7 +100,7 @@ public class AdminService {
             return messageSource.getMessage("user.invalid.id", null, LocaleContextHolder.getLocale());
         }
         //user not found
-        User user = userRepository.findById(userId).orElseThrow(()->new UserNotFoundException(messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale())));
+        User user = userRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException(messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale())));
 
         //if action = true, activate user
         if(action){

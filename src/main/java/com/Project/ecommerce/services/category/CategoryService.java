@@ -48,7 +48,7 @@ public class CategoryService {
 
     public List<String> addCategoryMetaDataField(String value) {
         if (categoryMetaDataFieldRepository.findByName(value).isPresent()) {
-            throw new DuplicateCategoryMetaDataFieldException(messageSource.getMessage("categoryMetaDataFields.duplicate", null, LocaleContextHolder.getLocale()));
+            throw new DuplicateResourceException(messageSource.getMessage("categoryMetaDataFields.duplicate", null, LocaleContextHolder.getLocale()));
         }
         CategoryMetaDataField categoryMetaDataField = new CategoryMetaDataField();
         categoryMetaDataField.setName(value.toLowerCase());
@@ -104,7 +104,7 @@ public class CategoryService {
     public String addCategory(String name) {
         //unique category at root level
         if (isUniqueRootCategory(name)) {
-            throw new DuplicateRootCategoryException(messageSource.getMessage("duplicate.root.category", null, LocaleContextHolder.getLocale()));
+            throw new DuplicateResourceException(messageSource.getMessage("duplicate.root.category", null, LocaleContextHolder.getLocale()));
         }
 
         Category category = new Category();
@@ -117,7 +117,7 @@ public class CategoryService {
         Category parentCategory = categoryRepository.findById(parentCategoryId).orElseThrow();
 
         if (!isUniqueCategory(parentCategoryId, name)) {
-            throw new DuplicateSubCategoryException(messageSource.getMessage("duplicate.sub.category", null, LocaleContextHolder.getLocale()));
+            throw new DuplicateResourceException(messageSource.getMessage("duplicate.sub.category", null, LocaleContextHolder.getLocale()));
         }
 
         //if associated with products
@@ -264,12 +264,12 @@ public class CategoryService {
             List<Category> rootCategories = categoryRepository.findAllByParentCategoryIdIsNull().orElseThrow();
             for(Category rootCategory: rootCategories){
                 if(rootCategory.getName().equals(name)){
-                    throw new DuplicateSubCategoryException(messageSource.getMessage("duplicate.root.category", null, LocaleContextHolder.getLocale()));
+                    throw new DuplicateResourceException(messageSource.getMessage("duplicate.root.category", null, LocaleContextHolder.getLocale()));
                 }
             }
             //check for whole subtree
             if(!bfs(category, name)){
-                throw new DuplicateSubCategoryException(messageSource.getMessage("duplicate.sub.category", null, LocaleContextHolder.getLocale()));
+                throw new DuplicateResourceException(messageSource.getMessage("duplicate.sub.category", null, LocaleContextHolder.getLocale()));
             }
         }
         else {
@@ -278,7 +278,7 @@ public class CategoryService {
             Category checkParent = parentCategory;
             while (checkParent != null) {
                 if (checkParent.getName().equals(name)) {
-                    throw new DuplicateSubCategoryException(messageSource.getMessage("duplicate.sub.category", null, LocaleContextHolder.getLocale()));
+                    throw new DuplicateResourceException(messageSource.getMessage("duplicate.sub.category", null, LocaleContextHolder.getLocale()));
                 }
                 checkParent = checkParent.getParentCategory();
             }
@@ -287,13 +287,13 @@ public class CategoryService {
             List<Category> realSiblings = categoryRepository.findAllByParentCategoryId(parentCategory.getId()).orElseThrow();
             for (Category realSibling : realSiblings) {
                 if (realSibling.getName().equals(name)) {
-                    throw new DuplicateSubCategoryException(messageSource.getMessage("duplicate.sub.category", null, LocaleContextHolder.getLocale()));
+                    throw new DuplicateResourceException(messageSource.getMessage("duplicate.sub.category", null, LocaleContextHolder.getLocale()));
                 }
             }
 
             // 3. check whole subtree
             if(!bfs(category, name)){
-                throw new DuplicateSubCategoryException(messageSource.getMessage("duplicate.sub.category", null, LocaleContextHolder.getLocale()));
+                throw new DuplicateResourceException(messageSource.getMessage("duplicate.sub.category", null, LocaleContextHolder.getLocale()));
             }
         }
 
@@ -311,15 +311,15 @@ public class CategoryService {
         List<String> values = metadataValueCategoryCO.getValues();
 
         //checking validity of id
-        Category category = categoryRepository.findById(categoryId).orElseThrow(()-> new InvalidIdException("Please enter a valid id"));
-        CategoryMetaDataField categoryMetaDataField = categoryMetaDataFieldRepository.findById(metaDataFieldId).orElseThrow(()-> new InvalidIdException("Please enter a valid id"));
+        Category category = categoryRepository.findById(categoryId).orElseThrow(()-> new InactiveResourceException("Please enter a valid id"));
+        CategoryMetaDataField categoryMetaDataField = categoryMetaDataFieldRepository.findById(metaDataFieldId).orElseThrow(()-> new InactiveResourceException("Please enter a valid id"));
 
         //checking all elements are unique
         values.replaceAll(String::toLowerCase);
 
         Set<String> valueSet = new HashSet<>(values);
         if(valueSet.size() < values.size()){
-            throw new DuplicateMetadataFieldValuesException("Duplicate values found in field values");
+            throw new DuplicateResourceException("Duplicate values found in field values");
         }
 
         //adding metadata field values in leaf category only
@@ -355,8 +355,8 @@ public class CategoryService {
         List<String> newValues = metadataValueCategoryCO.getValues();
 
         //checking validity of id
-        Category category = categoryRepository.findById(categoryId).orElseThrow(()-> new InvalidIdException("Please enter a valid id"));
-        CategoryMetaDataField categoryMetaDataField = categoryMetaDataFieldRepository.findById(metaDataFieldId).orElseThrow(()-> new InvalidIdException("Please enter a valid id"));
+        Category category = categoryRepository.findById(categoryId).orElseThrow(()-> new InactiveResourceException("Please enter a valid id"));
+        CategoryMetaDataField categoryMetaDataField = categoryMetaDataFieldRepository.findById(metaDataFieldId).orElseThrow(()-> new InactiveResourceException("Please enter a valid id"));
 
         // provided metadata field should be linked with the provided category
         CategoryMetaDataFieldValues categoryMetaDataFieldValues = categoryMetaDataFieldValuesRepository.findByCategoryMetaDataFieldId(metaDataFieldId).orElseThrow(()->new FieldNotAssociatedException("Provided metadata field is not associated with the category"));
@@ -367,7 +367,7 @@ public class CategoryService {
         Set<String> newValueSet = new HashSet<>(newValues);
         //unique values are passed in list
         if (newValueSet.size() < newValues.size()) {
-            throw new DuplicateMetadataFieldValuesException("Duplicate values found in field values");
+            throw new DuplicateResourceException("Duplicate values found in field values");
         }
 
         Set<String> existingValueSet = new HashSet<>(Arrays.asList(
@@ -498,7 +498,7 @@ public class CategoryService {
                 leafCategories.add(currentCategory);
             }
             else{
-                queue.addAll(categoryRepository.findAllByParentCategoryId(currentCategory.getId()).orElseThrow(()-> new InvalidIdException("Invalid category id provided")));
+                queue.addAll(categoryRepository.findAllByParentCategoryId(currentCategory.getId()).orElseThrow(()-> new InactiveResourceException("Invalid category id provided")));
             }
         }
         return leafCategories;

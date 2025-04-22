@@ -3,9 +3,9 @@ package com.Project.ecommerce.services.user.forgetPassword;
 import com.Project.ecommerce.co.forgetPassword.ResetPasswordCO;
 import com.Project.ecommerce.entities.user.User;
 import com.Project.ecommerce.exceptions.customExceptions.ConfirmPasswordMismatchException;
-import com.Project.ecommerce.exceptions.customExceptions.InactiveUserException;
+import com.Project.ecommerce.exceptions.customExceptions.InactiveResourceException;
 import com.Project.ecommerce.exceptions.customExceptions.LockedAccountException;
-import com.Project.ecommerce.exceptions.customExceptions.UserNotFoundException;
+import com.Project.ecommerce.exceptions.customExceptions.ResourceNotFoundException;
 import com.Project.ecommerce.repositories.user.UserRepository;
 import com.Project.ecommerce.security.jwt.JwtService;
 import jakarta.mail.MessagingException;
@@ -40,13 +40,13 @@ public class ForgetPasswordService {
 
     public String sendResetPasswordMail(String email) throws MessagingException {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException(
+                .orElseThrow(() -> new ResourceNotFoundException(
                         messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale())
                 ));
 
         //throwing error response if an inactive user trying to forget password
         if (!user.getIsActive()) {
-            throw new InactiveUserException(messageSource.getMessage("user.inactive", null, LocaleContextHolder.getLocale()));
+            throw new InactiveResourceException(messageSource.getMessage("user.inactive", null, LocaleContextHolder.getLocale()));
         }
 
         //throwing error response if a locked user trying to forget password
@@ -83,7 +83,7 @@ public class ForgetPasswordService {
             jwtService.deleteForgetPasswordToken(email);
 
             User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new UserNotFoundException(
+                    .orElseThrow(() -> new ResourceNotFoundException(
                             messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale())
                     ));
 

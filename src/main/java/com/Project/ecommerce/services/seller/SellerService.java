@@ -7,8 +7,8 @@ import com.Project.ecommerce.dto.seller.ViewProfileDTO;
 import com.Project.ecommerce.entities.address.Address;
 import com.Project.ecommerce.entities.user.Seller;
 import com.Project.ecommerce.exceptions.customExceptions.ConfirmPasswordMismatchException;
-import com.Project.ecommerce.exceptions.customExceptions.DuplicateGSTException;
-import com.Project.ecommerce.exceptions.customExceptions.UserNotFoundException;
+import com.Project.ecommerce.exceptions.customExceptions.DuplicateResourceException;
+import com.Project.ecommerce.exceptions.customExceptions.ResourceNotFoundException;
 import com.Project.ecommerce.repositories.user.AddressRepository;
 import com.Project.ecommerce.repositories.user.SellerRepository;
 import com.Project.ecommerce.security.jwt.JwtService;
@@ -54,7 +54,7 @@ public class SellerService {
         }
         ViewProfileDTO viewProfileDTO = new ViewProfileDTO();
         String email = jwtService.extractEmail(accessToken);
-        Seller seller = sellerRepository.findByEmail(email).orElseThrow(()->new UserNotFoundException(messageSource.getMessage("seller.not.found", null, request.getLocale())));
+        Seller seller = sellerRepository.findByEmail(email).orElseThrow(()->new ResourceNotFoundException(messageSource.getMessage("seller.not.found", null, request.getLocale())));
 
         viewProfileDTO.setId(seller.getId());
         viewProfileDTO.setFirstName(seller.getFirstName());
@@ -86,7 +86,7 @@ public class SellerService {
             }
         }
         String email = jwtService.extractEmail(accessToken);
-        Seller seller = sellerRepository.findByEmail(email).orElseThrow(()-> new UserNotFoundException(messageSource.getMessage("seller.not.found", null, request.getLocale())));
+        Seller seller = sellerRepository.findByEmail(email).orElseThrow(()-> new ResourceNotFoundException(messageSource.getMessage("seller.not.found", null, request.getLocale())));
 
         if(updateProfileCO!=null) {
             Optional.ofNullable(updateProfileCO.getFirstName()).ifPresent(seller::setFirstName);
@@ -95,7 +95,7 @@ public class SellerService {
             Optional.ofNullable(updateProfileCO.getCompanyName()).ifPresent(seller::setCompanyName);
             //not printing "enter a unique GST", security issue
             if (sellerRepository.findByGST(updateProfileCO.getGST()).isPresent()) {
-                throw new DuplicateGSTException(messageSource.getMessage("gst.duplicate", null, request.getLocale()));
+                throw new DuplicateResourceException(messageSource.getMessage("gst.duplicate", null, request.getLocale()));
             }
 
             Optional.ofNullable(updateProfileCO.getGST()).ifPresent(seller::setGST);
@@ -124,7 +124,7 @@ public class SellerService {
             }
         }
         String email = jwtService.extractEmail(accessToken);
-        Seller seller = sellerRepository.findByEmail(email).orElseThrow(()-> new UserNotFoundException("Seller not found"));
+        Seller seller = sellerRepository.findByEmail(email).orElseThrow(()-> new ResourceNotFoundException("Seller not found"));
 
         //updating password
         seller.setPassword(bCryptPasswordEncoder.encode(updatePasswordCO.getPassword()));
@@ -154,7 +154,7 @@ public class SellerService {
         }
 
         String email = jwtService.extractEmail(accessToken);
-        Seller seller = sellerRepository.findByEmail(email).orElseThrow(()->new UserNotFoundException("Seller not found"));
+        Seller seller = sellerRepository.findByEmail(email).orElseThrow(()->new ResourceNotFoundException("Seller not found"));
         Address address = new Address();
 
         if(seller.getAddresses().get(0) != null){
