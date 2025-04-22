@@ -1,5 +1,6 @@
 package com.Project.ecommerce.entities.product;
 
+import com.Project.ecommerce.audit.Auditable;
 import com.Project.ecommerce.entities.category.Category;
 import com.Project.ecommerce.entities.user.Seller;
 import com.github.f4b6a3.uuid.UuidCreator;
@@ -14,7 +15,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Product {
+public class Product extends Auditable {
     @Id
     @Column(length = 36)
     private String id;
