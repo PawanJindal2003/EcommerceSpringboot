@@ -31,38 +31,38 @@ public class CustomerController {
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/me")
-    public ResponseEntity<SuccessResponse> viewProfile(HttpServletRequest request){
-        ViewProfileDTO viewProfileDTO = customerService.viewProfile(request);
+    public ResponseEntity<SuccessResponse> viewProfile(Principal principal){
+        ViewProfileDTO viewProfileDTO = customerService.viewProfile(principal);
         return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, List.of(viewProfileDTO)), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/addresses")
-    public ResponseEntity<SuccessResponse> viewAddresses(HttpServletRequest request){
-        List<ViewAddressDTO> addresses = customerService.getAllAddresses(request);
+    public ResponseEntity<SuccessResponse> viewAddresses(Principal principal){
+        List<ViewAddressDTO> addresses = customerService.getAllAddresses(principal);
         return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, addresses), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @PutMapping(value = "/update-profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<SuccessResponse> updateProfile(HttpServletRequest request,
+    public ResponseEntity<SuccessResponse> updateProfile(Principal principal,
                                                 @RequestPart(value = "profilePic", required = false) MultipartFile multipartFile,
                                                 @Valid UpdateProfileCO updateProfile){
-        String responseMessage = customerService.updateProfile(request, updateProfile, multipartFile);
+        String responseMessage = customerService.updateProfile(principal, updateProfile, multipartFile);
         return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, responseMessage), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @PutMapping("/update-password")
-    public ResponseEntity<SuccessResponse> updatePassword(HttpServletRequest request, @Valid @RequestBody UpdatePasswordCO updatePasswordCO){
-        String responseMessage = customerService.updatePassword(request, updatePasswordCO);
+    public ResponseEntity<SuccessResponse> updatePassword(Principal principal, @Valid @RequestBody UpdatePasswordCO updatePasswordCO){
+        String responseMessage = customerService.updatePassword(principal, updatePasswordCO);
         return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, responseMessage), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/add-address")
-    public ResponseEntity<SuccessResponse> addAddress(HttpServletRequest request, @Valid @RequestBody Address address){
-        String responseMessage = customerService.addAddress(request, address);
+    public ResponseEntity<SuccessResponse> addAddress(Principal principal, @Valid @RequestBody Address address){
+        String responseMessage = customerService.addAddress(principal, address);
         return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, responseMessage), HttpStatus.OK);
     }
 
@@ -74,9 +74,9 @@ public class CustomerController {
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
-    @PutMapping("/update-address")
-    public ResponseEntity<SuccessResponse> updateAddress(HttpServletRequest request, @Valid @RequestBody UpdateAddressCO updateAddressCO){
-        String responseMessage = customerService.updateAddress(request, updateAddressCO);
+    @PutMapping("/update-address/{addressId}")
+    public ResponseEntity<SuccessResponse> updateAddress(Principal principal, @PathVariable String addressId, @Valid @RequestBody UpdateAddressCO updateAddressCO){
+        String responseMessage = customerService.updateAddress(principal, addressId, updateAddressCO);
         return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, responseMessage), HttpStatus.OK);
     }
 }
