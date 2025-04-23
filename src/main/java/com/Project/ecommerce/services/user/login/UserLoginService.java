@@ -1,9 +1,11 @@
 package com.Project.ecommerce.services.user.login;
 
 import com.Project.ecommerce.co.login.UserCO;
+import com.Project.ecommerce.entities.jwt.BlacklistedAccessToken;
 import com.Project.ecommerce.entities.user.User;
 import com.Project.ecommerce.exceptions.customExceptions.InactiveResourceException;
 import com.Project.ecommerce.exceptions.customExceptions.ResourceNotFoundException;
+import com.Project.ecommerce.repositories.Jwt.BlacklistedAccessTokenRepository;
 import com.Project.ecommerce.repositories.user.UserRepository;
 import com.Project.ecommerce.security.jwt.JwtService;
 import jakarta.servlet.http.Cookie;
@@ -17,6 +19,8 @@ import org.springframework.security.authentication.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -26,6 +30,7 @@ public class UserLoginService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final MessageSource messageSource;
+    private final BlacklistedAccessTokenRepository blacklistedAccessTokenRepository;
 
     public List<String> loginUser(@Valid @RequestBody UserCO userCO, HttpServletResponse response) {
         User user = userRepository.findByEmail(userCO.getEmail())
@@ -92,6 +97,10 @@ public class UserLoginService {
                 }
             }
         }
+
+        //add this token in blacklisted tokens
+        BlacklistedAccessToken blacklistedAccessToken = new BlacklistedAccessToken(accessToken, Instant.now().plus(1, ChronoUnit.MINUTES));
+        blacklistedAccessTokenRepository.save(blacklistedAccessToken);
 
         //deleting refresh token while user logouts
         String email = jwtService.extractEmail(accessToken);

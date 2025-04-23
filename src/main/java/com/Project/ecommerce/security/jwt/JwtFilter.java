@@ -1,6 +1,7 @@
 package com.Project.ecommerce.security.jwt;
 
 import com.Project.ecommerce.entities.jwt.RefreshToken;
+import com.Project.ecommerce.repositories.Jwt.BlacklistedAccessTokenRepository;
 import com.Project.ecommerce.repositories.Jwt.RefreshTokenRepository;
 import com.Project.ecommerce.security.config.CustomUserDetailsService;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -59,12 +60,14 @@ public class JwtFilter extends OncePerRequestFilter {
     private JwtService jwtService;
     private CustomUserDetailsService customUserDetailsService;
     private RefreshTokenRepository refreshTokenRepository;
+    private BlacklistedAccessTokenRepository blacklistedAccessTokenRepository;
 
     @Autowired
-    public JwtFilter(JwtService jwtService, CustomUserDetailsService customUserDetailsService, RefreshTokenRepository refreshTokenRepository) {
+    public JwtFilter(JwtService jwtService, CustomUserDetailsService customUserDetailsService, RefreshTokenRepository refreshTokenRepository, BlacklistedAccessTokenRepository blacklistedAccessTokenRepository) {
         this.jwtService = jwtService;
         this.customUserDetailsService = customUserDetailsService;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.blacklistedAccessTokenRepository = blacklistedAccessTokenRepository;
     }
 
     @Override
@@ -90,6 +93,10 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         } else if (token == null) {
             sendErrorResponse(response, List.of("Authentication Failed: JWT Missing"), HttpStatus.UNAUTHORIZED);
+            return;
+        }
+        else if(blacklistedAccessTokenRepository.existsByToken(token)){
+            sendErrorResponse(response, List.of("Authentication Failed: Token has been blacklisted"), HttpStatus.UNAUTHORIZED);
             return;
         }
 
@@ -180,7 +187,6 @@ public class JwtFilter extends OncePerRequestFilter {
                 throw new RuntimeException(ex);
             }
         }
-
     }
 }
 
