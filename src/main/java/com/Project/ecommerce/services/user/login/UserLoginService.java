@@ -3,6 +3,7 @@ package com.Project.ecommerce.services.user.login;
 import com.Project.ecommerce.co.login.UserCO;
 import com.Project.ecommerce.entities.jwt.BlacklistedAccessToken;
 import com.Project.ecommerce.entities.user.User;
+import com.Project.ecommerce.exceptions.customExceptions.ExpiredPasswordException;
 import com.Project.ecommerce.exceptions.customExceptions.InactiveResourceException;
 import com.Project.ecommerce.exceptions.customExceptions.ResourceNotFoundException;
 import com.Project.ecommerce.repositories.Jwt.BlacklistedAccessTokenRepository;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -36,6 +38,9 @@ public class UserLoginService {
         User user = userRepository.findByEmail(userCO.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale())));
 
+        if(user.getPasswordUpdateDate().before(Date.from(Instant.now().minus(60, ChronoUnit.DAYS)))){
+            throw new ExpiredPasswordException("Account expired, please reset your password to activate it.");
+        }
         if (!user.getIsActive()) {
             throw new InactiveResourceException(messageSource.getMessage("user.inactive", null, LocaleContextHolder.getLocale()));
         }
@@ -99,7 +104,7 @@ public class UserLoginService {
         }
 
         //add this token in blacklisted tokens
-        BlacklistedAccessToken blacklistedAccessToken = new BlacklistedAccessToken(accessToken, Instant.now().plus(1, ChronoUnit.MINUTES));
+        BlacklistedAccessToken blacklistedAccessToken = new BlacklistedAccessToken(accessToken, Instant.now().plus(15, ChronoUnit.MINUTES));
         blacklistedAccessTokenRepository.save(blacklistedAccessToken);
 
         //deleting refresh token while user logouts
