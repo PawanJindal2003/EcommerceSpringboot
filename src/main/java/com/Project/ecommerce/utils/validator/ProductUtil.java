@@ -8,33 +8,35 @@ import com.Project.ecommerce.exceptions.customExceptions.InactiveResourceExcepti
 import com.Project.ecommerce.exceptions.customExceptions.InvalidResourceException;
 import com.Project.ecommerce.exceptions.customExceptions.UnauthorizedAccessException;
 import org.springframework.stereotype.Component;
-
 import java.util.List;
 
 @Component
 public class ProductUtil {
 
-    public void validateIsDeletedProduct(Product product){
-        if(product.getIsDeleted()){
+    public void validateIsDeletedProduct(Product product) {
+        if (product.getIsDeleted()) {
             throw new DeletedProductException("Product is deleted please ask admin to add it");
         }
     }
 
-    public void validateIsSellerProduct(Seller seller, Product product){
-        if(!product.getSeller().getId().equals(seller.getId())){
+    public void validateIsSellerProduct(Seller seller, Product product) {
+        if (!product.getSeller().getId().equals(seller.getId())) {
             throw new UnauthorizedAccessException("You do not have permission to view this product.");
         }
     }
 
-    public void validateIsActiveProduct(Product product){
-        if(!product.getIsActive()){
+    public void validateIsActiveProduct(Product product) {
+        if (!product.getIsActive()) {
             throw new InactiveResourceException("This is an inactive product");
         }
     }
-    public void containsValidProductVariation(Product product){
+
+    public void containsValidProductVariation(Product product) {
         List<ProductVariation> productVariations = product.getProductVariations();
-        if(productVariations.isEmpty()){
-            throw new InvalidResourceException("Product does not contains single product variation");
+        boolean isValid = productVariations.stream().anyMatch(productVariation -> Boolean.TRUE.equals(productVariation.getIsActive()));
+
+        if(!isValid){
+            throw new InvalidResourceException("Selected product does not have any product variation");
         }
     }
 }
