@@ -1,4 +1,4 @@
-package com.Project.ecommerce.services.cutomer;
+package com.Project.ecommerce.services.customer;
 
 import com.Project.ecommerce.co.customer.UpdateProfileCO;
 import com.Project.ecommerce.co.user.UpdateAddressCO;
