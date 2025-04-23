@@ -33,6 +33,8 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -60,18 +62,19 @@ public class ProductService {
     private final ProductUtil productValidator;
     private final CategoryService categoryService;
     private final AdminProductEmailService adminProductEmailService;
-
+    private final MessageSource messageSource;
     public String addProduct(Principal principal, AddProductCO addProductCO) throws MessagingException {
+
         logger.info("Starting addProduct process for seller: {}", principal.getName());
 
-        Seller seller = sellerRepository.findByEmail(principal.getName()).orElseThrow(() -> new UsernameNotFoundException("Seller not found"));
+        Seller seller = sellerRepository.findByEmail(principal.getName()).orElseThrow(() -> new UsernameNotFoundException(messageSource.getMessage("seller.not.found", null, LocaleContextHolder.getLocale())));
         String categoryId = addProductCO.getCategoryId();
-        Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new EntityNotFoundException("Category not found"));
+        Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new EntityNotFoundException(messageSource.getMessage("category.not.found",null, LocaleContextHolder.getLocale())));
 
         //category should be leaf category
         if (!category.getIsLeafCategory()) {
             logger.warn("Non-leaf category selected: {}", categoryId);
-            throw new NonLeafCategoryException("Please select a leaf category to add the product");
+            throw new NonLeafCategoryException(messageSource.getMessage("select.leaf.category", null, LocaleContextHolder.getLocale()));
         }
         //unique product name
         logger.debug("Validating uniqueness of product name: {} for seller: {}", addProductCO.getName(), seller.getId());
@@ -82,7 +85,7 @@ public class ProductService {
         if (existingProduct != null && existingProduct.getName().equalsIgnoreCase(addProductCO.getName())) {
             logger.warn("Duplicate product name '{}' found for brand '{}' and seller '{}'",
                     addProductCO.getName(), addProductCO.getBrand(), seller.getId());
-            throw new DuplicateResourceException("Product name already exists, please add a unique product name.");
+            throw new DuplicateResourceException(messageSource.getMessage("duplicate.product.name", null, LocaleContextHolder.getLocale()));
         }
 
         Product product = createProduct(addProductCO, category, seller);
@@ -93,7 +96,7 @@ public class ProductService {
         sellerProductEmailService.sendNewProductActivationEmail(principal.getName(), product, seller);
         logger.info("Notification email sent to admin for new product by seller: {}", seller.getEmail());
 
-        return "Product added successfully";
+        return messageSource.getMessage("success.product.added", null, LocaleContextHolder.getLocale());
     }
 
     private Product createProduct(AddProductCO addProductCO, Category category, Seller seller) {
@@ -153,8 +156,8 @@ public class ProductService {
         String sellerEmail = principal.getName();
         logger.info("Fetching seller product details for seller: {} and productId: {}", sellerEmail, productId);
 
-        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
-        Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("seller.not.found", null, LocaleContextHolder.getLocale())));
+        Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("product.not.found", null, LocaleContextHolder.getLocale())));
         logger.debug("Validating product (id: {}) is not deleted", productId);
         productValidator.validateIsDeletedProduct(product);
         logger.debug("Validating product (id: {}) belongs to seller (id: {})", productId, seller.getId());
@@ -185,8 +188,8 @@ public class ProductService {
     public SellerProductVariationDTO getSellerProductVariation(Principal principal, String productVariationId){
         String sellerEmail = principal.getName();
         logger.info("Fetching product variation details for seller: {} and variationId: {}", sellerEmail, productVariationId);
-        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
-        ProductVariation productVariation = productVariationRepository.findById(productVariationId).orElseThrow(()->new ResourceNotFoundException("Product variation not found"));
+        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("seller.not.found", null, LocaleContextHolder.getLocale())));
+        ProductVariation productVariation = productVariationRepository.findById(productVariationId).orElseThrow(()->new ResourceNotFoundException(messageSource.getMessage("product.variation.not.found", null, LocaleContextHolder.getLocale())));
 
         logger.debug("Validating that product");
         productVariationValidator.validateIsSellerProductVariation(seller, productVariation);
@@ -214,7 +217,7 @@ public class ProductService {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(direction), sortField));
 
         String sellerEmail = principal.getName();
-        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
+        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("seller.not.found", null, LocaleContextHolder.getLocale())));
 
         Specification<Product> specification = ProductSpecifications.bySeller(seller.getId()).and(ProductSpecifications.isNotDeleted());
         if (query != null && !query.isBlank()) {
@@ -235,8 +238,8 @@ public class ProductService {
         logger.info("Fetching product variations for seller");
 
         String sellerEmail = principal.getName();
-        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
-        Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("seller.not.found", null, LocaleContextHolder.getLocale())));
+        Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("product.not.found", null, LocaleContextHolder.getLocale())));
         productValidator.validateIsDeletedProduct(product);
         productValidator.validateIsSellerProduct(seller, product);
 
@@ -267,21 +270,21 @@ public class ProductService {
         String sellerEmail = principal.getName();
         logger.info("Attempting to delete product for seller: {}, productId: {}", sellerEmail, productId);
 
-        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
-        Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("seller.not.found", null, LocaleContextHolder.getLocale())));
+        Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("product.not.found", null, LocaleContextHolder.getLocale())));
         productValidator.validateIsSellerProduct(seller, product);
 
         productRepository.deleteById(productId);
         logger.info("Product with ID: {} deleted successfully for seller: {}", productId, sellerEmail);
-        return "Product deleted successfully";
+        return messageSource.getMessage("success.product.deleted", null, LocaleContextHolder.getLocale());
     }
 
     public String updateSellerProduct(Principal principal, String productId, UpdateProductCO updateProductCO){
         logger.info("Attempting to update product for seller: {}, productId: {}", principal.getName(), productId);
 
-        Seller seller = sellerRepository.findByEmail(principal.getName()).orElseThrow(()->new ResourceNotFoundException("Seller not found"));
-        Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-        Category category = categoryRepository.findById(product.getCategory().getId()).orElseThrow(()->new ResourceNotFoundException("Category not found"));
+        Seller seller = sellerRepository.findByEmail(principal.getName()).orElseThrow(()->new ResourceNotFoundException(messageSource.getMessage("seller.not.found", null, LocaleContextHolder.getLocale())));
+        Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("product.not.found", null, LocaleContextHolder.getLocale())));
+        Category category = categoryRepository.findById(product.getCategory().getId()).orElseThrow(()->new ResourceNotFoundException(messageSource.getMessage("category.not.found", null, LocaleContextHolder.getLocale())));
         productValidator.validateIsSellerProduct(seller, product);
 
         Product existingProduct = productRepository.getNameByBrandAndSellerIdAndCategoryId(
@@ -290,7 +293,7 @@ public class ProductService {
 
         if (existingProduct != null && existingProduct.getName().equalsIgnoreCase(updateProductCO.getName())) {
             logger.warn("Duplicate product name found for seller: {}, productId: {}", seller.getEmail(), productId);
-            throw new DuplicateResourceException("Product name already exists, please add a unique product name.");
+            throw new DuplicateResourceException(messageSource.getMessage("duplicate.product.name", null, LocaleContextHolder.getLocale()));
         }
 
         product.setName(updateProductCO.getName());
@@ -300,15 +303,15 @@ public class ProductService {
 
         productRepository.save(product);
         logger.info("Product with ID: {} updated successfully for seller: {}", productId, seller.getEmail());
-        return "Product has been updated successfully";
+        return messageSource.getMessage("success.product.updated", null, LocaleContextHolder.getLocale());
     }
 
     public String updateProductVariation(Principal principal, String productVariationId, UpdateProductVariationCO updateProductVariationCO, MultipartFile primaryImage, List<MultipartFile> secondaryImages) throws IOException {
         logger.info("Attempting to update product variation for productVariationId: {}", productVariationId);
 
-        ProductVariation productVariation = productVariationRepository.findById(productVariationId).orElseThrow(()->new ResourceNotFoundException("Product variation not found"));
-        Seller seller = sellerRepository.findByEmail(principal.getName()).orElseThrow(()->new ResourceNotFoundException("Seller not found"));
-        Product product = productRepository.findById(productVariation.getProduct().getId()).orElseThrow(()->new ResourceNotFoundException("Product not found"));
+        ProductVariation productVariation = productVariationRepository.findById(productVariationId).orElseThrow(()->new ResourceNotFoundException(messageSource.getMessage("product.variation.not.found", null, LocaleContextHolder.getLocale())));
+        Seller seller = sellerRepository.findByEmail(principal.getName()).orElseThrow(()->new ResourceNotFoundException(messageSource.getMessage("seller.not.found", null, LocaleContextHolder.getLocale())));
+        Product product = productRepository.findById(productVariation.getProduct().getId()).orElseThrow(()->new ResourceNotFoundException(messageSource.getMessage("product.not.found", null, LocaleContextHolder.getLocale())));
         productVariationValidator.validateIsSellerProductVariation(seller, productVariation);
 
         productVariation.setQuantityAvailable(updateProductVariationCO.getQuantityAvailable());
@@ -331,12 +334,12 @@ public class ProductService {
 
         productVariationRepository.save(productVariation);
         logger.info("Product variation ID: {} updated successfully for seller: {}", productVariationId, principal.getName());
-        return "Product variation has been updated successfully.";
+        return messageSource.getMessage("success.product.variation.updated", null, LocaleContextHolder.getLocale());
     }
 
     public CustomerProductDTO getCustomerProduct(String productId){
         logger.info("Attempting to fetch product for productId: {}", productId);
-        Product product = productRepository.findById(productId).orElseThrow(()->new ResourceNotFoundException("Product not found"));
+        Product product = productRepository.findById(productId).orElseThrow(()->new ResourceNotFoundException(messageSource.getMessage("product.not.found", null, LocaleContextHolder.getLocale())));
         productValidator.validateIsDeletedProduct(product);
         productValidator.validateIsActiveProduct(product);
         productValidator.containsValidProductVariation(product);
@@ -393,7 +396,7 @@ public class ProductService {
 
     public List<CustomerAllProductsDTO> getCustomerAllProduct(int pageNo, int pageSize, String sortField, String direction, String query, String categoryId){
         logger.info("Fetching all products for customer");
-        Category category = categoryRepository.findById(categoryId).orElseThrow(()->new ResourceNotFoundException("Category not found"));
+        Category category = categoryRepository.findById(categoryId).orElseThrow(()->new ResourceNotFoundException(messageSource.getMessage("category.not.found", null, LocaleContextHolder.getLocale())));
 
         List<String> leafCategoryIds = new ArrayList<>();
 
@@ -478,7 +481,7 @@ public class ProductService {
 
     public List<CustomerProductDTO> getCustomerSimilarProducts(int pageNo, int pageSize, String sortField, String direction, String query, String productId){
         logger.info("Fetching similar products");
-        Product product = productRepository.findById(productId).orElseThrow(()-> new ResourceNotFoundException("Product not found"));
+        Product product = productRepository.findById(productId).orElseThrow(()-> new ResourceNotFoundException(messageSource.getMessage("product.not.found", null, LocaleContextHolder.getLocale())));
 
         //giving similar products by printing rest products of that category
         //1. other products in that category
@@ -506,7 +509,7 @@ public class ProductService {
 
     public AdminProductDTO getAdminProduct(String productId){
         logger.info("Fetching product details for admin with productId: {}", productId);
-        Product product = productRepository.findById(productId).orElseThrow(()->new ResourceNotFoundException("Product not found"));
+        Product product = productRepository.findById(productId).orElseThrow(()->new ResourceNotFoundException(messageSource.getMessage("product.not.found", null, LocaleContextHolder.getLocale())));
         logger.info("Successfully retrieved product details for productId: {}", productId);
         return createAdminProductDTO(product);
     }
@@ -576,7 +579,7 @@ public class ProductService {
 
     public String activateDeactivateProduct(String productId, String action) throws MessagingException {
         logger.info("Attempting to {} product with ID: {}", action, productId);
-        Product product = productRepository.findById(productId).orElseThrow(()->new ResourceNotFoundException("Product not found"));
+        Product product = productRepository.findById(productId).orElseThrow(()->new ResourceNotFoundException(messageSource.getMessage("product.not.found", null, LocaleContextHolder.getLocale())));
 
         Boolean isProductActive = product.getIsActive();
         if(Objects.equals(action, "deactivate")){
@@ -585,11 +588,11 @@ public class ProductService {
                 productRepository.save(product);
                 adminProductEmailService.sendProductDeactivationEmail(product.getSeller().getEmail(), product);
                 logger.info("Product with ID: {} deactivated successfully", productId);
-                return "Product deactivated";
+                return messageSource.getMessage("product.deactivated", null, LocaleContextHolder.getLocale());
             }
             else{
                 logger.info("Product with ID: {} is already deactivated", productId);
-                return "Product is already deactivated";
+                return messageSource.getMessage("product.already.deactivated", null, LocaleContextHolder.getLocale());
             }
         }
         else if(Objects.equals(action, "activate")){
@@ -598,13 +601,13 @@ public class ProductService {
                 productRepository.save(product);
                 adminProductEmailService.sendProductActivationEmail(product.getSeller().getEmail(), product);
                 logger.info("Product with ID: {} activated successfully", productId);
-                return "Product activated";
+                return messageSource.getMessage("product.activated", null, LocaleContextHolder.getLocale());
             }
             else{
                 logger.info("Product with ID: {} is already activated", productId);
-                return "Product is already activated";
+                return messageSource.getMessage("product.already.activated", null, LocaleContextHolder.getLocale());
             }
         }
-        return "Failed to activate-deactivate product";
+        return messageSource.getMessage("fail.activate.deactivate", null, LocaleContextHolder.getLocale());
     }
 }

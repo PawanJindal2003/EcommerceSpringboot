@@ -23,6 +23,7 @@ import com.Project.ecommerce.repositories.product.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cglib.core.Local;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
@@ -318,7 +319,7 @@ public class CategoryService {
 
         categoryRepository.save(category);
         logger.info("Category ID {} updated successfully to '{}'", id, name);
-        return "Category name updated successfully";
+        return messageSource.getMessage("category.updated.success", null, LocaleContextHolder.getLocale());
     }
 
     public String addMetadataCategory(MetadataValueCategoryCO metadataValueCategoryCO){
@@ -328,15 +329,15 @@ public class CategoryService {
         logger.info("Request to add metadata for CategoryID: {}, MetadataFieldID: {}", categoryId, metaDataFieldId);
 
         //checking validity of id
-        Category category = categoryRepository.findById(categoryId).orElseThrow(()-> new InactiveResourceException("Please enter a valid id"));
-        CategoryMetaDataField categoryMetaDataField = categoryMetaDataFieldRepository.findById(metaDataFieldId).orElseThrow(()-> new InactiveResourceException("Please enter a valid id"));
+        Category category = categoryRepository.findById(categoryId).orElseThrow(()-> new InactiveResourceException(messageSource.getMessage("invalid.category.id", null, LocaleContextHolder.getLocale())));
+        CategoryMetaDataField categoryMetaDataField = categoryMetaDataFieldRepository.findById(metaDataFieldId).orElseThrow(()-> new InactiveResourceException(messageSource.getMessage("invalid.category.id", null, LocaleContextHolder.getLocale())));
 
         //checking all elements are unique
         values.replaceAll(String::toLowerCase);
 
         Set<String> valueSet = new HashSet<>(values);
         if(valueSet.size() < values.size()){
-            throw new DuplicateResourceException("Duplicate values found in field values");
+            throw new DuplicateResourceException(messageSource.getMessage("duplicate.values", null, LocaleContextHolder.getLocale()));
         }
 
         //adding metadata field values in leaf category only
@@ -344,7 +345,7 @@ public class CategoryService {
         List<Category> children = categoryRepository.findAllByParentCategoryId(categoryId).orElseThrow();
         if(!children.isEmpty()){
             logger.warn("Category ID {} is not a leaf category, cannot assign metadata values", categoryId);
-            throw new NonLeafCategoryException("Cannot add metadata field values to a non leaf category");
+            throw new NonLeafCategoryException(messageSource.getMessage("fail.addition.values.leaf.categories", null, LocaleContextHolder.getLocale()));
         }
 
         //setting composite key
@@ -366,7 +367,7 @@ public class CategoryService {
         categoryMetaDataFieldValuesRepository.save(categoryMetaDataFieldValues);
         logger.info("Metadata values successfully added to CategoryID: {} for MetadataFieldID: {}", categoryId, metaDataFieldId);
 
-        return "Category meta data field values added successfully for provided category and meta data field";
+        return messageSource.getMessage("success.addition.metadata.to.category", null, LocaleContextHolder.getLocale());
     }
 
     public String updateMetadataCategory(MetadataValueCategoryCO metadataValueCategoryCO){
@@ -376,7 +377,7 @@ public class CategoryService {
         List<String> newValues = metadataValueCategoryCO.getValues();
 
         //checking validity of id
-        Category category = categoryRepository.findById(categoryId).orElseThrow(()-> new InactiveResourceException("Please enter a valid id"));
+        Category category = categoryRepository.findById(categoryId).orElseThrow(()-> new InactiveResourceException(messageSource.getMessage("invalid.category.id",null, LocaleContextHolder.getLocale())));
         CategoryMetaDataField categoryMetaDataField = categoryMetaDataFieldRepository.findById(metaDataFieldId).orElseThrow(()-> new InactiveResourceException("Please enter a valid id"));
 
         // provided metadata field should be linked with the provided category
@@ -388,7 +389,7 @@ public class CategoryService {
         Set<String> newValueSet = new HashSet<>(newValues);
         //unique values are passed in list
         if (newValueSet.size() < newValues.size()) {
-            throw new DuplicateResourceException("Duplicate values found in field values");
+            throw new DuplicateResourceException(messageSource.getMessage("duplicate.values", null, LocaleContextHolder.getLocale()));
         }
 
         Set<String> existingValueSet = new HashSet<>(Arrays.asList(
@@ -402,7 +403,7 @@ public class CategoryService {
 
         categoryMetaDataFieldValuesRepository.save(categoryMetaDataFieldValues);
         logger.info("Successfully updated metadata values for CategoryID: {}, MetadataFieldID: {}", categoryId, metaDataFieldId);
-        return "New values added successfully ";
+        return messageSource.getMessage("success.addition.values", null, LocaleContextHolder.getLocale());
     }
 
     //seller service
@@ -517,6 +518,7 @@ public class CategoryService {
 
         return customerFilterCategoryDTO;
     }
+
     private List<Category> findAssociatedLeafCategories(Category category){
         List<Category> leafCategories = new ArrayList<>();
         Queue<Category> queue = new LinkedList<>();

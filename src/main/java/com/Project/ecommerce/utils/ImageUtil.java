@@ -1,18 +1,25 @@
 package com.Project.ecommerce.utils;
 
 import com.Project.ecommerce.entities.user.User;
+import com.Project.ecommerce.exceptions.customExceptions.StoreImageFailureException;
 import com.Project.ecommerce.exceptions.customExceptions.UnsupportedImageTypeException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 @Component
+@RequiredArgsConstructor
 public class ImageUtil {
+    private final MessageSource messageSource;
     @Value("${user.upload-dir}")
     String uploadDir;
 
@@ -29,7 +36,7 @@ public class ImageUtil {
             Path filePath = uploadPath.resolve(fileName);
             Files.copy(multipartFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to store profile picture", e);
+            throw new StoreImageFailureException(messageSource.getMessage("image.store.profile.picture", null, LocaleContextHolder.getLocale()));
         }
     }
 
@@ -41,7 +48,7 @@ public class ImageUtil {
 
         List<String> allowedExtensions = List.of(".jpg", ".jpeg", ".png", ".bmp");
         if (!allowedExtensions.contains(extension)) {
-            throw new UnsupportedImageTypeException("Unsupported image format. Allowed formats: jpg, jpeg, png, bmp");
+            throw new UnsupportedImageTypeException(messageSource.getMessage("image.unsupported.format", null, LocaleContextHolder.getLocale()));
         }
 
         String filename;
@@ -98,14 +105,10 @@ public class ImageUtil {
     public String getImage(String id){
         Path dir = Paths.get("src/main/resources/images/users");
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, id + "*")) {
-            for (Path entry : stream) {
-//                return entry.toAbsolutePath().toString();
                 return "http://localhost:8080/users/image/" + id;
-            }
         } catch (IOException e) {
             return "http://localhost:8080/profile-pics/default.jpg";
         }
-        return null;
     }
 }
 

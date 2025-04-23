@@ -18,6 +18,7 @@ import com.Project.ecommerce.utils.ImageUtil;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cglib.core.Local;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -112,11 +113,11 @@ public class CustomerService {
     public String updatePassword(Principal principal, UpdatePasswordCO updatePasswordCO) {
         String email = principal.getName();
         logger.info("Attempting to update password for customer with email: {}", email);
-        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("customer.not.found", null, LocaleContextHolder.getLocale())));
         // check if password and confirm password are not different
         logger.info("Customer found for email: {}", email);
         if (bCryptPasswordEncoder.matches(updatePasswordCO.getPassword(), customer.getPassword())) {
-            throw new DuplicateResourceException("Please enter a different password from current password");
+            throw new DuplicateResourceException(messageSource.getMessage("duplicate.old.password", null, LocaleContextHolder.getLocale()));
         }
         if (!updatePasswordCO.getPassword().equals(updatePasswordCO.getConfirmPassword())) {
             throw new ConfirmPasswordMismatchException(messageSource.getMessage("password.confirm.mismatch", null, LocaleContextHolder.getLocale()));
@@ -136,7 +137,7 @@ public class CustomerService {
         String email = principal.getName();
         logger.info("Attempting to add new address for customer with email: {}", email);
 
-        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("customer.not.found", null, LocaleContextHolder.getLocale())));
 
         Address newAddress = new Address();
         newAddress.setAddressLine(enteredNewAddress.getAddressLine());
@@ -161,13 +162,13 @@ public class CustomerService {
         String email = principal.getName();
         logger.info("Attempting to delete address with ID: {} for customer with email: {}", addressId, email);
 
-        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("customer.not.found", null, LocaleContextHolder.getLocale())));
 
         // check id provided is valid
-        addressRepository.findById(addressId).orElseThrow(() -> new ResourceNotFoundException("Address not found"));
+        addressRepository.findById(addressId).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("customer.address.not.found", null, LocaleContextHolder.getLocale())));
 
         //check if provided address is customer's address
-        addressRepository.findByUserId(customer.getId()).orElseThrow(() -> new ResourceNotFoundException("Wrong addressId provided"));
+        addressRepository.findByUserId(customer.getId()).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("wrong.address.id", null, LocaleContextHolder.getLocale())));
 
         addressRepository.deleteById(addressId);
         logger.info("Address with ID: {} has been deleted successfully for customer with email: {}", addressId, email);
@@ -177,7 +178,7 @@ public class CustomerService {
     public String updateAddress(Principal principal, String addressId, UpdateAddressCO updateAddressCO) {
         String email = principal.getName();
         logger.info("Attempting to update address with ID: {} for customer with email: {}", addressId, email);
-        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("customer.not.found", null, LocaleContextHolder.getLocale())));
 
         //validating address
         List<Address> addresses = customer.getAddresses();
@@ -191,7 +192,7 @@ public class CustomerService {
 
         Address address = addressRepository.findById(addressId).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("customer.address.not.found", null, LocaleContextHolder.getLocale())));
         if (!isCustomerAddress) {
-            throw new UnauthorizedAccessException("Invalid address id, please pass logged in customer's address id");
+            throw new UnauthorizedAccessException(messageSource.getMessage("customer.invalid.address.access", null, LocaleContextHolder.getLocale()));
         }
 
         Optional.ofNullable(updateAddressCO.getAddressLine()).ifPresent(address::setAddressLine);

@@ -166,7 +166,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ExpiredPasswordException.class)
     public ResponseEntity<ErrorResponse> handleExpiredPasswordException(ExpiredPasswordException ex){
-        List<String> errorMessages = List.of(ex.getMessage() + " : you do not have permission to perform this action.");
+        List<String> errorMessages = List.of(ex.getMessage());
         return new ResponseEntity<>(responseUtil.fail(HttpStatus.UNAUTHORIZED, errorMessages), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(StoreImageFailureException.class)
+    public ResponseEntity<ErrorResponse> handleStoreImageFailureException(StoreImageFailureException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(responseUtil.fail(HttpStatus.BAD_REQUEST, errorMessages), HttpStatus.BAD_REQUEST);
     }
 }

@@ -104,7 +104,7 @@ public class SellerService {
             throw new ConfirmPasswordMismatchException(messageSource.getMessage("password.confirm.mismatch", null, LocaleContextHolder.getLocale()));
         }
         String email = principal.getName();
-        Seller seller = sellerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
+        Seller seller = sellerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("seller.not.found", null, LocaleContextHolder.getLocale())));
 
         //updating password
         seller.setPassword(bCryptPasswordEncoder.encode(updatePasswordCO.getPassword()));
@@ -118,7 +118,7 @@ public class SellerService {
 
     public String updateAddress(Principal principal, String addressId, UpdateAddressCO updateAddressCO) {
         String email = principal.getName();
-        Seller seller = sellerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+        Seller seller = sellerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("customer.not.found", null, LocaleContextHolder.getLocale())));
         logger.info("Updating address for seller: {}", email);
 
         //validating address

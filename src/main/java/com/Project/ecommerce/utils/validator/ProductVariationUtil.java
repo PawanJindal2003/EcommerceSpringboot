@@ -6,20 +6,25 @@ import com.Project.ecommerce.entities.product.ProductVariation;
 import com.Project.ecommerce.entities.user.Seller;
 import com.Project.ecommerce.exceptions.customExceptions.*;
 import com.Project.ecommerce.utils.JsonUtil;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class ProductVariationUtil {
+    private final MessageSource messageSource;
     //ensuring product is active and non deleted
     public void validateAndFetchProduct(Product product){
         if (!product.getIsActive()) {
-            throw new InactiveResourceException("Inactive product, please reach out to admin to activate the product");
+            throw new InactiveResourceException(messageSource.getMessage("productVariationUtil.product.inactive", null, LocaleContextHolder.getLocale()));
         }
         if (product.getIsDeleted()) {
-            throw new DeletedProductException("Chosen product is deleted, please create a product, if already created, reach out to admin");
+            throw new DeletedProductException(messageSource.getMessage("productVariationUtil.product.deleted", null, LocaleContextHolder.getLocale()));
         }
     }
 
@@ -27,7 +32,7 @@ public class ProductVariationUtil {
     public void validateBlankMetadata(Map<String, String> metadata){
         metadata.forEach((key, value) -> {
             if (key == null || key.trim().isEmpty() || value == null || value.trim().isEmpty()) {
-                throw new BlankMetadataException("Metadata keys and values cannot be blank");
+                throw new BlankMetadataException(messageSource.getMessage("productVariationUtil.metadata.blank", null, LocaleContextHolder.getLocale()));
             }
         });
     }
@@ -35,7 +40,7 @@ public class ProductVariationUtil {
     // ensuring each variation of a product should be unique
     public void checkDuplicateVariation(Product product, Map<String, String> metadata){
         if (JsonUtil.isDuplicateVariation(product, metadata)) {
-            throw new DuplicateResourceException("A variation with identical metadata already exists.");
+            throw new DuplicateResourceException(messageSource.getMessage("productVariationUtil.variation.duplicate", null, LocaleContextHolder.getLocale()));
         }
     }
 
@@ -52,15 +57,12 @@ public class ProductVariationUtil {
             String fieldValue = entry.getValue();
 
             if (!allowedFieldValuesMap.containsKey(fieldName)) {
-                throw new InactiveResourceException("Invalid metadata field: " + fieldName);
+                throw new InactiveResourceException(messageSource.getMessage("productVariationUtil.metadata.invalid.field", new Object[]{fieldName}, LocaleContextHolder.getLocale()));
             }
 
             List<String> allowedValues = allowedFieldValuesMap.get(fieldName);
             if (!allowedValues.contains(fieldValue)) {
-                throw new InactiveResourceException(
-                        "Invalid value '" + fieldValue + "' for field '" + fieldName +
-                                "'. Allowed values: " + allowedValues
-                );
+                throw new InactiveResourceException(messageSource.getMessage("productVariationUtil.metadata.invalid.value", new Object[]{fieldName, allowedValues}, LocaleContextHolder.getLocale()));
             }
         }
     }
@@ -68,13 +70,13 @@ public class ProductVariationUtil {
     // ensuring metadata structure is similar to rest variation's metadata structure
     public void validateMetadataStructure(Product product, Map<String, String> metadata){
         if (!JsonUtil.matchesStructure(product, metadata)) {
-            throw new InactiveResourceException("Meta data values provided does not matched the structure of meta data fields");
+            throw new InactiveResourceException(messageSource.getMessage("productVariationUtil.metadata.structure.mismatch", null, LocaleContextHolder.getLocale()));
         }
     }
 
     public void validateIsSellerProductVariation(Seller seller, ProductVariation productVariation){
         if(!productVariation.getProduct().getSeller().getId().equals(seller.getId())){
-            throw new UnauthorizedAccessException("You do not have permission to view this product variation.");
+            throw new UnauthorizedAccessException(messageSource.getMessage("productVariationUtil.variation.unauthorized.access", null, LocaleContextHolder.getLocale()));
         }
     }
 }

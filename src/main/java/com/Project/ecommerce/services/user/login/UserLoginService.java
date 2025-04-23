@@ -44,7 +44,7 @@ public class UserLoginService {
 
         if(user.getPasswordUpdateDate().before(Date.from(Instant.now().minus(60, ChronoUnit.DAYS)))){
             logger.warn("Password expired for user with email: {}", userCO.getEmail());
-            throw new ExpiredPasswordException("Account expired, please reset your password to activate it.");
+            throw new ExpiredPasswordException(messageSource.getMessage("user.account.expired", null, LocaleContextHolder.getLocale()));
         }
         if (!user.getIsActive()) {
             logger.warn("User account is inactive for email: {}", userCO.getEmail());
