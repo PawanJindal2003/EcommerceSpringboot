@@ -106,7 +106,7 @@ public class ProductController {
             Principal principal,
             @PathVariable String productVariationId,
             @ModelAttribute @Valid UpdateProductVariationCO updateProductVariationCO,
-            @RequestPart("primaryImage") MultipartFile primaryImage,
+            @RequestPart(value = "primaryImage", required = false) MultipartFile primaryImage,
             @RequestPart(value = "secondaryImages", required = false) List<MultipartFile> secondaryImages) throws IOException {
         String responseMessage = productService.updateProductVariation(principal, productVariationId, updateProductVariationCO, primaryImage, secondaryImages);
         return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, responseMessage), HttpStatus.OK);
