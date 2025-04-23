@@ -14,6 +14,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.authentication.*;
@@ -28,6 +30,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class UserLoginService {
+    private static final Logger logger = LoggerFactory.getLogger(UserLoginService.class);
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
@@ -35,13 +38,16 @@ public class UserLoginService {
     private final BlacklistedAccessTokenRepository blacklistedAccessTokenRepository;
 
     public List<String> loginUser(@Valid @RequestBody UserCO userCO, HttpServletResponse response) {
+        logger.info("Login attempt for user with email: {}", userCO.getEmail());
         User user = userRepository.findByEmail(userCO.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale())));
 
         if(user.getPasswordUpdateDate().before(Date.from(Instant.now().minus(60, ChronoUnit.DAYS)))){
+            logger.warn("Password expired for user with email: {}", userCO.getEmail());
             throw new ExpiredPasswordException("Account expired, please reset your password to activate it.");
         }
         if (!user.getIsActive()) {
+            logger.warn("User account is inactive for email: {}", userCO.getEmail());
             throw new InactiveResourceException(messageSource.getMessage("user.inactive", null, LocaleContextHolder.getLocale()));
         }
 
@@ -51,6 +57,7 @@ public class UserLoginService {
             );
         }
         catch (BadCredentialsException e){
+            logger.warn("Failed login attempt for user with email: {}", userCO.getEmail());
             multipleLoginAttempts(userCO.getEmail());
             throw e;
         }
@@ -71,6 +78,8 @@ public class UserLoginService {
 
         user.setInvalidAttemptCount(0);
         userRepository.save(user);
+        logger.info("User login successful for email: {}", userCO.getEmail());
+
 
         return List.of(messageSource.getMessage("user.login.success", null, LocaleContextHolder.getLocale()), accessToken);
     }
@@ -84,6 +93,7 @@ public class UserLoginService {
 
         if (attempts >= 3) {
             user.setIsLocked(true);
+            logger.warn("User account locked due to multiple failed login attempts for email: {}", email);
         }
 
         if(!user.getRole().getAuthority().equals("ADMIN")){
@@ -103,21 +113,27 @@ public class UserLoginService {
             }
         }
 
-        //add this token in blacklisted tokens
-        BlacklistedAccessToken blacklistedAccessToken = new BlacklistedAccessToken(accessToken, Instant.now().plus(15, ChronoUnit.MINUTES));
-        blacklistedAccessTokenRepository.save(blacklistedAccessToken);
+        if(accessToken!=null){
+            //add this token in blacklisted tokens
+            BlacklistedAccessToken blacklistedAccessToken = new BlacklistedAccessToken(accessToken, Instant.now().plus(15, ChronoUnit.MINUTES));
+            blacklistedAccessTokenRepository.save(blacklistedAccessToken);
 
-        //deleting refresh token while user logouts
-        String email = jwtService.extractEmail(accessToken);
-        jwtService.deleteRefreshToken(email);
+            //deleting refresh token while user logouts
+            String email = jwtService.extractEmail(accessToken);
+            jwtService.deleteRefreshToken(email);
 
-        //clearing the cookie
-        Cookie cookie = new Cookie("accessToken", null);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-        response.addCookie(cookie);
+            //clearing the cookie
+            Cookie cookie = new Cookie("accessToken", null);
+            cookie.setHttpOnly(true);
+            cookie.setSecure(true);
+            cookie.setPath("/");
+            cookie.setMaxAge(0);
+            response.addCookie(cookie);
+            logger.info("User logged out successfully for email: {}", email);
+        }
+        else{
+            logger.warn("No access token found in cookies during logout");
+        }
 
         return messageSource.getMessage("user.logout.success", null, LocaleContextHolder.getLocale());
     }

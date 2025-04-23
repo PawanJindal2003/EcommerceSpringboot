@@ -10,6 +10,8 @@ import com.Project.ecommerce.repositories.user.UserRepository;
 import com.Project.ecommerce.security.jwt.JwtService;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -23,6 +25,7 @@ import java.util.Date;
 @Service
 @RequiredArgsConstructor
 public class ForgetPasswordService {
+    private static final Logger logger = LoggerFactory.getLogger(ForgetPasswordService.class);
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final ForgetPasswordEmailService forgetPasswordEmailService;
@@ -30,18 +33,24 @@ public class ForgetPasswordService {
     private final MessageSource messageSource;
 
     public String sendResetPasswordMail(String email) throws MessagingException {
+        logger.info("Received reset password request for email: {}", email);
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale())
-                ));
+                .orElseThrow(() -> {
+                            logger.warn("User not found for email: {}", email);
+                            return new ResourceNotFoundException(
+                                    messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale())
+                            );
+                });
 
         //throwing error response if an inactive user trying to forget password
         if (!user.getIsActive()) {
+            logger.warn("Inactive user attempted to reset password: {}", email);
             throw new InactiveResourceException(messageSource.getMessage("user.inactive", null, LocaleContextHolder.getLocale()));
         }
 
         //throwing error response if a locked user trying to forget password
         if (user.getIsLocked()) {
+            logger.warn("Locked user attempted to reset password: {}", email);
             throw new LockedAccountException(messageSource.getMessage("user.locked", null, LocaleContextHolder.getLocale()));
         }
 

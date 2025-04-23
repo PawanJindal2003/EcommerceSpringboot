@@ -31,6 +31,8 @@ import com.Project.ecommerce.utils.validator.ProductVariationUtil;
 import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -47,6 +49,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class ProductService {
+    private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final SellerProductEmailService sellerProductEmailService;
@@ -59,29 +62,37 @@ public class ProductService {
     private final AdminProductEmailService adminProductEmailService;
 
     public String addProduct(Principal principal, AddProductCO addProductCO) throws MessagingException {
+        logger.info("Starting addProduct process for seller: {}", principal.getName());
+
         Seller seller = sellerRepository.findByEmail(principal.getName()).orElseThrow(() -> new UsernameNotFoundException("Seller not found"));
         String categoryId = addProductCO.getCategoryId();
         Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new EntityNotFoundException("Category not found"));
 
         //category should be leaf category
         if (!category.getIsLeafCategory()) {
+            logger.warn("Non-leaf category selected: {}", categoryId);
             throw new NonLeafCategoryException("Please select a leaf category to add the product");
         }
         //unique product name
+        logger.debug("Validating uniqueness of product name: {} for seller: {}", addProductCO.getName(), seller.getId());
         Product existingProduct = productRepository.getNameByBrandAndSellerIdAndCategoryId(
                 addProductCO.getBrand(), seller.getId(), categoryId
         );
 
         if (existingProduct != null && existingProduct.getName().equalsIgnoreCase(addProductCO.getName())) {
+            logger.warn("Duplicate product name '{}' found for brand '{}' and seller '{}'",
+                    addProductCO.getName(), addProductCO.getBrand(), seller.getId());
             throw new DuplicateResourceException("Product name already exists, please add a unique product name.");
         }
 
         Product product = createProduct(addProductCO, category, seller);
 
         productRepository.save(product);
-
+        logger.info("Product saved successfully: {} (ID: {})", product.getName(), product.getId());
         //sending email to admin
         sellerProductEmailService.sendNewProductActivationEmail(principal.getName(), product, seller);
+        logger.info("Notification email sent to admin for new product by seller: {}", seller.getEmail());
+
         return "Product added successfully";
     }
 
@@ -101,11 +112,17 @@ public class ProductService {
     }
 
     public String addProductVariation( AddProductVariationCO addProductVariationCO, MultipartFile primaryImage, List<MultipartFile> secondaryImages) throws IOException {
+        logger.info("Starting to add product variation for productId: {}", addProductVariationCO.getProductId());
+
         Product product = productRepository.findById(addProductVariationCO.getProductId())
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid Product id"));
+        logger.debug("Validating product with id: {}", product.getId());
         productVariationValidator.validateAndFetchProduct(product);
+
+        logger.debug("Creating product variation for productId: {}", product.getId());
         ProductVariation productVariation = createProductVariation(product, addProductVariationCO, primaryImage, secondaryImages);
         productVariationRepository.save(productVariation);
+        logger.info("Product variation saved successfully with ID: {}", productVariation.getId());
         return "Product variation added successfully for your product";
     }
 
@@ -134,10 +151,15 @@ public class ProductService {
 
     public SellerProductDTO getSellerProduct(Principal principal, String productId){
         String sellerEmail = principal.getName();
+        logger.info("Fetching seller product details for seller: {} and productId: {}", sellerEmail, productId);
+
         Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
         Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        logger.debug("Validating product (id: {}) is not deleted", productId);
         productValidator.validateIsDeletedProduct(product);
+        logger.debug("Validating product (id: {}) belongs to seller (id: {})", productId, seller.getId());
         productValidator.validateIsSellerProduct(seller, product);
+        logger.info("Successfully fetched seller product details for productId: {}", productId);
         return createSellerProductDTO(product);
     }
 
@@ -162,11 +184,15 @@ public class ProductService {
 
     public SellerProductVariationDTO getSellerProductVariation(Principal principal, String productVariationId){
         String sellerEmail = principal.getName();
+        logger.info("Fetching product variation details for seller: {} and variationId: {}", sellerEmail, productVariationId);
         Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
         ProductVariation productVariation = productVariationRepository.findById(productVariationId).orElseThrow(()->new ResourceNotFoundException("Product variation not found"));
+
+        logger.debug("Validating that product");
         productVariationValidator.validateIsSellerProductVariation(seller, productVariation);
         Product product = productVariation.getProduct();
         productValidator.validateIsDeletedProduct(product);
+        logger.info("Successfully fetched product variation details for variationId: {}", productVariationId);
         return createSellerProductVariationDTO(productVariation, product);
     }
 
@@ -184,6 +210,7 @@ public class ProductService {
     }
 
     public List<SellerProductDTO> getSellerAllProducts(Principal principal, int pageNo, int pageSize, String sortField, String direction, String query){
+        logger.info("Fetching all products for seller");
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(direction), sortField));
 
         String sellerEmail = principal.getName();
@@ -200,10 +227,13 @@ public class ProductService {
             SellerProductDTO dto = createSellerProductDTO(sellerProduct);
             sellerProductDTOs.add(dto);
         }
+        logger.info("Retrieved {} products for seller: {}", sellerProductDTOs.size(), sellerEmail);
         return sellerProductDTOs;
     }
 
     public List<SellerProductVariationDTO> getSellerAllProductVariations(Principal principal, String productId, int pageNo, int pageSize, String sortField, String direction, String query){
+        logger.info("Fetching product variations for seller");
+
         String sellerEmail = principal.getName();
         Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
         Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
@@ -216,6 +246,7 @@ public class ProductService {
         Specification<ProductVariation> specification = ProductVariationSpecification.byProductId(productId);
 
         if(query!=null && !query.isBlank()){
+            logger.debug("Applying query filter to product variations: {}", query);
             specification = specification.and(ProductVariationSpecification.fromQueryString(query));
             sellerProductVariations =  productVariationRepository.findAll(specification, pageable);
         }
@@ -228,21 +259,26 @@ public class ProductService {
             SellerProductVariationDTO sellerProductVariationDTO = createSellerProductVariationDTO(sellerProductVariation, product);
             sellerProductVariationDTOS.add(sellerProductVariationDTO);
         }
-
+        logger.info("Total product variations fetched: {}", sellerProductVariationDTOS.size());
         return sellerProductVariationDTOS;
     }
 
     public String deleteSellerProduct(Principal principal, String productId){
         String sellerEmail = principal.getName();
+        logger.info("Attempting to delete product for seller: {}, productId: {}", sellerEmail, productId);
+
         Seller seller = sellerRepository.findByEmail(sellerEmail).orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
         Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         productValidator.validateIsSellerProduct(seller, product);
 
         productRepository.deleteById(productId);
+        logger.info("Product with ID: {} deleted successfully for seller: {}", productId, sellerEmail);
         return "Product deleted successfully";
     }
 
     public String updateSellerProduct(Principal principal, String productId, UpdateProductCO updateProductCO){
+        logger.info("Attempting to update product for seller: {}, productId: {}", principal.getName(), productId);
+
         Seller seller = sellerRepository.findByEmail(principal.getName()).orElseThrow(()->new ResourceNotFoundException("Seller not found"));
         Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         Category category = categoryRepository.findById(product.getCategory().getId()).orElseThrow(()->new ResourceNotFoundException("Category not found"));
@@ -253,6 +289,7 @@ public class ProductService {
         );
 
         if (existingProduct != null && existingProduct.getName().equalsIgnoreCase(updateProductCO.getName())) {
+            logger.warn("Duplicate product name found for seller: {}, productId: {}", seller.getEmail(), productId);
             throw new DuplicateResourceException("Product name already exists, please add a unique product name.");
         }
 
@@ -262,10 +299,13 @@ public class ProductService {
         product.setIsReturnable(updateProductCO.getIsReturnable());
 
         productRepository.save(product);
+        logger.info("Product with ID: {} updated successfully for seller: {}", productId, seller.getEmail());
         return "Product has been updated successfully";
     }
 
     public String updateProductVariation(Principal principal, String productVariationId, UpdateProductVariationCO updateProductVariationCO, MultipartFile primaryImage, List<MultipartFile> secondaryImages) throws IOException {
+        logger.info("Attempting to update product variation for productVariationId: {}", productVariationId);
+
         ProductVariation productVariation = productVariationRepository.findById(productVariationId).orElseThrow(()->new ResourceNotFoundException("Product variation not found"));
         Seller seller = sellerRepository.findByEmail(principal.getName()).orElseThrow(()->new ResourceNotFoundException("Seller not found"));
         Product product = productRepository.findById(productVariation.getProduct().getId()).orElseThrow(()->new ResourceNotFoundException("Product not found"));
@@ -279,6 +319,7 @@ public class ProductService {
         String imageName = imageUtil.saveProductVariationImage(primaryImage, product.getId(), "primary");
         productVariation.setPrimaryImageName(imageName);
 
+        logger.info("Primary image for product variation ID: {} saved as: {}", productVariationId, imageName);
 
         if (secondaryImages != null) {
             int sequence = 1;
@@ -289,15 +330,17 @@ public class ProductService {
         }
 
         productVariationRepository.save(productVariation);
+        logger.info("Product variation ID: {} updated successfully for seller: {}", productVariationId, principal.getName());
         return "Product variation has been updated successfully.";
     }
 
     public CustomerProductDTO getCustomerProduct(String productId){
+        logger.info("Attempting to fetch product for productId: {}", productId);
         Product product = productRepository.findById(productId).orElseThrow(()->new ResourceNotFoundException("Product not found"));
         productValidator.validateIsDeletedProduct(product);
         productValidator.validateIsActiveProduct(product);
         productValidator.containsValidProductVariation(product);
-
+        logger.info("Successfully fetched product details for productId: {}", productId);
         return createCustomerProductDTO(product, productId);
     }
 
@@ -349,6 +392,7 @@ public class ProductService {
     }
 
     public List<CustomerAllProductsDTO> getCustomerAllProduct(int pageNo, int pageSize, String sortField, String direction, String query, String categoryId){
+        logger.info("Fetching all products for customer");
         Category category = categoryRepository.findById(categoryId).orElseThrow(()->new ResourceNotFoundException("Category not found"));
 
         List<String> leafCategoryIds = new ArrayList<>();
@@ -377,6 +421,7 @@ public class ProductService {
             Category associatedCategory = product.getCategory();
             CustomerAllProductsDTO dto = createCustomerAllProductDTO(product, associatedCategory, associatedCategory.getId());
             productsDTOs.add(dto);
+            logger.debug("Added product ID: {} to the result DTO list", product.getId());
         }
         return productsDTOs;
     }
@@ -432,6 +477,7 @@ public class ProductService {
     }
 
     public List<CustomerProductDTO> getCustomerSimilarProducts(int pageNo, int pageSize, String sortField, String direction, String query, String productId){
+        logger.info("Fetching similar products");
         Product product = productRepository.findById(productId).orElseThrow(()-> new ResourceNotFoundException("Product not found"));
 
         //giving similar products by printing rest products of that category
@@ -453,13 +499,15 @@ public class ProductService {
         for(Product similarProduct:similarProducts.getContent()){
             CustomerProductDTO similarProductDTO = createCustomerProductDTO(similarProduct, similarProduct.getId());
             similarProductsDTOs.add(similarProductDTO);
+            logger.debug("Added similar product ID: {} to the result DTO list", similarProduct.getId());
         }
         return similarProductsDTOs;
     }
 
     public AdminProductDTO getAdminProduct(String productId){
+        logger.info("Fetching product details for admin with productId: {}", productId);
         Product product = productRepository.findById(productId).orElseThrow(()->new ResourceNotFoundException("Product not found"));
-
+        logger.info("Successfully retrieved product details for productId: {}", productId);
         return createAdminProductDTO(product);
     }
 
@@ -510,13 +558,14 @@ public class ProductService {
     }
 
     public List<AdminProductDTO> getAdminAllProducts(int pageNo, int pageSize, String sortField, String direction, String query){
+        logger.info("Fetching all products for admin");
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.fromString(direction), sortField));
         Specification<Product> specification = null;
         if(query!=null && !query.isBlank()){
             specification = ProductSpecifications.fromQueryString(query);
         }
         Page<Product> allProducts = productRepository.findAll(specification, pageable);
-
+        logger.info("Fetched {} products for admin", allProducts.getContent().size());
         List<AdminProductDTO> allProductsDTOs = new ArrayList<>();
         for(Product product:allProducts.getContent()){
             AdminProductDTO adminProductDTO = createAdminProductDTO(product);
@@ -526,6 +575,7 @@ public class ProductService {
     }
 
     public String activateDeactivateProduct(String productId, String action) throws MessagingException {
+        logger.info("Attempting to {} product with ID: {}", action, productId);
         Product product = productRepository.findById(productId).orElseThrow(()->new ResourceNotFoundException("Product not found"));
 
         Boolean isProductActive = product.getIsActive();
@@ -534,9 +584,11 @@ public class ProductService {
                 product.setIsActive(false);
                 productRepository.save(product);
                 adminProductEmailService.sendProductDeactivationEmail(product.getSeller().getEmail(), product);
+                logger.info("Product with ID: {} deactivated successfully", productId);
                 return "Product deactivated";
             }
             else{
+                logger.info("Product with ID: {} is already deactivated", productId);
                 return "Product is already deactivated";
             }
         }
@@ -545,9 +597,11 @@ public class ProductService {
                 product.setIsActive(true);
                 productRepository.save(product);
                 adminProductEmailService.sendProductActivationEmail(product.getSeller().getEmail(), product);
+                logger.info("Product with ID: {} activated successfully", productId);
                 return "Product activated";
             }
             else{
+                logger.info("Product with ID: {} is already activated", productId);
                 return "Product is already activated";
             }
         }

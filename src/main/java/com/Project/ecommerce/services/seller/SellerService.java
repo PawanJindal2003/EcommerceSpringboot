@@ -15,6 +15,8 @@ import com.Project.ecommerce.repositories.user.SellerRepository;
 import com.Project.ecommerce.security.jwt.JwtService;
 import com.Project.ecommerce.utils.ImageUtil;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -29,7 +31,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class SellerService {
-    private final JwtService jwtService;
+    private static final Logger logger = LoggerFactory.getLogger(SellerService.class);
     private final SellerRepository sellerRepository;
     private final AddressRepository addressRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -38,6 +40,8 @@ public class SellerService {
 
     public ViewProfileDTO viewProfile(Principal principal) {
         String email = principal.getName();
+        logger.info("Fetching profile for seller: {}", email);
+
         Seller seller = sellerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("seller.not.found", null, LocaleContextHolder.getLocale())));
 
         ViewProfileDTO viewProfileDTO = new ViewProfileDTO();
@@ -65,6 +69,8 @@ public class SellerService {
 
     public String updateProfile(Principal principal, UpdateProfileCO updateProfileCO, MultipartFile multipartFile) {
         String email = principal.getName();
+        logger.info("Updating profile for seller: {}", email);
+
         Seller seller = sellerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("seller.not.found", null, LocaleContextHolder.getLocale())));
 
         if (updateProfileCO != null) {
@@ -74,22 +80,25 @@ public class SellerService {
             Optional.ofNullable(updateProfileCO.getCompanyName()).ifPresent(seller::setCompanyName);
             //not printing "enter a unique GST", security issue
             if (sellerRepository.findByGST(updateProfileCO.getGST()).isPresent()) {
+                logger.warn("Duplicate GST provided for update by seller: {}", email);
                 throw new DuplicateResourceException(messageSource.getMessage("gst.duplicate", null, LocaleContextHolder.getLocale()));
             }
-
 
             Optional.ofNullable(updateProfileCO.getGST()).ifPresent(seller::setGST);
             Optional.ofNullable(updateProfileCO.getCompanyContact()).ifPresent(seller::setCompanyContact);
             Optional.ofNullable(updateProfileCO.getCompanyName()).ifPresent(seller::setCompanyName);
         }
         if (multipartFile != null && !multipartFile.isEmpty()) {
+            logger.info("Saving profile picture for seller: {}", email);
             imageUtil.saveUserImage(multipartFile, seller);
         }
         sellerRepository.save(seller);
+        logger.info("Profile updated successfully for seller: {}", email);
         return messageSource.getMessage("profile.update.success", null, LocaleContextHolder.getLocale());
     }
 
     public String updatePassword(Principal principal, UpdatePasswordCO updatePasswordCO) {
+        logger.info("Password update requested for seller");
         // check if password and confirm password are not different
         if (!updatePasswordCO.getPassword().equals(updatePasswordCO.getConfirmPassword())) {
             throw new ConfirmPasswordMismatchException(messageSource.getMessage("password.confirm.mismatch", null, LocaleContextHolder.getLocale()));
@@ -103,13 +112,14 @@ public class SellerService {
         seller.setPasswordUpdateDate(Date.from(Instant.now()));
 
         sellerRepository.save(seller);
-
+        logger.info("Password updated successfully for seller: {}", email);
         return messageSource.getMessage("password.update.success", null, LocaleContextHolder.getLocale());
     }
 
     public String updateAddress(Principal principal, String addressId, UpdateAddressCO updateAddressCO) {
         String email = principal.getName();
         Seller seller = sellerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+        logger.info("Updating address for seller: {}", email);
 
         //validating address
         Address sellerAddress = seller.getAddresses().get(0);
@@ -117,6 +127,7 @@ public class SellerService {
 
         Address address = addressRepository.findById(addressId).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("customer.address.not.found", null, LocaleContextHolder.getLocale())));
         if (!isSellerAddress) {
+            logger.warn("Unauthorized address update attempt by seller: {}", email);
             throw new UnauthorizedAccessException("Invalid address id, please pass logged in seller's address id");
         }
 
@@ -127,7 +138,7 @@ public class SellerService {
         Optional.ofNullable(updateAddressCO.getZipCode()).ifPresent(address::setZipCode);
 
         addressRepository.save(address);
-
+        logger.info("Address updated successfully for seller: {}", email);
         return messageSource.getMessage("address.update.success", null, LocaleContextHolder.getLocale());
     }
 }

@@ -16,6 +16,8 @@ import com.Project.ecommerce.repositories.user.CustomerRepository;
 import com.Project.ecommerce.security.jwt.JwtService;
 import com.Project.ecommerce.utils.ImageUtil;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -32,6 +34,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class CustomerService {
+    private static final Logger logger = LoggerFactory.getLogger(CustomerService.class);
     private final JwtService jwtService;
     private final CustomerRepository customerRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -40,8 +43,11 @@ public class CustomerService {
     private final AddressRepository addressRepository;
 
     public ViewProfileDTO viewProfile(Principal principal) {
+        logger.info("Fetching profile for customer with email: {}", principal.getName());
+
         String email = principal.getName();
         Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("email.not.found", null, LocaleContextHolder.getLocale())));
+        logger.info("Customer profile found for email: {}", email);
 
         ViewProfileDTO viewProfileDTO = new ViewProfileDTO();
 
@@ -54,12 +60,14 @@ public class CustomerService {
         viewProfileDTO.setIsActive(customer.getIsActive());
         viewProfileDTO.setCustomerContact(customer.getCustomerContact());
         viewProfileDTO.setProfilePicUrl(imageUtil.getImage(customer.getId()));
-
+        logger.info("Profile successfully fetched for customer with email: {}", email);
         return viewProfileDTO;
     }
 
     public List<ViewAddressDTO> getAllAddresses(Principal principal) {
         String email = principal.getName();
+        logger.info("Fetching addresses for customer with email: {}", email);
+
         Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("email.not.found", null, LocaleContextHolder.getLocale())));
 
         List<ViewAddressDTO> addressesDTO = new ArrayList<>();
@@ -76,13 +84,14 @@ public class CustomerService {
 
             addressesDTO.add(addressDTO);
         }
-
+        logger.info("Successfully fetched {} addresses for customer with email: {}", addressesDTO.size(), email);
         return addressesDTO;
     }
 
     public String updateProfile(Principal principal, UpdateProfileCO updateProfileCO, MultipartFile multipartFile) {
         String email = principal.getName();
         Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("customer.not.found", null, LocaleContextHolder.getLocale())));
+        logger.info("Attempting to update profile for customer with email: {}", email);
 
         if (updateProfileCO != null) {
             Optional.ofNullable(updateProfileCO.getFirstName()).ifPresent(customer::setFirstName);
@@ -95,13 +104,17 @@ public class CustomerService {
             imageUtil.saveUserImage(multipartFile, customer);
         }
         customerRepository.save(customer);
+        logger.info("Profile updated successfully for customer with email: {}", email);
+
         return messageSource.getMessage("customer.profile.updated", null, LocaleContextHolder.getLocale());
     }
 
     public String updatePassword(Principal principal, UpdatePasswordCO updatePasswordCO) {
         String email = principal.getName();
+        logger.info("Attempting to update password for customer with email: {}", email);
         Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
         // check if password and confirm password are not different
+        logger.info("Customer found for email: {}", email);
         if (bCryptPasswordEncoder.matches(updatePasswordCO.getPassword(), customer.getPassword())) {
             throw new DuplicateResourceException("Please enter a different password from current password");
         }
@@ -115,12 +128,14 @@ public class CustomerService {
         customer.setPasswordUpdateDate(Date.from(Instant.now()));
 
         customerRepository.save(customer);
-
+        logger.info("Password updated successfully for customer with email: {}", email);
         return messageSource.getMessage("customer.password.updated", null, LocaleContextHolder.getLocale());
     }
 
     public String addAddress(Principal principal, Address enteredNewAddress) {
         String email = principal.getName();
+        logger.info("Attempting to add new address for customer with email: {}", email);
+
         Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
         Address newAddress = new Address();
@@ -137,12 +152,15 @@ public class CustomerService {
         customer.setAddresses(addresses);
 
         customerRepository.save(customer);
+        logger.info("New address successfully added for customer with email: {}", email);
 
         return messageSource.getMessage("customer.address.added", null, LocaleContextHolder.getLocale());
     }
 
     public String deleteAddress(Principal principal, String addressId) {
         String email = principal.getName();
+        logger.info("Attempting to delete address with ID: {} for customer with email: {}", addressId, email);
+
         Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
         // check id provided is valid
@@ -152,12 +170,13 @@ public class CustomerService {
         addressRepository.findByUserId(customer.getId()).orElseThrow(() -> new ResourceNotFoundException("Wrong addressId provided"));
 
         addressRepository.deleteById(addressId);
-
+        logger.info("Address with ID: {} has been deleted successfully for customer with email: {}", addressId, email);
         return messageSource.getMessage("customer.address.deleted", null, LocaleContextHolder.getLocale());
     }
 
     public String updateAddress(Principal principal, String addressId, UpdateAddressCO updateAddressCO) {
         String email = principal.getName();
+        logger.info("Attempting to update address with ID: {} for customer with email: {}", addressId, email);
         Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
         //validating address
@@ -182,6 +201,7 @@ public class CustomerService {
         Optional.ofNullable(updateAddressCO.getZipCode()).ifPresent(address::setZipCode);
 
         customerRepository.save(customer);
+        logger.info("Address with ID: {} has been updated successfully for customer with email: {}", addressId, email);
         return messageSource.getMessage("customer.address.updated", null, LocaleContextHolder.getLocale());
     }
 }

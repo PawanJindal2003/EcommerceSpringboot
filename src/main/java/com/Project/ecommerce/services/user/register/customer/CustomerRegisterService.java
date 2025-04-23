@@ -14,6 +14,8 @@ import com.Project.ecommerce.security.jwt.JwtService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class CustomerRegisterService {
+    private static final Logger logger = LoggerFactory.getLogger(CustomerRegisterService.class);
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -31,11 +34,14 @@ public class CustomerRegisterService {
     private final MessageSource messageSource;
 
     public String registerCustomer(CustomerCO customerCO) throws MessagingException {
+        logger.info("Received registration request for customer with email: {}", customerCO.getEmail());
         // validations
         if (customerRepository.findByEmail(customerCO.getEmail()).isPresent()) {
+            logger.warn("Attempt to register customer with already existing email: {}", customerCO.getEmail());
             throw new EmailAlreadyExistsException(messageSource.getMessage("customer.email.already.exists", null, LocaleContextHolder.getLocale()));
         }
         if (!customerCO.getPassword().equals(customerCO.getConfirmPassword())) {
+            logger.warn("Password mismatch for email: {}", customerCO.getEmail());
             throw new ConfirmPasswordMismatchException(messageSource.getMessage("customer.confirm.password.mismatch", null, LocaleContextHolder.getLocale()));
         }
 
@@ -51,10 +57,13 @@ public class CustomerRegisterService {
         customer.setRole(role);
 
         customerRepository.save(customer);
+        logger.info("Successfully registered customer with email: {}", customerCO.getEmail());
+
         // token generation and saving in db
         String generatedToken = jwtService.generateToken(customer.getEmail());
         jwtService.storeToken(generatedToken, customer.getEmail());
         customerEmailService.sendActivationEmail(customer.getEmail(), generatedToken);
+        logger.info("Activation email sent to customer with email: {}", customerCO.getEmail());
 
         return messageSource.getMessage("customer.register.success", null, LocaleContextHolder.getLocale());
     }
@@ -63,6 +72,7 @@ public class CustomerRegisterService {
         try {
             // if account is already active
             if (userRepository.findByEmail(jwtService.extractEmail(token)).get().getIsActive()) {
+                logger.info("Customer account already active for email: {}", jwtService.extractEmail(token));
                 return messageSource.getMessage("customer.account.already.active", null, LocaleContextHolder.getLocale());
             }
 
@@ -76,6 +86,8 @@ public class CustomerRegisterService {
                 // activating the user
                 customer.setIsActive(true);
                 userRepository.save(customer);
+                logger.info("Customer account activated for email: {}", extractedEmail);
+
                 // deleting useless token from db
                 jwtService.deleteToken(extractedEmail);
 
@@ -88,6 +100,7 @@ public class CustomerRegisterService {
         } catch (ExpiredJwtException e) {
             // delete expired token
             jwtService.deleteToken(e.getClaims().getSubject());
+            logger.warn("Expired activation token for email: {}", e.getClaims().getSubject());
 
             // resend activation email
             resendActivationEmail(e.getClaims().getSubject());
@@ -104,6 +117,7 @@ public class CustomerRegisterService {
         String newToken = jwtService.generateToken(customer.getEmail());
         jwtService.storeToken(newToken, email);
         customerEmailService.sendActivationEmail(customer.getEmail(), newToken);
+        logger.info("Resent activation email to customer with email: {}", email);
 
         return messageSource.getMessage("customer.resend.activation.email", null, LocaleContextHolder.getLocale());
     }

@@ -10,6 +10,8 @@ import com.Project.ecommerce.repositories.user.RoleRepository;
 import com.Project.ecommerce.repositories.user.SellerRepository;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class SellerRegisterService {
+    private static final Logger logger = LoggerFactory.getLogger(SellerRegisterService.class);
     private final SellerRepository sellerRepository;
     private final RoleRepository roleRepository;
     private final SellerEmailService sellerEmailService;
@@ -25,17 +28,22 @@ public class SellerRegisterService {
     private final MessageSource messageSource;
 
     public String registerSeller(SellerCO sellerCO) throws MessagingException {
+        logger.info("Received registration request for seller with email: {}", sellerCO.getEmail());
         if (sellerRepository.findByEmail(sellerCO.getEmail()).isPresent()) {
+            logger.warn("Attempt to register seller with already existing email: {}", sellerCO.getEmail());
             throw new EmailAlreadyExistsException(messageSource.getMessage("seller.email.already.exists", null, LocaleContextHolder.getLocale()));
         }
         if (!sellerCO.getPassword().equals(sellerCO.getConfirmPassword())) {
+            logger.warn("Password mismatch for email: {}", sellerCO.getEmail());
             throw new ConfirmPasswordMismatchException(messageSource.getMessage("seller.confirm.password.mismatch", null, LocaleContextHolder.getLocale()));
         }
         //not printing "enter a unique GST", security issue
         if(sellerRepository.findByGST(sellerCO.getGST()).isPresent()){
+            logger.warn("Attempt to register seller with duplicate GST: {}", sellerCO.getGST());
             throw new DuplicateResourceException(messageSource.getMessage("seller.invalid.gst", null, LocaleContextHolder.getLocale()));
         }
         if(sellerRepository.findByCompanyName(sellerCO.getCompanyName()).isPresent()){
+            logger.warn("Attempt to register seller with duplicate company name: {}", sellerCO.getCompanyName());
             throw new DuplicateResourceException(messageSource.getMessage("seller.duplicate.company.name", null, LocaleContextHolder.getLocale()));
         }
 
@@ -55,7 +63,10 @@ public class SellerRegisterService {
 
         sellerRepository.save(seller);
 
+        logger.info("Successfully registered seller with email: {}", sellerCO.getEmail());
+
         sellerEmailService.sendActivationEmail(seller.getEmail());
+        logger.info("Activation email sent to seller with email: {}", sellerCO.getEmail());
 
         return messageSource.getMessage("seller.register.attempt", null, LocaleContextHolder.getLocale());
     }
