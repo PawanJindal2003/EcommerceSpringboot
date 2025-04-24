@@ -72,6 +72,10 @@ public class CustomerRegisterService {
         try {
             // if account is already active
             if (userRepository.findByEmail(jwtService.extractEmail(token)).get().getIsActive()) {
+                if(jwtService.ifTokenPresent(token)) {
+                    String extractedEmail = jwtService.extractEmail(token);
+                    jwtService.deleteToken(extractedEmail);
+                }
                 logger.info("Customer account already active for email: {}", jwtService.extractEmail(token));
                 return messageSource.getMessage("customer.account.already.active", null, LocaleContextHolder.getLocale());
             }
