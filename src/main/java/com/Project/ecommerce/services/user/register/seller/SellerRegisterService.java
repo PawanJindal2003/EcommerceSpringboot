@@ -6,6 +6,7 @@ import com.Project.ecommerce.entities.user.Seller;
 import com.Project.ecommerce.exceptions.customExceptions.ConfirmPasswordMismatchException;
 import com.Project.ecommerce.exceptions.customExceptions.DuplicateResourceException;
 import com.Project.ecommerce.exceptions.customExceptions.EmailAlreadyExistsException;
+import com.Project.ecommerce.exceptions.customExceptions.ExcessAddressesException;
 import com.Project.ecommerce.repositories.user.RoleRepository;
 import com.Project.ecommerce.repositories.user.SellerRepository;
 import jakarta.mail.MessagingException;
@@ -58,6 +59,9 @@ public class SellerRegisterService {
         seller.setCompanyContact(sellerCO.getCompanyContact());
         seller.setEmail(sellerCO.getEmail());
         //send only one address
+        if(sellerCO.getAddresses().size()>1){
+            throw new ExcessAddressesException("A seller can have only one address");
+        }
         seller.setAddresses(sellerCO.getAddresses());
         seller.setRole(role);
 
