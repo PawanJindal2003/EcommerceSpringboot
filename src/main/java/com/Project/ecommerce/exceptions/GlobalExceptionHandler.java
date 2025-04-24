@@ -175,4 +175,10 @@ public class GlobalExceptionHandler {
         List<String> errorMessages = List.of(ex.getMessage());
         return new ResponseEntity<>(responseUtil.fail(HttpStatus.BAD_REQUEST, errorMessages), HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(ExcessAddressesException.class)
+    public ResponseEntity<ErrorResponse> handleExcessAddressesException(ExcessAddressesException ex){
+        List<String> errorMessages = List.of(ex.getMessage());
+        return new ResponseEntity<>(responseUtil.fail(HttpStatus.BAD_REQUEST, errorMessages), HttpStatus.BAD_REQUEST);
+    }
 }
