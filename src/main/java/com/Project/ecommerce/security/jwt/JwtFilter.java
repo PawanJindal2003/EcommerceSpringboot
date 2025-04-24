@@ -31,32 +31,10 @@ public class JwtFilter extends OncePerRequestFilter {
     private static final List<String> NON_PUBLIC_URLS = List.of(
             "/api/auth/logout",
             "/api/admin/**",
-            "/api/seller/me",
-            "/api/seller/update-profile",
-            "/api/seller/update-address/**",
-            "/api/seller/update-password",
-            "/api/customer/me",
-            "/api/customer/addresses",
-            "/api/customer/update-profile",
-            "/api/customer/update-password",
-            "/api/customer/add-address",
-            "/api/customer/delete-address/**",
-            "/api/customer/update-address",
-            "/api/category/add-categoryMetaDataField",
-            "/api/category/all-categoryMetaDataField/**",
-            "/api/category/add-category",
-            "/api/category/category/**",
-            "/api/category/all-categories/**",
-            "/api/category/update-category",
-            "/api/category/add-metadata-category",
-            "/api/category/update-metadata-category",
-            "/api/category/seller/all-categories",
-            "/api/category/customer/**",
-            "/api/product/add-product",
-            "/api/product/add-product-variation",
-            "/api/product/**",
-            "/api/product/customer/**",
-            "/api/product/admin/**");
+            "/api/seller/**",
+            "/api/customer/**",
+            "/api/category/**",
+            "/api/product/**");
     private JwtService jwtService;
     private CustomUserDetailsService customUserDetailsService;
     private RefreshTokenRepository refreshTokenRepository;
