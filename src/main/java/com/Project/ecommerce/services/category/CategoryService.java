@@ -209,7 +209,7 @@ public class CategoryService {
 
     public CategoryResponseDTO getCategory(String id) {
         logger.info("Fetching category with ID: {}", id);
-        Category category = categoryRepository.findById(id).orElseThrow();
+        Category category = categoryRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException(messageSource.getMessage("category.not.found", null, LocaleContextHolder.getLocale())));
         List<CategoryMetaDataFieldValues> fieldValues = category.getMetadataFieldValues();
         logger.debug("Constructed CategoryResponseDTO");
         return saveCategoryInDTO(id, category, fieldValues);
@@ -267,7 +267,7 @@ public class CategoryService {
 
     public String updateCategory(UpdateCategoryCO updateCategoryCO) {
         String id = updateCategoryCO.getId();
-        String name = updateCategoryCO.getName();
+        String name = updateCategoryCO.getName().toLowerCase();
         logger.info("Request received to update category. ID: {}, New Name: {}", id, name);
 
         Category category = categoryRepository.findById(id).orElseThrow();
