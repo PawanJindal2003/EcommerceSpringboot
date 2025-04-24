@@ -63,9 +63,9 @@ public class CategoryController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/category")
-    public ResponseEntity<SuccessResponse> getCategory(@RequestParam(required = true) String id) {
-        CategoryResponseDTO category = categoryService.getCategory(id);
+    @GetMapping("/{categoryId}")
+    public ResponseEntity<SuccessResponse> getCategory(@PathVariable String categoryId) {
+        CategoryResponseDTO category = categoryService.getCategory(categoryId);
         return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, category), HttpStatus.OK);
     }
 
