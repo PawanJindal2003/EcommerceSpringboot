@@ -30,7 +30,7 @@ public class CustomerRegisterController {
     @PutMapping("/activate/{token}")
     public ResponseEntity<SuccessResponse> activateCustomer(@PathVariable String token) throws MessagingException {
         String response = customerRegisterService.activateCustomer(token);
-        return new ResponseEntity<>(responseUtil.success(HttpStatus.CREATED, response), HttpStatus.CREATED);
+        return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, response), HttpStatus.OK);
     }
 
     @PostMapping("/resend-activation-link")
@@ -39,6 +39,6 @@ public class CustomerRegisterController {
                                                             @Email(message = "Invalid email format")
                                                             @Size(min = 6, max = 256, message = "Email must be between 6 and 256 characters") String email) throws MessagingException {
         String response = customerRegisterService.resendActivationEmail(email);
-        return new ResponseEntity<>(responseUtil.success(HttpStatus.CREATED, response), HttpStatus.CREATED);
+        return new ResponseEntity<>(responseUtil.success(HttpStatus.OK, response), HttpStatus.OK);
     }
 }
