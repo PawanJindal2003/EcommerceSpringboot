@@ -9,5 +9,4 @@ import java.util.Optional;
 
 @Repository
 public interface CategoryMetaDataFieldValuesRepository extends JpaRepository<CategoryMetaDataFieldValues, CategoryMetaDataFieldValuesId> {
-    Optional<CategoryMetaDataFieldValues> findByCategoryMetaDataFieldId(String id);
 }

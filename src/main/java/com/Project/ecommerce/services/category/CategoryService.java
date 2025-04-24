@@ -381,7 +381,8 @@ public class CategoryService {
         CategoryMetaDataField categoryMetaDataField = categoryMetaDataFieldRepository.findById(metaDataFieldId).orElseThrow(()-> new InactiveResourceException("Please enter a valid id"));
 
         // provided metadata field should be linked with the provided category
-        CategoryMetaDataFieldValues categoryMetaDataFieldValues = categoryMetaDataFieldValuesRepository.findByCategoryMetaDataFieldId(metaDataFieldId).orElseThrow(()->new FieldNotAssociatedException("Provided metadata field is not associated with the category"));
+        CategoryMetaDataFieldValuesId compositeId =  new CategoryMetaDataFieldValuesId(categoryId, metaDataFieldId);
+        CategoryMetaDataFieldValues categoryMetaDataFieldValues = categoryMetaDataFieldValuesRepository.findById(compositeId).orElseThrow(()->new FieldNotAssociatedException("Provided metadata field is not associated with the category"));
 
         // new values should be unique for category - metadata field combination
         newValues.replaceAll(String::toLowerCase);
