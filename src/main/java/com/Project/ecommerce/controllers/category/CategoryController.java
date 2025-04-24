@@ -115,14 +115,16 @@ public class CategoryController {
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
+    @GetMapping("/customer/categories")
+    public ResponseEntity<SuccessResponse> getCustomerRootCategories() {
+        List<CustomerCategoryResponseDTO> categories = categoryService.getCustomerRootCategories();
+        return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, categories), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/customer/{categoryId}/categories")
-    public ResponseEntity<SuccessResponse> getCustomerCategory(@PathVariable(required = false) String categoryId) {
-        List<CustomerCategoryResponseDTO> categories;
-        if (categoryId == null) {
-            categories = categoryService.getCustomerRootCategories();
-        } else {
-            categories = categoryService.getCustomerCategories(categoryId);
-        }
+    public ResponseEntity<SuccessResponse> getCustomerSubCategories(@PathVariable String categoryId) {
+        List<CustomerCategoryResponseDTO> categories = categoryService.getCustomerCategories(categoryId);
         return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, categories), HttpStatus.OK);
     }
 
