@@ -1,6 +1,7 @@
 package com.Project.ecommerce.utils;
 
 import com.Project.ecommerce.entities.user.User;
+import com.Project.ecommerce.exceptions.customExceptions.ResourceNotFoundException;
 import com.Project.ecommerce.exceptions.customExceptions.StoreImageFailureException;
 import com.Project.ecommerce.exceptions.customExceptions.UnsupportedImageTypeException;
 import lombok.RequiredArgsConstructor;
@@ -41,9 +42,11 @@ public class ImageUtil {
     }
 
     public String saveProductVariationImage(MultipartFile image, String productId, String imageType) throws IOException {
+        if (image == null || image.getOriginalFilename() == null) {
+            throw new ResourceNotFoundException("Image file must not be null or empty.");
+        }
         String originalFilename = image.getOriginalFilename();
 
-        assert originalFilename != null;
         String extension = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
 
         List<String> allowedExtensions = List.of(".jpg", ".jpeg", ".png", ".bmp");
