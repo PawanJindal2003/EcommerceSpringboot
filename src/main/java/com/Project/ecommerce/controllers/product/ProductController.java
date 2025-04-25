@@ -40,24 +40,22 @@ public class ProductController {
     }
 
     @PreAuthorize("hasRole('SELLER')")
-    @PostMapping(value = "/add-product-variation", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<SuccessResponse> addProductVariation(
-            @ModelAttribute @Valid AddProductVariationCO addProductVariationCO,
-            @RequestPart("primaryImage") MultipartFile primaryImage,
-            @RequestPart(required = false)List<MultipartFile> secondaryImages) throws IOException {
-        String responseMessage = productService.addProductVariation(addProductVariationCO, primaryImage, secondaryImages);
+    @PostMapping(value = "/add-product-variation", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_FORM_URLENCODED_VALUE})
+    public ResponseEntity<SuccessResponse> addProductVariation(Principal principal,
+            @ModelAttribute @Valid AddProductVariationCO addProductVariationCO) throws IOException {
+        String responseMessage = productService.addProductVariation(principal, addProductVariationCO);
         return new ResponseEntity<>(responseUtil.success(HttpStatus.CREATED, responseMessage), HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole('SELLER')")
     @GetMapping(value = "/{productId}")
-    public ResponseEntity<SuccessResponse> getSellerProduct(Principal principal, @PathVariable String productId) throws IOException {
+    public ResponseEntity<SuccessResponse> getSellerProduct(Principal principal, @PathVariable String productId) {
         SellerProductDTO product = productService.getSellerProduct(principal, productId);
         return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, product), HttpStatus.OK);
     }
     @PreAuthorize("hasRole('SELLER')")
     @GetMapping(value = "/product-variation/{productVariationId}")
-    public ResponseEntity<SuccessResponse> getSellerProductVariation(Principal principal, @PathVariable String productVariationId) throws IOException {
+    public ResponseEntity<SuccessResponse> getSellerProductVariation(Principal principal, @PathVariable String productVariationId) {
         SellerProductVariationDTO productVariation = productService.getSellerProductVariation(principal, productVariationId);
         return new ResponseEntity<>(responseUtil.successWithData(HttpStatus.OK, productVariation), HttpStatus.OK);
     }
