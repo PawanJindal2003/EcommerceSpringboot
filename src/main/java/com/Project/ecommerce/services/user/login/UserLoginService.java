@@ -18,10 +18,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.security.authentication.*;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
-
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -42,7 +43,7 @@ public class UserLoginService {
         User user = userRepository.findByEmail(userCO.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException(messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale())));
 
-        if(user.getPasswordUpdateDate().before(Date.from(Instant.now().minus(60, ChronoUnit.DAYS)))){
+        if (user.getPasswordUpdateDate().before(Date.from(Instant.now().minus(60, ChronoUnit.DAYS)))) {
             logger.warn("Password expired for user with email: {}", userCO.getEmail());
             throw new ExpiredPasswordException(messageSource.getMessage("user.account.expired", null, LocaleContextHolder.getLocale()));
         }
@@ -55,8 +56,7 @@ public class UserLoginService {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(userCO.getEmail(), userCO.getPassword())
             );
-        }
-        catch (BadCredentialsException e){
+        } catch (BadCredentialsException e) {
             logger.warn("Failed login attempt for user with email: {}", userCO.getEmail());
             multipleLoginAttempts(userCO.getEmail());
             throw e;
@@ -96,7 +96,7 @@ public class UserLoginService {
             logger.warn("User account locked due to multiple failed login attempts for email: {}", email);
         }
 
-        if(!user.getRole().getAuthority().equals("ADMIN")){
+        if (!user.getRole().getAuthority().equals("ADMIN")) {
             userRepository.save(user);
         }
     }
@@ -113,7 +113,7 @@ public class UserLoginService {
             }
         }
 
-        if(accessToken!=null){
+        if (accessToken != null) {
             //add this token in blacklisted tokens
             BlacklistedAccessToken blacklistedAccessToken = new BlacklistedAccessToken(accessToken, Instant.now().plus(15, ChronoUnit.MINUTES));
             blacklistedAccessTokenRepository.save(blacklistedAccessToken);
@@ -130,8 +130,7 @@ public class UserLoginService {
             cookie.setMaxAge(0);
             response.addCookie(cookie);
             logger.info("User logged out successfully for email: {}", email);
-        }
-        else{
+        } else {
             logger.warn("No access token found in cookies during logout");
         }
 
