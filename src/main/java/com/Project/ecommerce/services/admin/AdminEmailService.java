@@ -49,9 +49,4 @@ public class AdminEmailService {
 
         emailSender.send(message);
     }
-
-    private String generateActivationUrl(String token) {
-        String baseUrl = "http://localhost:8080/api/admin/activation-status";
-        return baseUrl + "?token=" + token;
-    }
 }

@@ -21,12 +21,9 @@ public class ForgetPasswordEmailService {
 
     @Async
     public void sendResetPasswordEmail(String toEmail, String forgetPasswordToken) throws MessagingException {
-        String activationUrl = generateActivationUrl(forgetPasswordToken);
-
         String subject = "Link to reset your password";
-        String body = "<p>To reset your password, please click the link below:</p>"
-                + "<p><a href='" + activationUrl + "'>Activate Account</a></p>";
-
+        String body = "<p>To reset your password, please use the activation token :</p>"
+                + "<p>" + forgetPasswordToken + "</p>";
         sendEmail(toEmail, subject, body);
     }
 
@@ -49,10 +46,5 @@ public class ForgetPasswordEmailService {
         helper.setText(body, true); // Set the body as HTML
 
         emailSender.send(message);
-    }
-
-    private String generateActivationUrl(String token) {
-        String baseUrl = "http://localhost:8080/api/auth/forget-password";
-        return baseUrl + "?token=" + token;
     }
 }

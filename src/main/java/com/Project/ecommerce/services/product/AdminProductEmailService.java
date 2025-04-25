@@ -30,7 +30,7 @@ public class AdminProductEmailService {
                 "<li><strong>Name:</strong> " + product.getName() + "</li>" +
                 "<li><strong>Brand:</strong> " + product.getBrand() + "</li>" +
                 "<li><strong>Category:</strong> " + product.getCategory().getName() + "</li>" +
-                "<li><strong>Description:</strong> " + product.getIsActive() + "</li>" +
+                "<li><strong>Description:</strong> " + product.getDescription() + "</li>" +
                 "</ul>";
 
         sendEmail(toEmail, subject, body);
@@ -46,7 +46,7 @@ public class AdminProductEmailService {
                 "<li><strong>Name:</strong> " + product.getName() + "</li>" +
                 "<li><strong>Brand:</strong> " + product.getBrand() + "</li>" +
                 "<li><strong>Category:</strong> " + product.getCategory().getName() + "</li>" +
-                "<li><strong>Description:</strong> " + product.getIsActive() + "</li>" +
+                "<li><strong>Description:</strong> " + product.getDescription() + "</li>" +
                 "</ul>";
 
         sendEmail(toEmail, subject, body);
@@ -62,10 +62,5 @@ public class AdminProductEmailService {
         helper.setText(body, true); // Set the body as HTML
 
         emailSender.send(message);
-    }
-
-    private String generateActivationUrl(String token) {
-        String baseUrl = "http://localhost:8080/api/admin/product-activation-status";
-        return baseUrl + "?token=" + token;
     }
 }
