@@ -6,11 +6,15 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 import java.util.Map;
 
 @Getter
 @Setter
 public class AddProductVariationCO {
+    @NotNull(message = "Primary image is mandatory")
+    private MultipartFile primaryImage;
+    private MultipartFile[] secondaryImages;
     @NotBlank(message = "Product Id cannot be blank")
     private String productId;
 
