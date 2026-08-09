@@ -13,6 +13,11 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+        name = "app.seed.demo-data",
+        havingValue = "false",
+        matchIfMissing = true
+)
 public class AdminBootstrap implements ApplicationRunner {
     private UserRepository userRepository;
     private RoleRepository roleRepository;

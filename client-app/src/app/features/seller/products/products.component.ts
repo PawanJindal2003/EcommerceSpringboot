@@ -53,7 +53,11 @@ export class SellerProductsComponent implements OnInit {
       error: e => this.error = this.err.getMessages(e).join(', ')
     });
   }
-  selectProduct(id: string) { this.selectedProductId = id; this.loadVariations(); }
+  selectProduct(id: string) {
+    this.selectedProductId = id;
+    this.variationForm.patchValue({ productId: id });
+    this.loadVariations();
+  }
   addProduct() {
     if (this.productForm.invalid) return;
     this.product.addProduct(this.productForm.value as any).subscribe({
@@ -65,11 +69,22 @@ export class SellerProductsComponent implements OnInit {
   onSecondaryImages(e: Event) { this.secondaryImages = Array.from((e.target as HTMLInputElement).files || []); }
   addVariation() {
     if (this.variationForm.invalid || !this.primaryImage) { this.error = 'Primary image is required'; return; }
+    const metadataRaw = (this.variationForm.value.metadata || '').trim();
+    if (!metadataRaw || metadataRaw === '{}') {
+      this.error = 'Metadata is required (e.g. {"Color":"Red"})';
+      return;
+    }
+    try {
+      JSON.parse(metadataRaw);
+    } catch {
+      this.error = 'Metadata must be valid JSON (e.g. {"Color":"Red"})';
+      return;
+    }
     const fd = new FormData();
     fd.append('productId', this.variationForm.value.productId!);
     fd.append('quantityAvailable', String(this.variationForm.value.quantityAvailable));
     fd.append('price', String(this.variationForm.value.price));
-    fd.append('metadata', this.variationForm.value.metadata || '{}');
+    fd.append('metadata', metadataRaw);
     fd.append('primaryImage', this.primaryImage);
     this.secondaryImages.forEach(f => fd.append('secondaryImages', f));
     this.product.addProductVariation(fd).subscribe({

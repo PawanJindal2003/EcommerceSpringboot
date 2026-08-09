@@ -41,7 +41,8 @@ public class CustomSecurityConfig {
                                 "/api/auth/customer/resend-activation-link",
                                 "/api/auth/seller/register",
                                 "/api/auth/seller/activate/**",
-                                "/api/auth/seller/resend-activation-link/**"
+                                "/api/auth/seller/resend-activation-link/**",
+                                "/api/images/**"
                         ).permitAll()
                         .requestMatchers(
                                 "/api/auth/logout",

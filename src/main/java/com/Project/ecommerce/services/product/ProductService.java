@@ -221,7 +221,7 @@ public class ProductService {
         dto.setMetaData(JsonUtil.jsonToMap(productVariation.getMetaData()));
         dto.setProduct(createSellerProductDTO(product));
         dto.setIsActive(productVariation.getIsActive());
-        dto.setPrimaryImageName(imageUtil.getProductVariationPrimaryImage(product.getId()));
+        dto.setPrimaryImageName(imageUtil.getProductVariationImageUrl(product.getId(), productVariation.getPrimaryImageName()));
         dto.setSecondaryImageNames(imageUtil.getProductVariationSecondaryImages(product.getId()));
         return dto;
     }
@@ -398,7 +398,7 @@ public class ProductService {
         List<ProductVariation> productVariations = product.getProductVariations();
         for (ProductVariation productVariation : productVariations) {
             CustomerProductVariationDTO dto = new CustomerProductVariationDTO();
-            dto.setPrimaryImage(imageUtil.getProductVariationPrimaryImage(productId));
+            dto.setPrimaryImage(imageUtil.getProductVariationImageUrl(productId, productVariation.getPrimaryImageName()));
             dto.setSecondaryImages(imageUtil.getProductVariationSecondaryImages(productId));
             dto.setMetadata(JsonUtil.jsonToMap(productVariation.getMetaData()));
             dto.setPrice(productVariation.getPrice());
@@ -499,7 +499,7 @@ public class ProductService {
         for (ProductVariation productVariation : productVariations) {
             CustomerAllProductsVariationsDTO productsVariationDTO = new CustomerAllProductsVariationsDTO();
             productsVariationDTO.setProductVariationId(productVariation.getId());
-            productsVariationDTO.setPrimaryImage(imageUtil.getProductVariationPrimaryImage(product.getId()));
+            productsVariationDTO.setPrimaryImage(imageUtil.getProductVariationImageUrl(product.getId(), productVariation.getPrimaryImageName()));
             productsVariationDTO.setPrice(productVariation.getPrice());
             productVariationsDTOs.add(productsVariationDTO);
         }
@@ -571,7 +571,7 @@ public class ProductService {
         for (ProductVariation productVariation : productVariations) {
             AdminProductVariationDTO productVariationDTO = new AdminProductVariationDTO();
             productVariationDTO.setProductVariationId(productVariation.getId());
-            productVariationDTO.setPrimaryImage(imageUtil.getProductVariationPrimaryImage(product.getId()));
+            productVariationDTO.setPrimaryImage(imageUtil.getProductVariationImageUrl(product.getId(), productVariation.getPrimaryImageName()));
 
             productVariationDTOs.add(productVariationDTO);
         }

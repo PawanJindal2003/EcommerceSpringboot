@@ -10,25 +10,28 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
 public class ImageUtil {
     private final MessageSource messageSource;
+
     @Value("${user.upload-dir}")
-    String uploadDir;
+    private String uploadDir;
 
     @Value("${product.variations.upload-dir}")
-    String variationUploadDir;
-    public void saveUserImage(MultipartFile multipartFile, User user){
+    private String variationUploadDir;
+
+    public void saveUserImage(MultipartFile multipartFile, User user) {
         try {
-            String extension = Objects.requireNonNull(multipartFile.getOriginalFilename()).substring(multipartFile.getOriginalFilename().lastIndexOf('.'));
+            String extension = Objects.requireNonNull(multipartFile.getOriginalFilename())
+                    .substring(multipartFile.getOriginalFilename().lastIndexOf('.'));
             Path uploadPath = Paths.get(uploadDir);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
@@ -46,7 +49,6 @@ public class ImageUtil {
             throw new ResourceNotFoundException("Image file must not be null or empty.");
         }
         String originalFilename = image.getOriginalFilename();
-
         String extension = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
 
         List<String> allowedExtensions = List.of(".jpg", ".jpeg", ".png", ".bmp");
@@ -54,64 +56,91 @@ public class ImageUtil {
             throw new UnsupportedImageTypeException(messageSource.getMessage("image.unsupported.format", null, LocaleContextHolder.getLocale()));
         }
 
-        String filename;
         Path variationDir = Paths.get(variationUploadDir, productId);
         Files.createDirectories(variationDir);
+
+        String filename;
         if ("primary".equals(imageType)) {
             filename = productId + "_primary" + extension;
-            try(DirectoryStream<Path> stream = Files.newDirectoryStream(variationDir, productId + "_primary.*")){
-                for(Path oldFile:stream){
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(variationDir, productId + "_primary.*")) {
+                for (Path oldFile : stream) {
                     Files.deleteIfExists(oldFile);
                 }
             }
-        }
-        else {
+        } else {
             filename = productId + "_" + imageType + extension;
         }
 
-        Path imagePath = Paths.get(variationUploadDir, productId, filename);
-
-        Files.createDirectories(imagePath.getParent());
+        Path imagePath = variationDir.resolve(filename);
         Files.copy(image.getInputStream(), imagePath, StandardCopyOption.REPLACE_EXISTING);
         return filename;
     }
 
-    public String getProductVariationPrimaryImage(String productId){
-        Path dir = Paths.get("src/main/resources/images/products/variations", productId);
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, productId + "_primary*.*")) {
-            for (Path entry : stream) {
-//                return entry.toAbsolutePath().toString();
-                String filename = entry.getFileName().toString();
-                return "http://localhost:8080/product/variations/primary-image/" + filename;
-            }
-        } catch (IOException e) {
-            return "http://localhost:8080/profile-pics/default.jpg";
+    public String getProductVariationImageUrl(String productId, String filename) {
+        if (productId == null || filename == null || filename.isBlank()) {
+            return resolvePrimaryImageUrl(productId);
         }
-        return null;
+        Path imagePath = Paths.get(variationUploadDir, productId, filename);
+        if (!Files.exists(imagePath)) {
+            return resolvePrimaryImageUrl(productId);
+        }
+        return "/api/images/product-variations/" + productId + "/" + filename;
     }
+
+    public String getProductVariationPrimaryImage(String productId) {
+        return resolvePrimaryImageUrl(productId);
+    }
+
     public List<String> getProductVariationSecondaryImages(String productId) {
         List<String> imageUrls = new ArrayList<>();
-        Path dir = Paths.get("src/main/resources/images/products/variations", productId);
+        Path dir = Paths.get(variationUploadDir, productId);
+
+        if (!Files.isDirectory(dir)) {
+            return imageUrls;
+        }
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, productId + "_secondary_*.*")) {
             for (Path entry : stream) {
                 String filename = entry.getFileName().toString();
-                imageUrls.add("http://localhost:8080/product/variation/image/" + productId + "/" + filename);
+                imageUrls.add("/api/images/product-variations/" + productId + "/" + filename);
             }
         } catch (IOException e) {
-            imageUrls.add("http://localhost:8080/profile-pics/default.jpg");
+            return imageUrls;
         }
         return imageUrls;
     }
 
-
-    public String getImage(String id){
-        Path dir = Paths.get("src/main/resources/images/users");
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, id + "*")) {
-                return "http://localhost:8080/users/image/" + id;
-        } catch (IOException e) {
-            return "http://localhost:8080/profile-pics/default.jpg";
+    public String getImage(String userId) {
+        Path dir = Paths.get(uploadDir);
+        if (!Files.isDirectory(dir)) {
+            return null;
         }
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, userId + "*")) {
+            for (Path entry : stream) {
+                return "/api/images/users/" + entry.getFileName().toString();
+            }
+        } catch (IOException e) {
+            return null;
+        }
+        return null;
+    }
+
+    private String resolvePrimaryImageUrl(String productId) {
+        if (productId == null) {
+            return null;
+        }
+        Path dir = Paths.get(variationUploadDir, productId);
+        if (!Files.isDirectory(dir)) {
+            return null;
+        }
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, productId + "_primary*.*")) {
+            for (Path entry : stream) {
+                String filename = entry.getFileName().toString();
+                return "/api/images/product-variations/" + productId + "/" + filename;
+            }
+        } catch (IOException e) {
+            return null;
+        }
+        return null;
     }
 }
-
