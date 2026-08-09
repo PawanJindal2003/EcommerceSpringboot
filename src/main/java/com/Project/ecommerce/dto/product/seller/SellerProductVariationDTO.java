@@ -9,6 +9,7 @@ import java.util.Map;
 @Getter
 @Setter
 public class SellerProductVariationDTO {
+    private String id;
     private Integer quantityAvailable;
     private Long price;
     private Map<String, String > metaData;

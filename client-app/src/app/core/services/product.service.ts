@@ -27,7 +27,7 @@ export class ProductService {
   }
 
   getSellerProduct(productId: string): Observable<SellerProductDTO> {
-    return this.api.get<SellerProductDTO>(`/product/seller/${productId}`).pipe(map(r => r.data));
+    return this.api.get<SellerProductDTO>(`/product/${productId}`).pipe(map(r => r.data));
   }
 
   getSellerProductVariation(variationId: string): Observable<SellerProductVariationDTO> {
@@ -35,18 +35,18 @@ export class ProductService {
   }
 
   getSellerProducts(params: PaginationParams): Observable<SellerProductDTO[]> {
-    return this.api.get<SellerProductDTO[]>('/product/seller/all-products', this.api.buildPaginationParams(params)).pipe(map(r => r.data ?? []));
+    return this.api.get<SellerProductDTO[]>('/product/all-products', this.api.buildPaginationParams(params)).pipe(map(r => r.data ?? []));
   }
 
   getSellerProductVariations(productId: string, params: PaginationParams): Observable<SellerProductVariationDTO[]> {
     return this.api.get<SellerProductVariationDTO[]>(
-      `/product/seller/${productId}/all-product-variations`,
+      `/product/${productId}/all-product-variations`,
       this.api.buildPaginationParams(params)
     ).pipe(map(r => r.data));
   }
 
   deleteSellerProduct(productId: string): Observable<string> {
-    return this.api.delete<null>(`/product/seller/${productId}`).pipe(map(r => r.successMessage || 'Deleted'));
+    return this.api.delete<null>(`/product/${productId}`).pipe(map(r => r.successMessage || 'Deleted'));
   }
 
   updateSellerProduct(productId: string, request: UpdateProductRequest): Observable<string> {
@@ -82,7 +82,7 @@ export class ProductService {
   }
 
   getAdminProducts(params: PaginationParams): Observable<AdminProductDTO[]> {
-    return this.api.get<AdminProductDTO[]>('/product/admin/product-list', this.api.buildPaginationParams(params)).pipe(map(r => r.data ?? []));
+    return this.api.get<AdminProductDTO[]>('/product/admin/all-products', this.api.buildPaginationParams(params)).pipe(map(r => r.data ?? []));
   }
 
   activateProduct(productId: string): Observable<string> {

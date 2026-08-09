@@ -8,6 +8,7 @@ import lombok.Setter;
 @Setter
 
 public class SellerProductDTO {
+    private String id;
     private String name;
     private String description;
     private Boolean isCancellable;

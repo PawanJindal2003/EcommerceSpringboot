@@ -181,6 +181,7 @@ public class ProductService {
     private SellerProductDTO createSellerProductDTO(Product product) {
         SellerProductDTO dto = new SellerProductDTO();
 
+        dto.setId(product.getId());
         dto.setName(product.getName());
         dto.setBrand(product.getBrand());
         dto.setDescription(product.getDescription());
@@ -214,6 +215,7 @@ public class ProductService {
     private SellerProductVariationDTO createSellerProductVariationDTO(ProductVariation productVariation, Product product) {
         SellerProductVariationDTO dto = new SellerProductVariationDTO();
 
+        dto.setId(productVariation.getId());
         dto.setPrice(productVariation.getPrice());
         dto.setQuantityAvailable(productVariation.getQuantityAvailable());
         dto.setMetaData(JsonUtil.jsonToMap(productVariation.getMetaData()));
