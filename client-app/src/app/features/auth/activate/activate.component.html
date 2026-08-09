@@ -1,0 +1,14 @@
+<div class="auth-card">
+  <h2>Account Activation</h2>
+  <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+  <div class="alert alert-success" *ngIf="success">{{ success }}</div>
+  <p *ngIf="loading">Activating your account...</p>
+  <div *ngIf="showResend">
+    <h3>Resend Activation Link</h3>
+    <form [formGroup]="resendForm" (ngSubmit)="resend()">
+      <div class="form-group"><label>Email</label><input formControlName="email" type="email" /></div>
+      <button type="submit" class="btn btn-primary" [disabled]="loading">Resend Link</button>
+    </form>
+  </div>
+  <div class="auth-links"><a routerLink="/auth/login">Back to Login</a></div>
+</div>

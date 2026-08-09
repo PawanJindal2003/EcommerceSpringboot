@@ -1,0 +1,49 @@
+<div class="page">
+  <h2>Category Management</h2>
+  <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+  <div class="alert alert-success" *ngIf="message">{{ message }}</div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <h3>Add Category</h3>
+      <div class="form-group"><input [(ngModel)]="newCategoryName" placeholder="Category name" /></div>
+      <div class="form-group"><input [(ngModel)]="parentCategoryId" placeholder="Parent category ID (optional)" /></div>
+      <button class="btn btn-primary" (click)="addCategory()">Add Category</button>
+
+      <h3>Add Metadata Field</h3>
+      <div class="form-group"><input [(ngModel)]="newMetaField" placeholder="Field name (e.g. Color)" /></div>
+      <button class="btn btn-primary" (click)="addMetaField()">Add Field</button>
+    </div>
+
+    <div class="panel">
+      <h3>Categories</h3>
+      <ul class="list">
+        <li *ngFor="let c of categories">
+          <a (click)="viewCategory(c.id)">{{ c.name }}</a> ({{ c.id }})
+          <ul *ngIf="c.subCategories?.length"><li *ngFor="let sc of c.subCategories">{{ sc.name }}</li></ul>
+        </li>
+        <li *ngIf="!loading && !categories.length" class="text-muted">No categories yet. Add one using the form on the left.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel" *ngIf="selectedCategory">
+    <h3>{{ selectedCategory.name }} - Details</h3>
+    <div *ngFor="let mf of selectedCategory.metaDataFields">
+      <strong>{{ mf.fieldName }}:</strong> {{ mf.fieldValues?.join(', ') }}
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Assign Metadata to Category</h3>
+    <form [formGroup]="metaForm" (ngSubmit)="addMetadata()">
+      <div class="grid-2">
+        <div class="form-group"><label>Category ID</label><input formControlName="categoryId" /></div>
+        <div class="form-group"><label>Metadata Field ID</label><input formControlName="metaDataFieldId" /></div>
+        <div class="form-group"><label>Values (comma-separated)</label><input formControlName="values" placeholder="Red, Blue, Green" /></div>
+      </div>
+      <button type="submit" class="btn btn-primary">Assign Metadata</button>
+    </form>
+    <p>Available metadata fields: <span *ngFor="let f of metaFields">{{ f }}, </span></p>
+  </div>
+</div>

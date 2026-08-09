@@ -1,0 +1,20 @@
+<div class="page">
+  <h2>Sellers</h2>
+  <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+  <div class="alert alert-success" *ngIf="message">{{ message }}</div>
+  <div class="toolbar">
+    <input [(ngModel)]="email" placeholder="Search by email" (keyup.enter)="search()" />
+    <button class="btn btn-primary" (click)="search()">Search</button>
+  </div>
+  <table class="data-table" *ngIf="!loading">
+    <thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Contact</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+      <tr *ngFor="let s of sellers">
+        <td>{{ s.name }}</td><td>{{ s.email }}</td><td>{{ s.companyName }}</td><td>{{ s.companyContact }}</td>
+        <td><span [class]="s.isActive ? 'badge active' : 'badge inactive'">{{ s.isActive ? 'Active' : 'Inactive' }}</span></td>
+        <td><button class="btn btn-sm" (click)="toggle(s)">{{ s.isActive ? 'Deactivate' : 'Activate' }}</button></td>
+      </tr>
+    </tbody>
+  </table>
+  <p *ngIf="loading">Loading...</p>
+</div>

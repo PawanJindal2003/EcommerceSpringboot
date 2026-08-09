@@ -1,0 +1,10 @@
+<div class="dashboard">
+  <h1>Admin Dashboard</h1>
+  <p>Welcome, {{ auth.currentEmail }}</p>
+  <div class="card-grid">
+    <a routerLink="/admin/customers" class="dash-card"><h3>Customers</h3><p>Manage customer accounts</p></a>
+    <a routerLink="/admin/sellers" class="dash-card"><h3>Sellers</h3><p>Manage seller accounts</p></a>
+    <a routerLink="/admin/categories" class="dash-card"><h3>Categories</h3><p>Manage product categories</p></a>
+    <a routerLink="/admin/products" class="dash-card"><h3>Products</h3><p>Review and approve products</p></a>
+  </div>
+</div>

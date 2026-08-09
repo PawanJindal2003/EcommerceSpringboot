@@ -1,0 +1,25 @@
+<div class="page">
+  <h2>Customers</h2>
+  <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+  <div class="alert alert-success" *ngIf="message">{{ message }}</div>
+  <div class="toolbar">
+    <input [(ngModel)]="email" placeholder="Search by email" (keyup.enter)="search()" />
+    <button class="btn btn-primary" (click)="search()">Search</button>
+  </div>
+  <table class="data-table" *ngIf="!loading">
+    <thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+      <tr *ngFor="let c of customers">
+        <td>{{ c.name }}</td><td>{{ c.email }}</td>
+        <td><span [class]="c.isActive ? 'badge active' : 'badge inactive'">{{ c.isActive ? 'Active' : 'Inactive' }}</span></td>
+        <td><button class="btn btn-sm" (click)="toggle(c)">{{ c.isActive ? 'Deactivate' : 'Activate' }}</button></td>
+      </tr>
+    </tbody>
+  </table>
+  <p *ngIf="loading">Loading...</p>
+  <div class="pagination">
+    <button class="btn btn-secondary" [disabled]="page === 0" (click)="page = page - 1; load()">Prev</button>
+    <span>Page {{ page + 1 }}</span>
+    <button class="btn btn-secondary" [disabled]="customers.length < size" (click)="page = page + 1; load()">Next</button>
+  </div>
+</div>

@@ -1,0 +1,45 @@
+<div class="page">
+  <h2>Products</h2>
+  <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+  <div class="toolbar">
+    <input [(ngModel)]="query" placeholder="Search products" (keyup.enter)="load()" />
+    <button class="btn btn-primary" (click)="load()">Search</button>
+    <a routerLink="/shop/catalog" class="btn btn-secondary">Back to Catalog</a>
+  </div>
+
+  <div class="product-grid" *ngIf="!selectedProduct && !loading">
+    <div class="product-card" *ngFor="let p of products" (click)="viewProduct(p.id)">
+      <img *ngIf="p.productVariations?.[0]?.primaryImage" [src]="p.productVariations[0].primaryImage" alt="{{ p.name }}" />
+      <div class="product-info">
+        <h3>{{ p.name }}</h3>
+        <p class="brand">{{ p.brand }}</p>
+        <p class="price" *ngIf="p.productVariations?.length">From {{ p.productVariations[0].price | currency }}</p>
+        <p class="retailer">Sold by {{ p.retailer }}</p>
+      </div>
+    </div>
+    <p *ngIf="!products.length" class="text-muted">No products available in this category yet. Products need admin approval and at least one variation before they appear here.</p>
+  </div>
+
+  <div class="product-detail panel" *ngIf="selectedProduct">
+    <button class="btn btn-secondary" (click)="closeDetail()">Back to List</button>
+    <h2>{{ selectedProduct.name }}</h2>
+    <p class="brand">{{ selectedProduct.brand }}</p>
+    <p>{{ selectedProduct.description }}</p>
+    <p>Cancellable: {{ selectedProduct.isCancellable }} | Returnable: {{ selectedProduct.isReturnable }}</p>
+    <h3>Variations</h3>
+    <div class="variation-grid">
+      <div class="variation-card" *ngFor="let v of selectedProduct.productVariation">
+        <img *ngIf="v.primaryImage" [src]="v.primaryImage" alt="variation" />
+        <p class="price">{{ v.price | currency }}</p>
+        <div *ngFor="let item of v.metadata | keyvalue">{{ item.key }}: {{ item.value }}</div>
+      </div>
+    </div>
+    <h3 *ngIf="similarProducts.length">Similar Products</h3>
+    <div class="product-grid">
+      <div class="product-card" *ngFor="let sp of similarProducts">
+        <h4>{{ sp.name }}</h4>
+        <p>{{ sp.brand }}</p>
+      </div>
+    </div>
+  </div>
+</div>

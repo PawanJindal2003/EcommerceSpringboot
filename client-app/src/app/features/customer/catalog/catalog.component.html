@@ -1,0 +1,27 @@
+<div class="page">
+  <h2>Browse Categories</h2>
+  <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+  <button *ngIf="breadcrumb.length" class="btn btn-secondary" (click)="goBack()">Back</button>
+
+  <div class="category-grid" *ngIf="!subCategories.length && !loading">
+    <div class="category-card" *ngFor="let c of categories" (click)="selectCategory(c)">
+      <h3>{{ c.name }}</h3>
+    </div>
+    <p *ngIf="!categories.length" class="text-muted">No categories available yet.</p>
+  </div>
+
+  <div class="category-grid" *ngIf="subCategories.length">
+    <div class="category-card" *ngFor="let c of subCategories" (click)="selectCategory(c)">
+      <h3>{{ c.name }}</h3>
+      <button class="btn btn-sm btn-primary" (click)="browseProducts(c.id); $event.stopPropagation()">View Products</button>
+    </div>
+  </div>
+
+  <div class="panel" *ngIf="filterData">
+    <h3>Filters</h3>
+    <p>Price: {{ filterData.priceRange?.minPrice }} - {{ filterData.priceRange?.maxPrice }}</p>
+    <p>Brands: {{ filterData.brands?.join(', ') }}</p>
+    <div *ngFor="let m of filterData.metadata"><strong>{{ m.fieldName }}:</strong> {{ m.fieldValues?.join(', ') }}</div>
+    <button class="btn btn-primary" (click)="browseProducts(selectedCategoryId)">Shop This Category</button>
+  </div>
+</div>

@@ -1,0 +1,36 @@
+<div class="page">
+  <h2>Seller Profile</h2>
+  <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+  <div class="alert alert-success" *ngIf="message">{{ message }}</div>
+  <div *ngIf="profile" class="grid-2">
+    <div class="panel">
+      <h3>Profile Info</h3>
+      <p><strong>{{ profile.name }}</strong> | {{ profile.isActive ? 'Active' : 'Inactive' }}</p>
+      <p>GST: {{ profile.GST }}</p>
+      <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+        <div class="form-group"><label>Company Name</label><input formControlName="companyName" /></div>
+        <div class="form-group"><label>Company Contact</label><input formControlName="companyContact" /></div>
+        <div class="form-group"><label>Profile Picture</label><input type="file" (change)="onFile($event)" accept="image/*" /></div>
+        <button type="submit" class="btn btn-primary">Update Profile</button>
+      </form>
+    </div>
+    <div class="panel">
+      <h3>Change Password</h3>
+      <form [formGroup]="passwordForm" (ngSubmit)="updatePassword()">
+        <div class="form-group"><label>Old Password</label><input formControlName="oldPassword" type="password" /></div>
+        <div class="form-group"><label>New Password</label><input formControlName="password" type="password" /></div>
+        <div class="form-group"><label>Confirm Password</label><input formControlName="confirmPassword" type="password" /></div>
+        <button type="submit" class="btn btn-primary">Update Password</button>
+      </form>
+      <h3>Address</h3>
+      <form [formGroup]="addressForm" (ngSubmit)="updateAddress()">
+        <div class="form-group"><label>Address</label><input formControlName="addressLine" /></div>
+        <div class="form-group"><label>City</label><input formControlName="city" /></div>
+        <div class="form-group"><label>State</label><input formControlName="state" /></div>
+        <div class="form-group"><label>Country</label><input formControlName="country" /></div>
+        <div class="form-group"><label>Zip</label><input formControlName="zipCode" /></div>
+        <button type="submit" class="btn btn-primary">Update Address</button>
+      </form>
+    </div>
+  </div>
+</div>

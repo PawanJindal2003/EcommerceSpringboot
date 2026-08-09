@@ -1,0 +1,70 @@
+# See https://docs.github.com/get-started/git-basics/ignoring-files
+
+############################
+# Compiled output
+############################
+/dist
+/tmp
+/out-tsc
+/bazel-out
+
+############################
+# Dependencies
+############################
+/node_modules
+
+############################
+# Angular CLI
+############################
+/.angular/
+
+############################
+# Test & coverage
+############################
+/coverage
+/libpeerconnection.log
+/testem.log
+chrome-profiler-events*.json
+
+############################
+# Logs
+############################
+npm-debug.log*
+yarn-error.log
+
+############################
+# Local environment
+############################
+.env
+.env.*
+!.env.example
+
+############################
+# IDEs & editors
+############################
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/
+
+############################
+# Misc
+############################
+/.sass-cache
+/connect.lock
+/typings
+
+############################
+# OS files
+############################
+.DS_Store
+Thumbs.db

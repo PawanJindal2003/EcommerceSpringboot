@@ -1,0 +1,66 @@
+<div class="page">
+  <h2>My Products</h2>
+  <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+  <div class="alert alert-success" *ngIf="message">{{ message }}</div>
+  <div class="toolbar">
+    <input [(ngModel)]="query" placeholder="Search" (keyup.enter)="loadProducts()" />
+    <button class="btn btn-primary" (click)="showAddProduct = !showAddProduct">Add Product</button>
+    <button class="btn btn-secondary" (click)="showAddVariation = !showAddVariation">Add Variation</button>
+  </div>
+
+  <div class="panel" *ngIf="showAddProduct">
+    <h3>Add Product</h3>
+    <form [formGroup]="productForm" (ngSubmit)="addProduct()">
+      <div class="grid-2">
+        <div class="form-group"><label>Name</label><input formControlName="name" /></div>
+        <div class="form-group"><label>Brand</label><input formControlName="brand" /></div>
+        <div class="form-group"><label>Category</label>
+          <select formControlName="categoryId"><option value="">Select</option><option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option></select>
+          <small *ngIf="!categories.length" class="text-muted">No leaf categories available. Ask admin to create categories first.</small>
+        </div>
+        <div class="form-group"><label>Description</label><input formControlName="description" /></div>
+      </div>
+      <button type="submit" class="btn btn-primary">Create Product</button>
+    </form>
+  </div>
+
+  <div class="panel" *ngIf="showAddVariation">
+    <h3>Add Product Variation</h3>
+    <p class="text-muted">Customers can only see products that are admin-approved and have at least one variation with price and image.</p>
+    <form [formGroup]="variationForm" (ngSubmit)="addVariation()">
+      <div class="grid-2">
+        <div class="form-group"><label>Product ID</label><input formControlName="productId" /></div>
+        <div class="form-group"><label>Quantity</label><input formControlName="quantityAvailable" type="number" /></div>
+        <div class="form-group"><label>Price</label><input formControlName="price" type="number" /></div>
+        <div class="form-group"><label>Metadata (JSON)</label><input formControlName="metadata" placeholder='{"Color":"Red"}' /></div>
+        <div class="form-group"><label>Primary Image</label><input type="file" (change)="onPrimaryImage($event)" accept="image/*" /></div>
+        <div class="form-group"><label>Secondary Images</label><input type="file" multiple (change)="onSecondaryImages($event)" accept="image/*" /></div>
+      </div>
+      <button type="submit" class="btn btn-primary">Add Variation</button>
+    </form>
+  </div>
+
+  <div class="grid-2">
+    <div>
+      <table class="data-table">
+        <thead><tr><th>Name</th><th>Brand</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let p of products">
+            <td><a (click)="selectProduct(p.id)">{{ p.name }}</a></td>
+            <td>{{ p.brand }}</td>
+            <td><span [class]="p.isActive ? 'badge active' : 'badge inactive'">{{ p.isActive ? 'Active' : 'Pending' }}</span></td>
+            <td><button class="btn btn-sm btn-danger" (click)="deleteProduct(p.id)">Delete</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="panel" *ngIf="selectedProductId">
+      <h3>Variations</h3>
+      <div *ngFor="let v of variations" class="variation-card">
+        <p>Price: {{ v.price }} | Qty: {{ v.quantityAvailable }}</p>
+        <p>Metadata: {{ v.metaData | json }}</p>
+        <img *ngIf="v.primaryImageName" [src]="v.primaryImageName" alt="product" class="thumb" />
+      </div>
+    </div>
+  </div>
+</div>

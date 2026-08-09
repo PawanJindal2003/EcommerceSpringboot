@@ -1,0 +1,31 @@
+<div class="page">
+  <h2>Product Management</h2>
+  <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+  <div class="alert alert-success" *ngIf="message">{{ message }}</div>
+  <div class="toolbar">
+    <input [(ngModel)]="query" placeholder="Search products" (keyup.enter)="load()" />
+    <button class="btn btn-primary" (click)="load()">Search</button>
+  </div>
+  <table class="data-table" *ngIf="!loading">
+    <thead><tr><th>Name</th><th>Brand</th><th>Seller</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+      <tr *ngFor="let p of products">
+        <td><a (click)="view(p.id)">{{ p.name }}</a></td>
+        <td>{{ p.brand }}</td>
+        <td>{{ p.sellerDetails?.companyName }}</td>
+        <td><span [class]="p.isActive ? 'badge active' : 'badge inactive'">{{ p.isActive ? 'Active' : 'Pending' }}</span></td>
+        <td>
+          <button class="btn btn-sm" (click)="view(p.id)">View</button>
+          <button class="btn btn-sm" (click)="toggle(p)">{{ p.isActive ? 'Deactivate' : 'Activate' }}</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="panel" *ngIf="selected">
+    <h3>{{ selected.name }}</h3>
+    <p>{{ selected.description }}</p>
+    <p>Brand: {{ selected.brand }} | Cancellable: {{ selected.isCancellable }} | Returnable: {{ selected.isReturnable }}</p>
+    <p>Seller: {{ selected.sellerDetails?.name }} ({{ selected.sellerDetails?.companyName }}) GST: {{ selected.sellerDetails?.GST }}</p>
+    <p>Variations: {{ selected.variations?.length || 0 }}</p>
+  </div>
+</div>

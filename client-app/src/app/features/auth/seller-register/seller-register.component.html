@@ -1,0 +1,29 @@
+<div class="auth-card wide">
+  <h2>Seller Registration</h2>
+  <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+  <div class="alert alert-success" *ngIf="success">{{ success }}</div>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="grid-2">
+      <div class="form-group"><label>Email</label><input formControlName="email" type="email" /></div>
+      <div class="form-group"><label>Company Name</label><input formControlName="companyName" /></div>
+      <div class="form-group"><label>GST Number</label><input formControlName="GST" placeholder="22AAAAA0000A1Z5" /></div>
+      <div class="form-group"><label>Company Contact</label><input formControlName="companyContact" placeholder="+91-9876543210" /></div>
+      <div class="form-group"><label>First Name</label><input formControlName="firstName" /></div>
+      <div class="form-group"><label>Last Name</label><input formControlName="lastName" /></div>
+      <div class="form-group"><label>Password</label><input formControlName="password" type="password" /></div>
+      <div class="form-group"><label>Confirm Password</label><input formControlName="confirmPassword" type="password" /></div>
+    </div>
+    <h3>Company Address</h3>
+    <div formArrayName="addresses">
+      <div [formGroupName]="0" class="grid-2">
+        <div class="form-group"><label>Address Line</label><input formControlName="addressLine" /></div>
+        <div class="form-group"><label>City</label><input formControlName="city" /></div>
+        <div class="form-group"><label>State</label><input formControlName="state" /></div>
+        <div class="form-group"><label>Country</label><input formControlName="country" /></div>
+        <div class="form-group"><label>Zip Code</label><input formControlName="zipCode" /></div>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary" [disabled]="loading">Register as Seller</button>
+  </form>
+  <div class="auth-links"><a routerLink="/auth/login">Back to Login</a></div>
+</div>
