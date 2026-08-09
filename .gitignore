@@ -1,37 +1,98 @@
-HELP.md
+############################
+# Backend — Maven / Spring Boot
+############################
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+############################
+# Backend — logs
+############################
+*.log
+logs/
 
-### IntelliJ IDEA ###
-.idea
+############################
+# Backend — local config & secrets
+############################
+application-local.properties
+application-*.local.properties
+.env
+.env.*
+!.env.example
+
+############################
+# Backend — runtime uploads
+############################
+src/main/resources/images/users/*
+!src/main/resources/images/users/.gitkeep
+src/main/resources/images/products/**/*
+!src/main/resources/images/products/.gitkeep
+!src/main/resources/images/products/variations/.gitkeep
+
+############################
+# Frontend — Angular (client-app)
+############################
+client-app/node_modules/
+client-app/dist/
+client-app/.angular/
+client-app/coverage/
+client-app/out-tsc/
+client-app/tmp/
+client-app/bazel-out/
+client-app/.sass-cache/
+client-app/connect.lock
+client-app/libpeerconnection.log
+client-app/typings/
+client-app/chrome-profiler-events*.json
+client-app/npm-debug.log*
+client-app/yarn-error.log
+client-app/testem.log
+
+############################
+# IDEs & editors
+############################
+.idea/
 *.iws
 *.iml
 *.ipr
-
-### NetBeans ###
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.project
+.classpath
+.factorypath
+.settings/
+.springBeans
+.sts4-cache
+.apt_generated
 /nbproject/private/
 /nbbuild/
-/dist/
 /nbdist/
 /.nb-gradle/
+.c9/
+*.launch
+*.sublime-workspace
+.history/
+
+############################
+# Build tools
+############################
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
+/dist/
+/nbdist/
 
-### VS Code ###
-.vscode/
+############################
+# OS files
+############################
+.DS_Store
+Thumbs.db
 
-mvnw
-.idea/
-mvnw.cmd
+############################
+# Misc
+############################
+HELP.md
