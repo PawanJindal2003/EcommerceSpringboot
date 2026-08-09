@@ -507,7 +507,7 @@ public class ProductService {
         categoryDTO.setCategoryId(categoryId);
         categoryDTO.setCategoryName(category.getName());
 
-        if (category.getParentCategory().getId() == null) {
+        if (category.getParentCategory() == null) {
             categoryDTO.setCategoryParentId("NULL");
         } else {
             categoryDTO.setCategoryParentId(category.getParentCategory().getId());
@@ -579,7 +579,7 @@ public class ProductService {
         CustomerProductCategoryDTO categoryDTO = new CustomerProductCategoryDTO();
         categoryDTO.setCategoryId(category.getId());
         categoryDTO.setCategoryName(category.getName());
-        if (category.getParentCategory().getId() == null) {
+        if (category.getParentCategory() == null) {
             categoryDTO.setCategoryParentId("null");
         } else {
             categoryDTO.setCategoryParentId(category.getParentCategory().getId());
